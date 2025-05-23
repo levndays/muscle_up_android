@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^2.32.0 # Або остання версія
+  firebase_auth: ^4.20.0 # Або остання версія
 
 dev_dependencies:
   flutter_test:

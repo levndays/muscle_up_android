@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1012783717502",
+    "project_id": "muscle-up-8c275",
+    "storage_bucket": "muscle-up-8c275.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012783717502:android:2f7ce9326b23c730938c2f",
+        "android_client_info": {
+          "package_name": "com.example.muscle_up"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnwYrzMP3nVK_bpX86pgItzDt-FK77NX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
