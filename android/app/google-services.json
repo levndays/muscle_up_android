@@ -12,7 +12,20 @@
           "package_name": "com.example.muscle_up"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1012783717502-sp0ocdvt826a594m08u2a67674t84pmd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.muscle_up",
+            "certificate_hash": "5f64da5e6979bd16c2ad006d7fc2c05c63be05fe"
+          }
+        },
+        {
+          "client_id": "1012783717502-kc8pdm9fisavd2bvmp86svfn2kob6hp5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCnwYrzMP3nVK_bpX86pgItzDt-FK77NX8"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1012783717502-kc8pdm9fisavd2bvmp86svfn2kob6hp5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1012783717502-9ii5tn4ulcq8qv6rvh0ril514pdcm50l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.muscleUp"
+              }
+            }
+          ]
         }
       }
     }

@@ -1,21 +1,50 @@
 name: muscle_up
 description: "A new Flutter project."
-publish_to: 'none'
-version: 0.1.0
+publish_to: 'none' # Remove this line if you want to publish to pub.dev
+version: 0.1.0 # Або твоя поточна версія
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.8.0 # Або твоя поточна версія Dart SDK
 
 dependencies:
   flutter:
     sdk: flutter
   firebase_core: ^2.32.0 # Або остання версія
   firebase_auth: ^4.20.0 # Або остання версія
+  google_sign_in: ^6.2.1 # Або остання версія
+  cloud_firestore: ^4.17.5 # Або остання версія
+  animated_background: ^2.0.0
+
+  # Додай сюди інші залежності, якщо вони є
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^5.0.0 # Або остання версія
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/ # Для логотипу Google та інших зображень
+    # - assets/some_other_folder/ # Якщо є інші асети
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter_18pt-Regular.ttf
+        - asset: assets/fonts/Inter_18pt-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Inter_18pt-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Inter_18pt-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter_18pt-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter_18pt-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter_18pt-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Inter_18pt-Black.ttf
+          weight: 900
+    # Можеш додати інші сімейства шрифтів тут
