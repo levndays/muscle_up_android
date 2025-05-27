@@ -1,11 +1,11 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-05-27T02:57:00.853011
+Snapshot created on: 2025-05-27T03:30:59.238585
 ================================================================================
 
 === FILE: .flutter-plugins-dependencies ===
 --------------------------------------------------
-{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_android","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_android-6.2.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[],"windows":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"web":[{"name":"cloud_firestore_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore_web-4.4.8\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_auth_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth_web-5.14.3\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_core_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core_web-2.23.0\\\\","dependencies":[],"dev_dependency":false},{"name":"google_sign_in_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_web-0.12.4+4\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"cloud_firestore","dependencies":["cloud_firestore_web","firebase_core"]},{"name":"cloud_firestore_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_auth","dependencies":["firebase_auth_web","firebase_core"]},{"name":"firebase_auth_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_core","dependencies":["firebase_core_web"]},{"name":"firebase_core_web","dependencies":[]},{"name":"google_sign_in","dependencies":["google_sign_in_android","google_sign_in_ios","google_sign_in_web"]},{"name":"google_sign_in_android","dependencies":[]},{"name":"google_sign_in_ios","dependencies":[]},{"name":"google_sign_in_web","dependencies":[]}],"date_created":"2025-05-27 01:56:50.317841","version":"3.32.0","swift_package_manager_enabled":{"ios":false,"macos":false}}
+{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_android","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_android-6.2.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[],"windows":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"web":[{"name":"cloud_firestore_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore_web-4.4.8\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_auth_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth_web-5.14.3\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_core_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core_web-2.23.0\\\\","dependencies":[],"dev_dependency":false},{"name":"google_sign_in_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_web-0.12.4+4\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"cloud_firestore","dependencies":["cloud_firestore_web","firebase_core"]},{"name":"cloud_firestore_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_auth","dependencies":["firebase_auth_web","firebase_core"]},{"name":"firebase_auth_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_core","dependencies":["firebase_core_web"]},{"name":"firebase_core_web","dependencies":[]},{"name":"google_sign_in","dependencies":["google_sign_in_android","google_sign_in_ios","google_sign_in_web"]},{"name":"google_sign_in_android","dependencies":[]},{"name":"google_sign_in_ios","dependencies":[]},{"name":"google_sign_in_web","dependencies":[]}],"date_created":"2025-05-27 03:06:14.525039","version":"3.32.0","swift_package_manager_enabled":{"ios":false,"macos":false}}
 --------------------------------------------------
 === END OF FILE: .flutter-plugins-dependencies ===
 
@@ -869,7 +869,7 @@ android {
         applicationId = "com.example.muscle_up"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = flutter.minSdkVersion.coerceAtLeast(23)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -2583,59 +2583,105 @@ class DefaultFirebaseOptions {
 
 === FILE: lib/home_page.dart ===
 --------------------------------------------------
+// lib/home_page.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+// Імпорти екранів для вкладок
+import 'features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
+import 'features/routines/presentation/screens/user_routines_screen.dart';
+// (Можливо) екран профілю
+// import 'features/profile/presentation/screens/profile_screen.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key}); // const конструктор
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  // Список віджетів (екранів) для кожної вкладки
+  // Важливо: ці екрани повинні коректно отримувати свої залежності (кубіти/репозиторії)
+  // через BlocProvider/RepositoryProvider з контексту, якщо вони їх створюють.
+  static final List<Widget> _widgetOptions = <Widget>[
+    const DashboardScreen(),
+    const ExerciseExplorerScreen(), // Цей екран вже має свій BlocProvider
+    const UserRoutinesScreen(),     // Цей екран вже має свій BlocProvider
+    // const ProfileScreen(), // Додати, коли буде готовий
+  ];
+
+  // Список заголовків для AppBar
+  static const List<String> _appBarTitles = <String>[
+    'Dashboard',
+    'Exercise Library',
+    'My Routines',
+    // 'Profile',
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Головна сторінка'),
-        centerTitle: true,
+        title: Text(_appBarTitles[_selectedIndex]),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Вийти',
+            tooltip: 'Sign Out',
             onPressed: () async {
               try {
                 await FirebaseAuth.instance.signOut();
-                // AuthGate автоматично обробить перенаправлення на LoginPage
+                // AuthGate автоматично обробить перенаправлення
               } catch (e) {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text('Помилка виходу: ${e.toString()}')),
-                 );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error signing out: ${e.toString()}')),
+                  );
+                }
               }
             },
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Вітаємо!',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 10),
-              if (user != null) ...[
-                if (user.displayName != null && user.displayName!.isNotEmpty)
-                  Text('Ім\'я: ${user.displayName}', style: const TextStyle(fontSize: 18)),
-                Text('Email: ${user.email}',  style: const TextStyle(fontSize: 18)),
-                const SizedBox(height: 20),
-                Text('User ID: ${user.uid}', style: const TextStyle(fontSize: 14, color: Colors.grey)),
-              ] else
-                const Text('Інформація про користувача недоступна.'),
-            ],
+      body: IndexedStack( // Використовуємо IndexedStack для збереження стану екранів
+        index: _selectedIndex,
+        children: _widgetOptions,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center_outlined),
+            activeIcon: Icon(Icons.fitness_center),
+            label: 'Exercises',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_outlined),
+            activeIcon: Icon(Icons.list_alt),
+            label: 'Routines',
+          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.person_outline),
+          //   activeIcon: Icon(Icons.person),
+          //   label: 'Profile',
+          // ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
       ),
     );
   }
@@ -3058,10 +3104,16 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin { /
 
 === FILE: lib/main.dart ===
 --------------------------------------------------
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'firebase_options.dart';
-import 'auth_gate.dart'; // Переконайся, що цей файл існує
+import 'auth_gate.dart';
+import 'core/domain/repositories/predefined_exercise_repository.dart';
+import 'features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart';
+import 'core/domain/repositories/routine_repository.dart';
+import 'features/routines/data/repositories/routine_repository_impl.dart'; // Переконайтесь, що це правильний шлях
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -3076,27 +3128,96 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Muscle UP Auth', // Можеш додати назву
-      theme: ThemeData( // Базова тема
-        primarySwatch: Colors.deepPurple, // Або будь-який інший колір
-        useMaterial3: true, // Для використання Material 3 дизайну
-        inputDecorationTheme: const InputDecorationTheme( // Глобальний стиль для полів вводу
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          ),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<PredefinedExerciseRepository>(
+          create: (context) => PredefinedExerciseRepositoryImpl(),
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData( // Глобальний стиль для кнопок
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
+        RepositoryProvider<RoutineRepository>(
+          // FirebaseAuth.instance буде використано всередині RoutineRepositoryImpl
+          create: (context) => RoutineRepositoryImpl(),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Muscle UP',
+        theme: ThemeData(
+          primarySwatch: Colors.deepOrange,
+          colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: Colors.deepOrange,
+            accentColor: Colors.amber, // Для зворотної сумісності, якщо десь використовується
+          ).copyWith(
+            secondary: Colors.amber, // Основний акцентний колір
+            primary: const Color(0xFFED5D1A), // Основний колір бренду
+            onPrimary: Colors.white, // Колір тексту/іконок на primary
+            surface: Colors.white, // Колір фону карток, діалогів
+            onSurface: Colors.black87, // Колір тексту на surface
+            error: Colors.redAccent,
+          ),
+          useMaterial3: true,
+          fontFamily: 'Inter',
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: const Color(0xF2FFFFFF), 
+            hintStyle: TextStyle(color: Colors.grey[600]),
+            border: OutlineInputBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+              borderSide: BorderSide(color: Colors.grey.shade300),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            enabledBorder: OutlineInputBorder( 
+              borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+              borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12.0)),
+              borderSide: BorderSide(color: Color(0xFFED5D1A), width: 2.0),
+            ),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              backgroundColor: const Color(0xFFED5D1A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              textStyle: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFED5D1A),
+               textStyle: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+            )
+          ),
+          appBarTheme: AppBarTheme(
+            centerTitle: true,
+            elevation: 0.5,
+            backgroundColor: Colors.grey[50], 
+            titleTextStyle: const TextStyle(fontFamily: 'Inter', fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
+            iconTheme: const IconThemeData(color: Color(0xFFED5D1A)), 
+          ),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            selectedItemColor: Color(0xFFED5D1A),
+            unselectedItemColor: Colors.grey,
+            backgroundColor: Colors.white,
+            selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
+          ),
+          // Виправлення тут:
+          cardTheme: CardThemeData( 
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+          ),
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            backgroundColor: Color(0xFFED5D1A),
+            foregroundColor: Colors.white,
           ),
         ),
+        home: const AuthGate(),
       ),
-      home: const AuthGate(), // Використовуємо AuthGate
     );
   }
 }
@@ -3359,6 +3480,136 @@ abstract class RoutineRepository { // <-- Ключове слово "abstract cl
 === END OF FILE: lib/core/domain/repositories/routine_repository.dart ===
 
 
+=== FILE: lib/features/dashboard/presentation/screens/dashboard_screen.dart ===
+--------------------------------------------------
+// lib/features/dashboard/presentation/screens/dashboard_screen.dart
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+// TODO: Імпортувати UserRoutinesCubit/State та RoutineRepository, якщо будете показувати тут рутини
+// import '../../../routines/presentation/cubit/user_routines_cubit.dart';
+// import '../../../../core/domain/repositories/routine_repository.dart';
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    // TODO: Для відображення рутин тут, можна було б створити окремий BlocProvider
+    // або використовувати BlocBuilder для UserRoutinesCubit, якщо він надається вище (наприклад, у HomePage)
+    // Однак, для простоти, поки що не будемо завантажувати рутини прямо тут,
+    // а лише покажемо базову інформацію.
+
+    return Scaffold(
+      // AppBar тут не потрібен, бо він буде на HomePage
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (user != null) ...[
+              Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                       Text(
+                        'Welcome back,',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        user.displayName ?? user.email ?? 'Fitness Enthusiast',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Today's Focus",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              // Тут можна відобразити заплановану рутину на сьогодні, якщо є
+              // Або якусь мотиваційну цитату
+              Card(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                child: const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Icon(Icons.calendar_today, size: 30, color: Color(0xFFED5D1A)),
+                      SizedBox(height: 8),
+                      Text(
+                        "No workout scheduled for today (yet!).\nCheck your routines or start a new one.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Quick Actions",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+               const SizedBox(height: 8),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Create New Routine'),
+                onPressed: () {
+                  // Для навігації на екран створення рутин, потрібно щоб HomePage мала спосіб
+                  // змінити вкладку та/або запустити навігацію.
+                  // Поки що, це може бути просто кнопка-заглушка, або ми можемо
+                  // використати `Navigator.push` напряму до `CreateEditRoutineScreen`.
+                  // Для цього `CreateEditRoutineScreen` має бути доступним
+                  // (і мати доступ до `RoutineRepository` через `RepositoryProvider`).
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text('Navigate to Create Routine from Routines Tab for now.'))
+                   );
+                },
+              ),
+              const SizedBox(height: 12),
+               ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondary),
+                icon: const Icon(Icons.play_circle_outline),
+                label: const Text('Start Empty Workout (Soon)'),
+                onPressed: () {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text('Feature coming soon!'))
+                   );
+                },
+              ),
+
+
+            ] else ...[
+              const Center(child: Text('User information unavailable. Please try logging in again.')),
+            ],
+            const SizedBox(height: 30),
+            Text(
+              'Version: 0.1.0', // Як у pubspec.yaml
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/dashboard/presentation/screens/dashboard_screen.dart ===
+
+
 === FILE: lib/features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart ===
 --------------------------------------------------
 // lib/features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart
@@ -3528,51 +3779,81 @@ class ExerciseExplorerError extends ExerciseExplorerState {
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/exercise_explorer_cubit.dart';
-import '../../data/repositories/predefined_exercise_repository_impl.dart'; // Тимчасово для простоти, краще через DI
-// import '../../../../core/domain/entities/predefined_exercise.dart'; // Перевірити, чи потрібен після змін
+// Тимчасово для простоти, краще через DI
+// import '../../data/repositories/predefined_exercise_repository_impl.dart'; 
+import '../../../../core/domain/repositories/predefined_exercise_repository.dart'; // Імпорт абстракції
 import '../widgets/exercise_list_item.dart';
 
 class ExerciseExplorerScreen extends StatelessWidget {
-  final bool isSelectionMode; // <--- ДОДАНО
+  final bool isSelectionMode;
 
-  const ExerciseExplorerScreen({super.key, this.isSelectionMode = false}); // <--- ДОДАНО
+  const ExerciseExplorerScreen({super.key, this.isSelectionMode = false});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
+    // Якщо ExerciseExplorerScreen не надає BlocProvider сам, а очікує його ззовні,
+    // то тут BlocProvider не потрібен. Але якщо він його створює, то так:
+    return BlocProvider<ExerciseExplorerCubit>( // Уточнено тип
       create: (context) => ExerciseExplorerCubit(
-        // Переконайся, що PredefinedExerciseRepositoryImpl() передається коректно
-        // або використовуй RepositoryProvider.of<PredefinedExerciseRepository>(context)
-        PredefinedExerciseRepositoryImpl() 
+        RepositoryProvider.of<PredefinedExerciseRepository>(context), // Отримуємо з контексту
       )..fetchExercises(),
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(isSelectionMode ? 'Select Exercise' : 'Exercise Library'),
-          // Якщо в режимі вибору, можна не показувати кнопку назад, якщо це модальне вікно
-          // automaticallyImplyLeading: !isSelectionMode, 
-        ),
+        appBar: isSelectionMode // Показуємо AppBar тільки якщо це не режим вибору, бо HomePage вже має AppBar
+            ? AppBar(
+                title: Text(isSelectionMode ? 'Select Exercise' : 'Exercise Library'),
+                 // Кнопка назад буде автоматично, якщо це не корінь навігатора
+              )
+            : null, // Немає AppBar, якщо це вкладка в HomePage
         body: BlocBuilder<ExerciseExplorerCubit, ExerciseExplorerState>(
           builder: (context, state) {
+            if (state is ExerciseExplorerInitial && !isSelectionMode) {
+              // Можна викликати fetchExercises, якщо він не був викликаний при створенні кубіта
+              // context.read<ExerciseExplorerCubit>().fetchExercises();
+              // Або просто показувати завантаження
+               return const Center(child: CircularProgressIndicator());
+            }
             if (state is ExerciseExplorerLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is ExerciseExplorerLoaded) {
               if (state.exercises.isEmpty) {
-                return const Center(child: Text('No exercises found.'));
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No exercises found in the library yet. Content is being added!', textAlign: TextAlign.center),
+                  )
+                );
               }
               return ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 8), // Додамо відступи, якщо AppBar немає
                 itemCount: state.exercises.length,
                 itemBuilder: (context, index) {
                   final exercise = state.exercises[index];
                   return ExerciseListItem(
-                    exercise: exercise, 
-                    isSelectionMode: isSelectionMode, // <--- ПЕРЕДАНО
+                    exercise: exercise,
+                    isSelectionMode: isSelectionMode,
                   );
                 },
               );
             } else if (state is ExerciseExplorerError) {
-              return Center(child: Text('Error: ${state.message}'));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text('Error loading exercises: ${state.message}', textAlign: TextAlign.center),
+                       const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.read<ExerciseExplorerCubit>().fetchExercises(),
+                        child: const Text('Try Again'),
+                      )
+                    ],
+                  ),
+                )
+              );
             }
-            // Початковий стан або якщо щось не так
             return const Center(child: Text('Loading exercises...'));
           },
         ),
@@ -4357,27 +4638,26 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
 // lib/features/routines/presentation/screens/user_routines_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/domain/repositories/routine_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Потрібен для FirebaseAuth.instance
+import '../../../../core/domain/repositories/routine_repository.dart'; // Абстракція
 import '../cubit/user_routines_cubit.dart';
 import '../widgets/routine_list_item.dart';
 import 'create_edit_routine_screen.dart';
-// import '../../../../core/domain/entities/routine.dart'; // <--- ВИДАЛЕНО
 
 class UserRoutinesScreen extends StatelessWidget {
   const UserRoutinesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider( // Змінено на один BlocProvider, оскільки ManageRoutineCubit тут не надається глобально
+    // Якщо UserRoutinesScreen не надає BlocProvider сам, а очікує його ззовні,
+    // то тут BlocProvider не потрібен. Але якщо він його створює, то так:
+    return BlocProvider<UserRoutinesCubit>( // Уточнено тип
       create: (context) => UserRoutinesCubit(
-        RepositoryProvider.of<RoutineRepository>(context),
+        RepositoryProvider.of<RoutineRepository>(context), // Отримуємо з контексту
         FirebaseAuth.instance,
       )..fetchUserRoutines(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('My Routines'),
-        ),
+        // AppBar тут не потрібен, оскільки він є в HomePage
         body: BlocConsumer<UserRoutinesCubit, UserRoutinesState>(
           listener: (context, state) {
             if (state is UserRoutinesError) {
@@ -4387,58 +4667,76 @@ class UserRoutinesScreen extends StatelessWidget {
             }
           },
           builder: (context, state) {
+            if (state is UserRoutinesInitial) {
+              // Можна викликати fetchUserRoutines, якщо він не був викликаний при створенні кубіта
+              // context.read<UserRoutinesCubit>().fetchUserRoutines();
+              // Або просто показувати завантаження
+              return const Center(child: CircularProgressIndicator());
+            }
             if (state is UserRoutinesLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is UserRoutinesLoaded) {
               if (state.routines.isEmpty) {
                 return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.fitness_center, size: 60, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No routines yet.',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create Your First Routine'),
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => const CreateEditRoutineScreen(),
-                          ));
-                        },
-                      )
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.list_alt_outlined, size: 60, color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'You have no routines yet.',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Create a routine to start organizing your workouts!',
+                          style: TextStyle(fontSize: 15, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.add_circle_outline),
+                          label: const Text('Create Your First Routine'),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => const CreateEditRoutineScreen(),
+                            ));
+                          },
+                        )
+                      ],
+                    ),
                   ),
                 );
               }
               return ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 70), // Відступ знизу для FAB
                 itemCount: state.routines.length,
                 itemBuilder: (context, index) {
                   final routine = state.routines[index];
-                  // RoutineListItem тепер сам обробляє залежності для видалення,
-                  // якщо RepositoryProvider доступний
                   return RoutineListItem(routine: routine);
                 },
               );
             } else if (state is UserRoutinesError) {
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                    const SizedBox(height: 16),
-                    Text('Failed to load routines: ${state.message}'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context.read<UserRoutinesCubit>().fetchUserRoutines(),
-                      child: const Text('Retry'),
-                    )
-                  ],
-                ),
+                 child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text('Failed to load routines: ${state.message}', textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.read<UserRoutinesCubit>().fetchUserRoutines(),
+                        child: const Text('Try Again'),
+                      )
+                    ],
+                  ),
+                )
               );
             }
             return const Center(child: Text('Press button to load routines or create one.'));
@@ -4448,14 +4746,17 @@ class UserRoutinesScreen extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => const CreateEditRoutineScreen(),
-            )).then((_) {
-              // Опціонально: оновити список після повернення зі створення/редагування,
-              // якщо ManageRoutineCubit не оновлює UserRoutinesCubit напряму.
-              // context.read<UserRoutinesCubit>().fetchUserRoutines();
-            });
+            ));
+            // .then((_) { // Цей .then може бути непотрібним, якщо ManageRoutineCubit оновлює UserRoutinesCubit
+            //   // final userRoutinesState = context.read<UserRoutinesCubit>().state;
+            //   // if (userRoutinesState is UserRoutinesLoaded) { // Оновлюємо, якщо вже завантажено
+            //   //   context.read<UserRoutinesCubit>().fetchUserRoutines();
+            //   // }
+            // });
           },
           icon: const Icon(Icons.add),
           label: const Text('New Routine'),
+          tooltip: 'Create a new routine',
         ),
       ),
     );
