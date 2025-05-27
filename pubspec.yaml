@@ -9,13 +9,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.32.0 # Або остання версія
-  firebase_auth: ^4.20.0 # Або остання версія
+  firebase_core: ^3.13.1 # Або остання версія
+  firebase_auth: ^5.5.4 # Або остання версія
   google_sign_in: ^6.2.1 # Або остання версія
-  cloud_firestore: ^4.17.5 # Або остання версія
+  cloud_firestore: ^5.6.8 # Або остання версія
   animated_background: ^2.0.0
 
-  # Додай сюди інші залежності, якщо вони є
+  flutter_bloc: ^9.1.1  
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:

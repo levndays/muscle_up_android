@@ -1,11 +1,11 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-05-27T01:31:39.413264
+Snapshot created on: 2025-05-27T02:57:00.853011
 ================================================================================
 
 === FILE: .flutter-plugins-dependencies ===
 --------------------------------------------------
-{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-4.17.5\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-4.20.0\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-2.32.0\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-4.17.5\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-4.20.0\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-2.32.0\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_android","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_android-6.2.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-4.17.5\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-4.20.0\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-2.32.0\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[],"windows":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-4.17.5\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-4.20.0\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-2.32.0\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"web":[{"name":"cloud_firestore_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore_web-3.12.5\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_auth_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth_web-5.12.0\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_core_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core_web-2.17.5\\\\","dependencies":[],"dev_dependency":false},{"name":"google_sign_in_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_web-0.12.4+4\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"cloud_firestore","dependencies":["cloud_firestore_web","firebase_core"]},{"name":"cloud_firestore_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_auth","dependencies":["firebase_auth_web","firebase_core"]},{"name":"firebase_auth_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_core","dependencies":["firebase_core_web"]},{"name":"firebase_core_web","dependencies":[]},{"name":"google_sign_in","dependencies":["google_sign_in_android","google_sign_in_ios","google_sign_in_web"]},{"name":"google_sign_in_android","dependencies":[]},{"name":"google_sign_in_ios","dependencies":[]},{"name":"google_sign_in_web","dependencies":[]}],"date_created":"2025-05-27 00:48:47.029227","version":"3.32.0","swift_package_manager_enabled":{"ios":false,"macos":false}}
+{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_android","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_android-6.2.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[],"windows":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"web":[{"name":"cloud_firestore_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore_web-4.4.8\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_auth_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth_web-5.14.3\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_core_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core_web-2.23.0\\\\","dependencies":[],"dev_dependency":false},{"name":"google_sign_in_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_web-0.12.4+4\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"cloud_firestore","dependencies":["cloud_firestore_web","firebase_core"]},{"name":"cloud_firestore_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_auth","dependencies":["firebase_auth_web","firebase_core"]},{"name":"firebase_auth_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_core","dependencies":["firebase_core_web"]},{"name":"firebase_core_web","dependencies":[]},{"name":"google_sign_in","dependencies":["google_sign_in_android","google_sign_in_ios","google_sign_in_web"]},{"name":"google_sign_in_android","dependencies":[]},{"name":"google_sign_in_ios","dependencies":[]},{"name":"google_sign_in_web","dependencies":[]}],"date_created":"2025-05-27 01:56:50.317841","version":"3.32.0","swift_package_manager_enabled":{"ios":false,"macos":false}}
 --------------------------------------------------
 === END OF FILE: .flutter-plugins-dependencies ===
 
@@ -313,13 +313,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.32.0 # Або остання версія
-  firebase_auth: ^4.20.0 # Або остання версія
+  firebase_core: ^3.13.1 # Або остання версія
+  firebase_auth: ^5.5.4 # Або остання версія
   google_sign_in: ^6.2.1 # Або остання версія
-  cloud_firestore: ^4.17.5 # Або остання версія
+  cloud_firestore: ^5.6.8 # Або остання версія
   animated_background: ^2.0.0
 
-  # Додай сюди інші залежності, якщо вони є
+  flutter_bloc: ^9.1.1  
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
@@ -358,9 +359,350 @@ flutter:
 
 === FILE: README.md ===
 --------------------------------------------------
-# muscle_up
+# MuscleUP: Фітнес-застосунок для справжніх атлетів
 
-A new Flutter project.
+**Motto:** Level Up Your Lifts, Connect Your Crew, Achieve Your Goals. Build Your Strength, Together.
+
+## 1. Вступ
+
+**MuscleUP** – це мобільний фітнес-застосунок, розроблений для розв'язання поширеної проблеми відтоку користувачів у фітнес-додатках. Наша мета – сприяти довгостроковій залученості шляхом створення високомотивуючого, соціально інтерактивного та гейміфікованого середовища. MuscleUP дає змогу користувачам ретельно відстежувати свої тренування, встановлювати та досягати персоналізованих фітнес-цілей, ділитися своїм шляхом та черпати натхнення від спільноти, що підтримує.
+
+Цей документ описує поточну реалізацію бізнес-логіки, архітектуру програмного забезпечення та дизайн бекенду з акцентом на модульність, масштабованість та легкість супроводу. Проєкт розробляється як дипломна робота і є основою для майбутнього повноцінного продукту, як описано в [MuscleUP: Application Design Document (Version 2.0 - Product Focused)](./MuscleUP_Application_Design_Document_v2.txt) (припустимо, що цей файл лежить поруч).
+
+**Поточний стан:** Реалізовано ядро автентифікації (Email/Password, Google Sign-In), створення профілю користувача в Firestore, а також базовий функціонал для перегляду бібліотеки вправ та створення/управління користувацькими тренувальними рутинами.
+
+## 2. Ключові Архітектурні Принципи
+
+Дизайн MuscleUP керується наступними принципами (детальніше в дизайн-документі):
+
+*   **Модульність:** Функції розробляються як слабозв'язані модулі.
+*   **Масштабованість:** Фронтенд та бекенд розраховані на зростання.
+*   **Легкість супроводу:** Чітке розділення відповідальностей, послідовні патерни кодування.
+*   **Розширюваність:** Система спроєктована для легкого додавання нових функцій.
+*   **Рішення на основі даних:** Дизайн сприяє збору аналітики (в майбутньому).
+
+## 3. Технологічний Стек
+
+*   **Фронтенд:**
+    *   **Framework:** Flutter (версія SDK, як у `pubspec.yaml`)
+    *   **Мова:** Dart (версія SDK, як у `pubspec.yaml`)
+    *   **Управління станом:** Flutter BLoC/Cubit (використовується в реалізованих модулях `exercise_explorer` та `routines`)
+    *   **Навігація:** Стандартна Flutter навігація (в майбутньому планується перехід на GoRouter або AutoRoute).
+    *   **Залежності (ключові):**
+        *   `firebase_core`: Базовий пакет Firebase.
+        *   `firebase_auth`: Автентифікація Firebase.
+        *   `google_sign_in`: Автентифікація через Google.
+        *   `cloud_firestore`: База даних Firestore.
+        *   `flutter_bloc`: Для реалізації BLoC/Cubit.
+        *   `equatable`: Для порівняння об'єктів у станах BLoC/Cubit.
+        *   `animated_background`: Для анімації фону на сторінці логіну.
+        *   `flutter_lints`: Для аналізу коду.
+*   **Бекенд:**
+    *   **Firebase:**
+        *   **Authentication:** Для управління користувачами.
+        *   **Cloud Firestore:** NoSQL база даних для зберігання даних застосунку.
+        *   **Firebase Storage:** (Планується) для зберігання медіафайлів (аватари, докази рекордів).
+        *   **Cloud Functions:** (Планується) для серверної логіки, автоматизації, тригерів.
+
+## 4. Файлова Структура Проєкту (`lib/`)
+
+Проєкт дотримується модульної, feature-first архітектури, що сприяє розділенню відповідальностей та масштабованості.
+
+
+muscle_up/
+├── lib/
+│ ├── main.dart # Точка входу в застосунок, ініціалізація Firebase
+│ ├── auth_gate.dart # Віджет для управління станом автентифікації (перенаправлення)
+│ ├── firebase_options.dart # Конфігураційні дані Firebase (згенеровано FlutterFire CLI)
+│ │
+│ ├── home_page.dart # Тимчасова домашня сторінка після логіну
+│ ├── login_page.dart # UI та логіка для екрану входу/реєстрації
+│ │
+│ ├── app_config/ # (Планується) Базове налаштування застосунку
+│ │ ├── app_widget.dart # (Планується) Кореневий MaterialApp
+│ │ ├── di_container.dart # (Планується) Налаштування Dependency Injection (напр. GetIt)
+│ │ ├── navigation/ # (Планується) Централізована навігація
+│ │ └── theme/ # (Планується) Глобальні теми, кольори, шрифти
+│ │
+│ ├── core/ # Спільна бізнес-логіка, моделі, інтерфейси
+│ │ ├── common/ # (Планується) Базові класи, винятки, типи результатів
+│ │ ├── domain/
+│ │ │ ├── entities/ # Об'єкти предметної області (POJO/PODO)
+│ │ │ │ ├── predefined_exercise.dart # Модель для стандартизованої вправи
+│ │ │ │ └── routine.dart # Моделі UserRoutine та RoutineExercise
+│ │ │ └── repositories/ # Абстрактні інтерфейси для операцій з даними
+│ │ │ ├── predefined_exercise_repository.dart # Інтерфейс для predefinedExercises
+│ │ │ └── routine_repository.dart # Інтерфейс для userRoutines
+│ │ └── enums/ # (Планується) Глобальні enum'и
+│ │
+│ ├── features/ # Кожен модуль фічі
+│ │ ├── auth/ # (Неявно реалізовано в login_page.dart, auth_gate.dart)
+│ │ │ ├── presentation/
+│ │ │ │ ├── screens/ # login_page.dart, home_page.dart (поточна)
+│ │ │
+│ │ ├── exercise_explorer/ # Модуль для перегляду бібліотеки вправ
+│ │ │ ├── data/
+│ │ │ │ └── repositories/
+│ │ │ │ └── predefined_exercise_repository_impl.dart # Реалізація репозиторію
+│ │ │ ├── presentation/
+│ │ │ │ ├── cubit/
+│ │ │ │ │ ├── exercise_explorer_cubit.dart # Логіка стану для списку вправ
+│ │ │ │ │ └── exercise_explorer_state.dart # Стани для ExerciseExplorerCubit
+│ │ │ │ ├── screens/
+│ │ │ │ │ └── exercise_explorer_screen.dart # UI для відображення списку вправ
+│ │ │ │ └── widgets/
+│ │ │ │ └── exercise_list_item.dart # Віджет для одного елемента списку вправ
+│ │ │
+│ │ ├── routines/ # Модуль для управління користувацькими рутинами
+│ │ │ ├── data/
+│ │ │ │ └── repositories/
+│ │ │ │ └── routine_repository_impl.dart # Реалізація репозиторію рутин
+│ │ │ ├── presentation/
+│ │ │ │ ├── cubit/
+│ │ │ │ │ ├── user_routines_cubit.dart # Логіка стану для списку рутин користувача
+│ │ │ │ │ ├── user_routines_state.dart # Стани для UserRoutinesCubit
+│ │ │ │ │ ├── manage_routine_cubit.dart # Логіка стану для створення/редагування рутини
+│ │ │ │ │ └── manage_routine_state.dart # Стани для ManageRoutineCubit
+│ │ │ │ ├── screens/
+│ │ │ │ │ ├── user_routines_screen.dart # UI для списку рутин користувача
+│ │ │ │ │ └── create_edit_routine_screen.dart # UI для створення/редагування рутини
+│ │ │ │ └── widgets/
+│ │ │ │ ├── routine_list_item.dart # Віджет для одного елемента списку рутин
+│ │ │ │ └── add_exercise_to_routine_dialog.dart # (Планується) Діалог/екран для додавання вправ до рутини
+│ │ │
+│ │ ├── onboarding/ # (Планується) Модуль онбордингу
+│ │ ├── dashboard/ # (Планується) Головний екран застосунку
+│ │ └── ... # Інші майбутні фічі
+│ │
+│ ├── data_sources/ # (Планується) Спільні реалізації джерел даних
+│ │ ├── firebase/
+│ │ │ ├── firestore_service.dart # (Планується) Огортка для Firestore
+│ │
+│ └── presentation_common/ # (Планується) Спільні віджети та UI-утиліти
+│ └── widgets/
+│
+├── assets/
+│ ├── images/
+│ │ └── google_logo.png # Логотип Google для кнопки
+│ └── fonts/
+│ └── Inter_...ttf # Файли шрифтів Inter
+│
+├── android/ # Специфічний код та конфігурація для Android
+├── ios/ # Специфічний код та конфігурація для iOS
+├── web/ # Специфічний код та конфігурація для Web
+└── ... # Інші файли та папки проєкту
+
+## 5. Детальний Опис Ключових Компонентів та Логіки
+
+### 5.1. Автентифікація та Управління Користувачем
+
+*   **`main.dart`**:
+    *   **Призначення**: Головний файл, точка входу в застосунок.
+    *   **Логіка**: Ініціалізує Firebase (`Firebase.initializeApp`) перед запуском будь-яких віджетів. Створює екземпляр `MainApp`.
+*   **`MainApp` (у `main.dart`)**:
+    *   **Призначення**: Кореневий віджет застосунку.
+    *   **Логіка**: `StatelessWidget`, який повертає `MaterialApp`. Встановлює базову тему, глобальні стилі для полів вводу та кнопок. В якості `home` використовує `AuthGate`.
+*   **`auth_gate.dart`**:
+    *   **Призначення**: Керує потоком автентифікації.
+    *   **Логіка**: Використовує `StreamBuilder` для прослуховування змін стану автентифікації (`FirebaseAuth.instance.authStateChanges()`).
+        *   Якщо з'єднання в очікуванні (`ConnectionState.waiting`), показує `CircularProgressIndicator`.
+        *   Якщо користувач автентифікований (`snapshot.hasData`), перенаправляє на `HomePage`.
+        *   Якщо користувач не автентифікований, перенаправляє на `LoginPage`.
+*   **`login_page.dart`**:
+    *   **Призначення**: Екран для входу та реєстрації користувача.
+    *   **Логіка**:
+        *   Використовує `StatefulWidget` та `GlobalKey<FormState>` для валідації форм.
+        *   Має контролери `_emailController` та `_passwordController`.
+        *   Змінна `_isLogin` перемикає режим між входом та реєстрацією.
+        *   **Анімація фону**: Використовує `AnimationController` та `AlignmentTween` для створення динамічного градієнтного фону.
+        *   **`_submitForm()`**:
+            *   Валідує форму.
+            *   Якщо `_isLogin` = `true`, викликає `FirebaseAuth.instance.signInWithEmailAndPassword()`.
+            *   Якщо `_isLogin` = `false`, викликає `FirebaseAuth.instance.createUserWithEmailAndPassword()`. Після успішної реєстрації викликає `_createInitialUserProfile()` для нового користувача.
+        *   **`_signInWithGoogle()`**:
+            *   Використовує плагін `google_sign_in` для отримання облікових даних Google.
+            *   Створює `AuthCredential` та викликає `FirebaseAuth.instance.signInWithCredential()`.
+            *   Якщо це новий користувач (`additionalUserInfo?.isNewUser`), викликає `_createInitialUserProfile()`.
+        *   **`_createInitialUserProfile(User user)`**:
+            *   Створює новий документ у колекції `users` Firestore з `uid` користувача як ID документа.
+            *   Заповнює базові поля профілю (email, displayName, photoURL з `User` об'єкта, решту полів – значеннями за замовчуванням згідно з дизайн-документом, наприклад, `profileSetupComplete: false`).
+            *   Використовує `FieldValue.serverTimestamp()` для `createdAt` та `updatedAt`.
+            *   Перевіряє, чи профіль вже існує, щоб уникнути перезапису.
+        *   Обробляє `FirebaseAuthException` та інші помилки, відображаючи їх у `_errorMessage`.
+*   **`home_page.dart`**:
+    *   **Призначення**: Поточна "заглушка" для головного екрану після успішного входу.
+    *   **Логіка**: Відображає базову інформацію про користувача (email, displayName, UID) та кнопку виходу (`FirebaseAuth.instance.signOut()`).
+
+### 5.2. Бібліотека Вправ (`exercise_explorer`)
+
+Цей модуль відповідає за відображення списку стандартизованих вправ.
+
+*   **`core/domain/entities/predefined_exercise.dart`**:
+    *   **Призначення**: Клас-модель, що представляє одну вправу з усіма її атрибутами (назва, м'язові групи, обладнання тощо).
+    *   **Логіка**: Містить конструктор, фабричний метод `fromFirestore()` для перетворення `DocumentSnapshot` з Firestore в об'єкт `PredefinedExercise`, та метод `toMap()` для перетворення об'єкта в `Map` (для запису в Firestore, якщо знадобиться).
+*   **`core/domain/repositories/predefined_exercise_repository.dart`**:
+    *   **Призначення**: Абстрактний клас (інтерфейс), що визначає контракт для отримання даних про вправи. Це дозволяє відокремити логіку отримання даних від конкретної реалізації (наприклад, Firestore).
+    *   **Методи**: `Future<List<PredefinedExercise>> getAllExercises()`.
+*   **`features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart`**:
+    *   **Призначення**: Конкретна реалізація `PredefinedExerciseRepository`, що використовує Firebase Firestore для отримання даних.
+    *   **Логіка**: Метод `getAllExercises()` робить запит до колекції `predefinedExercises` у Firestore, отримує всі документи та перетворює їх на список об'єктів `PredefinedExercise` за допомогою `PredefinedExercise.fromFirestore()`. Обробляє можливі помилки.
+*   **`features/exercise_explorer/presentation/cubit/exercise_explorer_state.dart`**:
+    *   **Призначення**: Визначає можливі стани для `ExerciseExplorerCubit` (Initial, Loading, Loaded, Error) з використанням `Equatable` для полегшення порівняння станів.
+*   **`features/exercise_explorer/presentation/cubit/exercise_explorer_cubit.dart`**:
+    *   **Призначення**: Управляє станом екрану бібліотеки вправ.
+    *   **Логіка**:
+        *   Залежить від `PredefinedExerciseRepository`.
+        *   Метод `fetchExercises()`: встановлює стан `ExerciseExplorerLoading`, викликає метод `getAllExercises()` репозиторію. При успішному отриманні даних встановлює стан `ExerciseExplorerLoaded` з отриманим списком вправ. У випадку помилки – `ExerciseExplorerError`.
+*   **`features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart`**:
+    *   **Призначення**: UI-компонент, що відображає список вправ.
+    *   **Логіка**:
+        *   Використовує `BlocProvider` для створення та надання `ExerciseExplorerCubit`.
+        *   Використовує `BlocBuilder` для перебудови UI залежно від поточного стану `ExerciseExplorerCubit`.
+        *   Відображає `CircularProgressIndicator` у стані `Loading`, список вправ (використовуючи `ListView.builder` та `ExerciseListItem`) у стані `Loaded`, або повідомлення про помилку у стані `Error`.
+*   **`features/exercise_explorer/presentation/widgets/exercise_list_item.dart`**:
+    *   **Призначення**: Віджет для відображення однієї вправи у списку.
+    *   **Логіка**: Приймає об'єкт `PredefinedExercise` та відображає його назву, основну м'язову групу. Має обробник `onTap` для майбутньої навігації на детальний екран вправи.
+
+### 5.3. Користувацькі Рутини (`routines`)
+
+Цей модуль дозволяє користувачам створювати, переглядати, редагувати та видаляти власні тренувальні рутини.
+
+*   **`core/domain/entities/routine.dart`**:
+    *   **Призначення**: Містить два класи-моделі:
+        *   `RoutineExercise`: Представляє одну вправу всередині рутини користувача (посилання на `predefinedExerciseId`, кількість підходів, нотатки).
+        *   `UserRoutine`: Представляє повну рутину користувача (ID, userId, назва, список `RoutineExercise`, дні тижня тощо).
+    *   **Логіка**: Аналогічно `PredefinedExercise`, ці класи мають конструктори, фабричні методи `fromMap`/`fromFirestore` та методи `toMap`.
+*   **`core/domain/repositories/routine_repository.dart`**:
+    *   **Призначення**: Абстрактний клас (інтерфейс) для операцій CRUD (Create, Read, Update, Delete) з рутинами користувача.
+    *   **Методи**: `createRoutine()`, `getUserRoutines()`, `updateRoutine()`, `deleteRoutine()`.
+*   **`features/routines/data/repositories/routine_repository_impl.dart`**:
+    *   **Призначення**: Конкретна реалізація `RoutineRepository` з використанням Firestore.
+    *   **Логіка**:
+        *   `createRoutine()`: Додає новий документ до колекції `userRoutines` Firestore, використовуючи `FieldValue.serverTimestamp()` для `createdAt` та `updatedAt`.
+        *   `getUserRoutines()`: Отримує всі рутини для вказаного `userId` з колекції `userRoutines`, сортуючи їх за датою створення.
+        *   `updateRoutine()`: Оновлює існуючий документ рутини в Firestore, встановлюючи `updatedAt` на `FieldValue.serverTimestamp()`.
+        *   `deleteRoutine()`: Видаляє документ рутини з Firestore за його ID.
+*   **Кубіти для Рутин:**
+    *   **`user_routines_state.dart` / `user_routines_cubit.dart`**:
+        *   **Призначення**: Управління станом списку рутин користувача.
+        *   **Логіка**: `UserRoutinesCubit` завантажує список рутин через `RoutineRepository` та надає його UI через стани (Initial, Loading, Loaded, Error). Має методи для завантаження та, можливо, оновлення списку після видалення/додавання.
+    *   **`manage_routine_state.dart` / `manage_routine_cubit.dart`**:
+        *   **Призначення**: Управління станом процесу створення або редагування однієї рутини.
+        *   **Логіка**: `ManageRoutineCubit` обробляє введення даних для нової/редагованої рутини, взаємодіє з `RoutineRepository` для збереження або оновлення. Має стани для відображення процесу (Initial, Loading, Success, Error).
+*   **Екрани для Рутин:**
+    *   **`features/routines/presentation/screens/user_routines_screen.dart`**:
+        *   **Призначення**: Відображає список всіх рутин поточного користувача.
+        *   **Логіка**: Використовує `UserRoutinesCubit`. Надає можливість перейти до створення нової рутини (`CreateEditRoutineScreen`) та опції для редагування/видалення існуючих рутин.
+    *   **`features/routines/presentation/screens/create_edit_routine_screen.dart`**:
+        *   **Призначення**: Форма для створення нової або редагування існуючої рутини.
+        *   **Логіка**: Використовує `ManageRoutineCubit`. Містить поля для назви, опису, вибору днів тижня. Ключова частина – інтерфейс для додавання вправ до рутини:
+            *   Користувач може обрати вправи з `predefinedExercises` (можна використати `ExerciseExplorerScreen` в режимі вибору або окремий діалог).
+            *   Для кожної обраної вправи користувач вказує кількість підходів та, можливо, нотатки.
+            *   Список обраних вправ (`List<RoutineExercise>`) динамічно відображається та редагується.
+*   **Віджети для Рутин:**
+    *   **`features/routines/presentation/widgets/routine_list_item.dart`**: Відображає одну рутину в списку, надає опції (наприклад, через `PopupMenuButton`) для редагування та видалення.
+    *   **`features/routines/presentation/widgets/add_exercise_to_routine_dialog.dart`**: (Планується або як частина `CreateEditRoutineScreen`) UI для вибору вправ з `predefinedExercises` та вказання деталей (кількість підходів).
+
+## 6. Структура Бекенду (Firebase)
+
+### 6.1. Firebase Authentication
+
+*   Використовується для реєстрації та входу користувачів (Email/Password, Google).
+*   UID користувача з Firebase Auth є первинним ключем для документів у колекції `users` Firestore.
+
+### 6.2. Cloud Firestore (База Даних)
+
+*   **`users`**:
+    *   **ID Документа**: `userId` (збігається з Firebase Auth UID).
+    *   **Призначення**: Зберігає всю інформацію профілю користувача.
+    *   **Ключові поля (поточна реалізація в `_createInitialUserProfile`):**
+        *   `uid`: String
+        *   `email`: String
+        *   `displayName`: String?
+        *   `profilePictureUrl`: String?
+        *   `username`: String? (поки `null`)
+        *   `xp`: Number (default: 0)
+        *   `level`: Number (default: 1)
+        *   `currentStreak`: Number (default: 0)
+        *   `longestStreak`: Number (default: 0)
+        *   `lastWorkoutTimestamp`: Timestamp? (default: `null`)
+        *   `scheduledWorkoutDays`: List<String> (default: `[]`)
+        *   `preferredUnits`: String (default: 'kg')
+        *   `profileSetupComplete`: Boolean (default: `false`)
+        *   `createdAt`: Timestamp
+        *   `updatedAt`: Timestamp
+        *   Інші поля з дизайн-документа будуть додаватися поступово.
+*   **`predefinedExercises`**:
+    *   **ID Документа**: Автогенерований або осмислений ID вправи.
+    *   **Призначення**: Зберігає стандартизовану бібліотеку вправ, керовану адміністратором.
+    *   **Поля**: `name`, `normalizedName`, `primaryMuscleGroup`, `secondaryMuscleGroups`, `equipmentNeeded`, `description`, `videoDemonstrationUrl`, `difficultyLevel`, `tags`.
+*   **`userRoutines`**:
+    *   **ID Документа**: Автогенерований ID рутини.
+    *   **Призначення**: Зберігає тренувальні рутини, створені користувачами.
+    *   **Поля**: `userId`, `name`, `description`, `exercises` (список `Map`, що містить `predefinedExerciseId`, `exerciseNameSnapshot`, `numberOfSets`, `notes`), `scheduledDays`, `isPublic`, `createdAt`, `updatedAt`. Інші поля (рейтинг, копії) для майбутніх соціальних функцій.
+
+### 6.3. Firebase Storage (Планується)
+
+*   `profile_pictures/{userId}/<filename>`: Для зберігання аватарів користувачів.
+*   Інші шляхи для медіа, пов'язаного з постами та доказами рекордів (як у дизайн-документі).
+
+### 6.4. Firebase Cloud Functions (Планується)
+
+Хоча ще не реалізовані, їх роль буде критичною для:
+
+*   **Автоматичних обчислень**: Наприклад, розрахунок тренувального об'єму після збереження тренування.
+*   **Тригерів**: Наприклад, нарахування XP за виконання рутини, оновлення стріків.
+*   **Підтримки цілісності даних**: Наприклад, оновлення денормалізованих полів.
+*   **Запланованих завдань**: Наприклад, генерація лідербордів, надсилання нагадувань.
+*   **Push-сповіщень**.
+
+## 7. Налаштування та Запуск Проєкту
+
+1.  **Передумови**:
+    *   Встановлений Flutter SDK (версія, вказана у `pubspec.yaml` або новіша).
+    *   Налаштоване середовище розробки (Android Studio, VS Code з плагінами Flutter/Dart).
+    *   Firebase CLI встановлено та налаштовано.
+2.  **Клонування Репозиторію** (якщо проєкт у Git):
+    ```bash
+    git clone <URL_РЕПОЗИТОРІЮ>
+    cd muscle_up
+    ```
+3.  **Налаштування Firebase**:
+    *   Переконайся, що в корені проєкту є файл `firebase.json`.
+    *   Для Android: файл `android/app/google-services.json` повинен бути завантажений з твого Firebase проєкту.
+    *   Для iOS: файл `ios/Runner/GoogleService-Info.plist` (якщо використовується) повинен бути завантажений та доданий до Xcode проєкту.
+    *   Файл `lib/firebase_options.dart` повинен бути актуальним (згенерований через `flutterfire configure`).
+4.  **Налаштування Google Sign-In**:
+    *   **Android**:
+        *   Переконайся, що SHA-1 відбиток твого debug та release ключів додано до налаштувань Android-застосунку в Firebase Console.
+        *   `google-services.json` повинен містити `client_id` типу 3 (Web application) для Google Sign-In.
+    *   **iOS**: (Якщо планується)
+        *   Додай URL Scheme до `Info.plist` (зазвичай REVERSED_CLIENT_ID з `GoogleService-Info.plist`).
+5.  **Встановлення Залежностей**:
+    ```bash
+    flutter pub get
+    ```
+6.  **Запуск Застосунку**:
+    *   Обери цільовий пристрій (емулятор або фізичний пристрій).
+    *   Виконай:
+        ```bash
+        flutter run
+        ```
+
+## 8. Подальші Кроки та Розвиток (Згідно з Дизайн-Документом)
+
+Поточна реалізація закладає фундамент. Наступні кроки включатимуть:
+
+*   **Логування Тренувань (`userWorkouts`)**: Детальне логування сетів, повторень, ваги, RPE.
+*   **Дашборд (`HomePage` -> `DashboardScreen`)**: Відображення статистики, прогресу.
+*   **Гейміфікація**: Детальна система XP, рівнів, досягнень.
+*   **Соціальні Функції**: Стрічка активності, підписки, публічні рекорди.
+*   **Цілі**: Створення та відстеження персоналізованих цілей.
+*   **Розширення UI/UX**: Покращення дизайну, онбординг.
+*   **Реалізація Cloud Functions** для автоматизації та серверної логіки.
+*   **Тестування**: Написання unit, widget та integration тестів.
+
+Цей README буде оновлюватися в міру розвитку проєкту.
 
 --------------------------------------------------
 === END OF FILE: README.md ===
@@ -2760,6 +3102,1600 @@ class MainApp extends StatelessWidget {
 }
 --------------------------------------------------
 === END OF FILE: lib/main.dart ===
+
+
+=== FILE: lib/core/domain/entities/predefined_exercise.dart ===
+--------------------------------------------------
+// lib/core/domain/entities/predefined_exercise.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class PredefinedExercise {
+  final String id;
+  final String name;
+  final String normalizedName;
+  final String primaryMuscleGroup;
+  final List<String> secondaryMuscleGroups;
+  final List<String> equipmentNeeded;
+  final String description;
+  final String? videoDemonstrationUrl;
+  final String difficultyLevel;
+  final List<String> tags;
+
+  PredefinedExercise({
+    required this.id,
+    required this.name,
+    required this.normalizedName,
+    required this.primaryMuscleGroup,
+    required this.secondaryMuscleGroups,
+    required this.equipmentNeeded,
+    required this.description,
+    this.videoDemonstrationUrl,
+    required this.difficultyLevel,
+    required this.tags,
+  });
+
+  factory PredefinedExercise.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    final data = snapshot.data();
+    if (data == null) throw Exception("Exercise data is null!");
+    return PredefinedExercise(
+      id: snapshot.id,
+      name: data['name'] ?? '',
+      normalizedName: data['normalizedName'] ?? '',
+      primaryMuscleGroup: data['primaryMuscleGroup'] ?? '',
+      secondaryMuscleGroups: List<String>.from(data['secondaryMuscleGroups'] ?? []),
+      equipmentNeeded: List<String>.from(data['equipmentNeeded'] ?? []),
+      description: data['description'] ?? '',
+      videoDemonstrationUrl: data['videoDemonstrationUrl'],
+      difficultyLevel: data['difficultyLevel'] ?? '',
+      tags: List<String>.from(data['tags'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toJson() { // Необхідно для адмін-панелі або майбутнього створення вправ з додатку
+    return {
+      'name': name,
+      'normalizedName': normalizedName,
+      'primaryMuscleGroup': primaryMuscleGroup,
+      'secondaryMuscleGroups': secondaryMuscleGroups,
+      'equipmentNeeded': equipmentNeeded,
+      'description': description,
+      'videoDemonstrationUrl': videoDemonstrationUrl,
+      'difficultyLevel': difficultyLevel,
+      'tags': tags,
+    };
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/entities/predefined_exercise.dart ===
+
+
+=== FILE: lib/core/domain/entities/routine.dart ===
+--------------------------------------------------
+// lib/core/domain/entities/routine.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart'; // Додай, якщо ще не маєш, для порівняння
+
+// --- RoutineExercise ---
+class RoutineExercise extends Equatable { // Зробимо Equatable для зручності
+  final String predefinedExerciseId;
+  final String exerciseNameSnapshot;
+  final int numberOfSets;
+  final String? notes;
+
+  const RoutineExercise({ // Додай const
+    required this.predefinedExerciseId,
+    required this.exerciseNameSnapshot,
+    required this.numberOfSets,
+    this.notes,
+  });
+
+  factory RoutineExercise.fromMap(Map<String, dynamic> map) {
+    return RoutineExercise(
+      predefinedExerciseId: map['predefinedExerciseId'] ?? '',
+      exerciseNameSnapshot: map['exerciseNameSnapshot'] ?? '',
+      numberOfSets: map['numberOfSets'] is String
+          ? int.tryParse(map['numberOfSets']) ?? 0
+          : map['numberOfSets'] ?? 0, // Обробка, якщо numberOfSets приходить як String
+      notes: map['notes'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'predefinedExerciseId': predefinedExerciseId,
+      'exerciseNameSnapshot': exerciseNameSnapshot,
+      'numberOfSets': numberOfSets,
+      'notes': notes,
+    };
+  }
+
+  RoutineExercise copyWith({
+    String? predefinedExerciseId,
+    String? exerciseNameSnapshot,
+    int? numberOfSets,
+    String? notes, // Nullable для скидання значення
+    bool allowNullNotes = false, // Прапорець для дозволу встановлення notes в null
+  }) {
+    return RoutineExercise(
+      predefinedExerciseId: predefinedExerciseId ?? this.predefinedExerciseId,
+      exerciseNameSnapshot: exerciseNameSnapshot ?? this.exerciseNameSnapshot,
+      numberOfSets: numberOfSets ?? this.numberOfSets,
+      notes: allowNullNotes ? notes : (notes ?? this.notes),
+    );
+  }
+
+  @override
+  List<Object?> get props => [predefinedExerciseId, exerciseNameSnapshot, numberOfSets, notes];
+}
+
+// --- UserRoutine ---
+class UserRoutine extends Equatable { // Зробимо Equatable
+  final String id;
+  final String userId;
+  final String name;
+  final String? description;
+  final List<RoutineExercise> exercises;
+  final List<String> scheduledDays;
+  final bool isPublic;
+  // Додай інші поля згідно з дизайн-документом (communityRatingSum і т.д.)
+  final Timestamp createdAt;
+  final Timestamp updatedAt;
+
+  const UserRoutine({ // Додай const
+    required this.id,
+    required this.userId,
+    required this.name,
+    this.description,
+    required this.exercises,
+    required this.scheduledDays,
+    this.isPublic = false,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory UserRoutine.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    final data = snapshot.data();
+    if (data == null) throw Exception("Routine data is null!");
+    return UserRoutine(
+      id: snapshot.id,
+      userId: data['userId'] ?? '',
+      name: data['name'] ?? '',
+      description: data['description'],
+      exercises: (data['exercises'] as List<dynamic>?)
+              ?.map((e) => RoutineExercise.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      scheduledDays: List<String>.from(data['scheduledDays'] ?? []),
+      isPublic: data['isPublic'] ?? false,
+      // Важливо правильно обробляти Timestamps
+      createdAt: data['createdAt'] is Timestamp ? data['createdAt'] : Timestamp.now(),
+      updatedAt: data['updatedAt'] is Timestamp ? data['updatedAt'] : Timestamp.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'name': name,
+      'description': description,
+      'exercises': exercises.map((e) => e.toMap()).toList(),
+      'scheduledDays': scheduledDays,
+      'isPublic': isPublic,
+      // createdAt та updatedAt краще встановлювати через FieldValue.serverTimestamp() при записі
+      // 'createdAt': createdAt, // Закоментуй, якщо встановлюєш через FieldValue
+      // 'updatedAt': updatedAt, // Закоментуй, якщо встановлюєш через FieldValue
+      // Додай інші поля
+    };
+  }
+
+  UserRoutine copyWith({
+    String? id,
+    String? userId,
+    String? name,
+    String? description, // Nullable для скидання
+    List<RoutineExercise>? exercises,
+    List<String>? scheduledDays,
+    bool? isPublic,
+    Timestamp? createdAt,
+    Timestamp? updatedAt,
+    bool allowNullDescription = false, // Прапорець для дозволу встановлення description в null
+  }) {
+    return UserRoutine(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      description: allowNullDescription ? description : (description ?? this.description),
+      exercises: exercises ?? this.exercises,
+      scheduledDays: scheduledDays ?? this.scheduledDays,
+      isPublic: isPublic ?? this.isPublic,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        userId,
+        name,
+        description,
+        exercises,
+        scheduledDays,
+        isPublic,
+        createdAt,
+        updatedAt
+      ];
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/entities/routine.dart ===
+
+
+=== FILE: lib/core/domain/repositories/predefined_exercise_repository.dart ===
+--------------------------------------------------
+// lib/core/domain/repositories/predefined_exercise_repository.dart
+import '../entities/predefined_exercise.dart';
+
+abstract class PredefinedExerciseRepository {
+  Future<List<PredefinedExercise>> getAllExercises();
+  // В майбутньому: Future<List<PredefinedExercise>> searchExercises(String query);
+  // В майбутньому: Future<List<PredefinedExercise>> filterExercises(Map<String, dynamic> filters);
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/repositories/predefined_exercise_repository.dart ===
+
+
+=== FILE: lib/core/domain/repositories/routine_repository.dart ===
+--------------------------------------------------
+// lib/core/domain/repositories/routine_repository.dart
+import '../entities/routine.dart'; // Перевір цей імпорт також
+
+abstract class RoutineRepository { // <-- Ключове слово "abstract class"
+  Future<void> createRoutine(UserRoutine routine);
+  Future<List<UserRoutine>> getUserRoutines(String userId);
+  Future<void> updateRoutine(UserRoutine routine);
+  Future<void> deleteRoutine(String routineId);
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/repositories/routine_repository.dart ===
+
+
+=== FILE: lib/features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart ===
+--------------------------------------------------
+// lib/features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/domain/entities/predefined_exercise.dart';
+import '../../../../core/domain/repositories/predefined_exercise_repository.dart';
+import 'dart:developer' as developer; // Для логування
+
+
+class PredefinedExerciseRepositoryImpl implements PredefinedExerciseRepository {
+  final FirebaseFirestore _firestore;
+
+  PredefinedExerciseRepositoryImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  @override
+  Future<List<PredefinedExercise>> getAllExercises() async {
+    try {
+      final snapshot = await _firestore.collection('predefinedExercises').orderBy('name').get(); // Сортуємо за назвою
+      return snapshot.docs
+          .map((doc) => PredefinedExercise.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>))
+          .toList();
+    } catch (e) {
+      developer.log("Error fetching exercises: $e", name: "PredefinedExerciseRepo");
+      throw Exception('Failed to fetch predefined exercises.');
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart ===
+
+
+=== FILE: lib/features/exercise_explorer/data/repositories/routine_repository_impl.dart ===
+--------------------------------------------------
+// lib/features/routines/data/repositories/routine_repository_impl.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Для отримання поточного userId
+import '../../../../core/domain/entities/routine.dart';
+import '../../../../core/domain/repositories/routine_repository.dart';
+
+class RoutineRepositoryImpl implements RoutineRepository {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _firebaseAuth; // Додано
+
+  RoutineRepositoryImpl({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth}) // Оновлено
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance; // Оновлено
+
+  @override
+  Future<void> createRoutine(UserRoutine routine) async {
+    try {
+      final docRef = _firestore.collection('userRoutines').doc();
+      // Встановлюємо createdAt та updatedAt на серверний час при створенні
+      final routineData = routine.toMap()
+        ..['createdAt'] = FieldValue.serverTimestamp()
+        ..['updatedAt'] = FieldValue.serverTimestamp();
+      await docRef.set(routineData);
+    } catch (e) {
+      print("Error creating routine: $e");
+      throw Exception('Failed to create routine.');
+    }
+  }
+
+  @override
+  Future<List<UserRoutine>> getUserRoutines(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('userRoutines')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true) // Сортування за датою створення
+          .get();
+      return snapshot.docs
+          .map((doc) => UserRoutine.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>))
+          .toList();
+    } catch (e) {
+      print("Error fetching user routines: $e");
+      throw Exception('Failed to fetch user routines.');
+    }
+  }
+
+  @override
+  Future<void> updateRoutine(UserRoutine routine) async {
+    try {
+      final routineData = routine.toMap()..['updatedAt'] = FieldValue.serverTimestamp();
+      await _firestore.collection('userRoutines').doc(routine.id).update(routineData);
+    } catch (e) {
+      print("Error updating routine: $e");
+      throw Exception('Failed to update routine.');
+    }
+  }
+
+  @override
+  Future<void> deleteRoutine(String routineId) async {
+    try {
+      await _firestore.collection('userRoutines').doc(routineId).delete();
+    } catch (e) {
+      print("Error deleting routine: $e");
+      throw Exception('Failed to delete routine.');
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/exercise_explorer/data/repositories/routine_repository_impl.dart ===
+
+
+=== FILE: lib/features/exercise_explorer/presentation/cubit/exercise_explorer_cubit.dart ===
+--------------------------------------------------
+// lib/features/exercise_explorer/presentation/cubit/exercise_explorer_cubit.dart
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../../core/domain/entities/predefined_exercise.dart';
+import '../../../../core/domain/repositories/predefined_exercise_repository.dart'; // Абстракція
+
+part 'exercise_explorer_state.dart';
+
+class ExerciseExplorerCubit extends Cubit<ExerciseExplorerState> {
+  final PredefinedExerciseRepository _exerciseRepository;
+
+  ExerciseExplorerCubit(this._exerciseRepository) : super(ExerciseExplorerInitial());
+
+  Future<void> fetchExercises() async {
+    emit(ExerciseExplorerLoading());
+    try {
+      final exercises = await _exerciseRepository.getAllExercises();
+      emit(ExerciseExplorerLoaded(exercises));
+    } catch (e) {
+      emit(ExerciseExplorerError(e.toString()));
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/exercise_explorer/presentation/cubit/exercise_explorer_cubit.dart ===
+
+
+=== FILE: lib/features/exercise_explorer/presentation/cubit/exercise_explorer_state.dart ===
+--------------------------------------------------
+// lib/features/exercise_explorer/presentation/cubit/exercise_explorer_state.dart
+part of 'exercise_explorer_cubit.dart';
+
+abstract class ExerciseExplorerState extends Equatable {
+  const ExerciseExplorerState();
+  @override
+  List<Object?> get props => [];
+}
+
+class ExerciseExplorerInitial extends ExerciseExplorerState {}
+class ExerciseExplorerLoading extends ExerciseExplorerState {}
+class ExerciseExplorerLoaded extends ExerciseExplorerState {
+  final List<PredefinedExercise> exercises;
+  const ExerciseExplorerLoaded(this.exercises);
+  @override
+  List<Object?> get props => [exercises];
+}
+class ExerciseExplorerError extends ExerciseExplorerState {
+  final String message;
+  const ExerciseExplorerError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/exercise_explorer/presentation/cubit/exercise_explorer_state.dart ===
+
+
+=== FILE: lib/features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart ===
+--------------------------------------------------
+// lib/features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/exercise_explorer_cubit.dart';
+import '../../data/repositories/predefined_exercise_repository_impl.dart'; // Тимчасово для простоти, краще через DI
+// import '../../../../core/domain/entities/predefined_exercise.dart'; // Перевірити, чи потрібен після змін
+import '../widgets/exercise_list_item.dart';
+
+class ExerciseExplorerScreen extends StatelessWidget {
+  final bool isSelectionMode; // <--- ДОДАНО
+
+  const ExerciseExplorerScreen({super.key, this.isSelectionMode = false}); // <--- ДОДАНО
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ExerciseExplorerCubit(
+        // Переконайся, що PredefinedExerciseRepositoryImpl() передається коректно
+        // або використовуй RepositoryProvider.of<PredefinedExerciseRepository>(context)
+        PredefinedExerciseRepositoryImpl() 
+      )..fetchExercises(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isSelectionMode ? 'Select Exercise' : 'Exercise Library'),
+          // Якщо в режимі вибору, можна не показувати кнопку назад, якщо це модальне вікно
+          // automaticallyImplyLeading: !isSelectionMode, 
+        ),
+        body: BlocBuilder<ExerciseExplorerCubit, ExerciseExplorerState>(
+          builder: (context, state) {
+            if (state is ExerciseExplorerLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is ExerciseExplorerLoaded) {
+              if (state.exercises.isEmpty) {
+                return const Center(child: Text('No exercises found.'));
+              }
+              return ListView.builder(
+                itemCount: state.exercises.length,
+                itemBuilder: (context, index) {
+                  final exercise = state.exercises[index];
+                  return ExerciseListItem(
+                    exercise: exercise, 
+                    isSelectionMode: isSelectionMode, // <--- ПЕРЕДАНО
+                  );
+                },
+              );
+            } else if (state is ExerciseExplorerError) {
+              return Center(child: Text('Error: ${state.message}'));
+            }
+            // Початковий стан або якщо щось не так
+            return const Center(child: Text('Loading exercises...'));
+          },
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart ===
+
+
+=== FILE: lib/features/exercise_explorer/presentation/widgets/exercise_list_item.dart ===
+--------------------------------------------------
+// lib/features/exercise_explorer/presentation/widgets/exercise_list_item.dart
+import 'package:flutter/material.dart';
+import '../../../../core/domain/entities/predefined_exercise.dart';
+
+class ExerciseListItem extends StatelessWidget {
+  final PredefinedExercise exercise;
+  final bool isSelectionMode; // <--- ДОДАНО
+
+  const ExerciseListItem({
+    super.key, 
+    required this.exercise,
+    this.isSelectionMode = false, // <--- ДОДАНО
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ListTile(
+        title: Text(exercise.name),
+        subtitle: Text(exercise.primaryMuscleGroup),
+        trailing: isSelectionMode ? const Icon(Icons.add_circle_outline) : const Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          if (isSelectionMode) {
+            Navigator.pop(context, exercise); // Повертаємо обрану вправу
+          } else {
+            // TODO: Навігація на детальний екран вправи
+            // Наприклад: Navigator.push(context, MaterialPageRoute(builder: (_) => ExerciseDetailScreen(exercise: exercise)));
+            // log('Tapped on ${exercise.name} for details'); // Використовуй логгер
+          }
+        },
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/exercise_explorer/presentation/widgets/exercise_list_item.dart ===
+
+
+=== FILE: lib/features/routines/data/repositories/routine_repository_impl.dart ===
+--------------------------------------------------
+// lib/features/routines/data/repositories/routine_repository_impl.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/domain/entities/routine.dart';
+import '../../../../core/domain/repositories/routine_repository.dart';
+import 'dart:developer' as developer; // Для логування
+
+class RoutineRepositoryImpl implements RoutineRepository {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _firebaseAuth; // ЗАЛИШАЄМО, бо використовується для _currentUserId
+
+  RoutineRepositoryImpl({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
+      : _firestore = firestore ?? FirebaseFirestore.instance,
+        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+
+  String? get _currentUserId => _firebaseAuth.currentUser?.uid; // Використовується
+
+  @override
+  Future<void> createRoutine(UserRoutine routine) async {
+    final currentUserId = _currentUserId; // Зберігаємо в локальну змінну
+    if (currentUserId == null) throw Exception('User not logged in');
+    try {
+      final docRef = _firestore.collection('userRoutines').doc();
+      final routineData = routine.copyWith(
+        id: docRef.id,
+        userId: currentUserId, // Гарантуємо правильний userId
+        createdAt: Timestamp.now(), 
+        updatedAt: Timestamp.now()
+      ).toMap()
+        ..['createdAt'] = FieldValue.serverTimestamp()
+        ..['updatedAt'] = FieldValue.serverTimestamp();
+      await docRef.set(routineData);
+    } catch (e) {
+      developer.log("Error creating routine: $e", name: "RoutineRepositoryImpl");
+      throw Exception('Failed to create routine.');
+    }
+  }
+
+  @override
+  Future<List<UserRoutine>> getUserRoutines(String userId) async {
+    if (userId.isEmpty) throw Exception('User ID cannot be empty');
+    try {
+      final snapshot = await _firestore
+          .collection('userRoutines')
+          .where('userId', isEqualTo: userId)
+          .orderBy('updatedAt', descending: true)
+          .get();
+      return snapshot.docs
+          .map((doc) => UserRoutine.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>))
+          .toList();
+    } catch (e) {
+      developer.log("Error fetching user routines for $userId: $e", name: "RoutineRepositoryImpl");
+      throw Exception('Failed to fetch user routines.');
+    }
+  }
+
+  @override
+  Future<void> updateRoutine(UserRoutine routine) async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) throw Exception('User not logged in');
+    if (routine.userId != currentUserId) throw Exception('Cannot update routine of another user');
+    try {
+      final routineData = routine.copyWith(updatedAt: Timestamp.now()).toMap()
+        ..['updatedAt'] = FieldValue.serverTimestamp();
+      await _firestore.collection('userRoutines').doc(routine.id).update(routineData);
+    } catch (e) {
+      developer.log("Error updating routine ${routine.id}: $e", name: "RoutineRepositoryImpl");
+      throw Exception('Failed to update routine.');
+    }
+  }
+
+  @override
+  Future<void> deleteRoutine(String routineId) async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) throw Exception('User not logged in');
+    try {
+      final routineDoc = await _firestore.collection('userRoutines').doc(routineId).get();
+      if (!routineDoc.exists || routineDoc.data()?['userId'] != currentUserId) {
+        developer.log('Attempt to delete routine $routineId failed: Not found or permission denied.', name: "RoutineRepositoryImpl");
+        throw Exception('Routine not found or permission denied to delete.');
+      }
+      await _firestore.collection('userRoutines').doc(routineId).delete();
+    } catch (e) {
+      developer.log("Error deleting routine $routineId: $e", name: "RoutineRepositoryImpl");
+      // Не перезагортаємо у загальний Exception, якщо це вже специфічний
+      if (e is! Exception || !e.toString().contains('Routine not found')) {
+          throw Exception('Failed to delete routine.');
+      }
+      rethrow; // Перекидаємо оригінальну помилку, якщо це "Routine not found..."
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/data/repositories/routine_repository_impl.dart ===
+
+
+=== FILE: lib/features/routines/presentation/cubit/manage_routine_cubit.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/cubit/manage_routine_cubit.dart
+import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/domain/entities/routine.dart';
+import '../../../../core/domain/repositories/routine_repository.dart';
+
+part 'manage_routine_state.dart';
+
+class ManageRoutineCubit extends Cubit<ManageRoutineState> {
+  final RoutineRepository _routineRepository;
+  final FirebaseAuth _firebaseAuth;
+  UserRoutine _currentRoutine; // Внутрішній стан рутини, що редагується
+  final bool _isEditing;
+
+  ManageRoutineCubit(
+    this._routineRepository,
+    this._firebaseAuth, {
+    UserRoutine? initialRoutine,
+  })  : _currentRoutine = initialRoutine ??
+            UserRoutine(
+              // Значення за замовчуванням для нової рутини
+              id: '', // Буде встановлено репозиторієм
+              userId: _firebaseAuth.currentUser?.uid ?? '',
+              name: '',
+              exercises: [],
+              scheduledDays: [],
+              isPublic: false,
+              createdAt: Timestamp.now(), // Попереднє значення
+              updatedAt: Timestamp.now(), // Попереднє значення
+            ),
+        _isEditing = initialRoutine != null,
+        super(ManageRoutineInitial(
+            routine: initialRoutine ??
+                UserRoutine(
+                  id: '',
+                  userId: _firebaseAuth.currentUser?.uid ?? '',
+                  name: '',
+                  exercises: [],
+                  scheduledDays: [],
+                  isPublic: false,
+                  createdAt: Timestamp.now(),
+                  updatedAt: Timestamp.now(),
+                ),
+            isEditing: initialRoutine != null));
+
+  UserRoutine get currentRoutineSnapshot => _currentRoutine;
+  bool get isEditingMode => _isEditing;
+
+  void updateRoutineName(String name) {
+    _currentRoutine = _currentRoutine.copyWith(name: name);
+    emit(ManageRoutineExercisesUpdated(_currentRoutine)); // Щоб UI оновився
+  }
+
+  void updateRoutineDescription(String description) {
+    _currentRoutine = _currentRoutine.copyWith(description: description);
+     emit(ManageRoutineExercisesUpdated(_currentRoutine));
+  }
+
+  void updateScheduledDays(List<String> days) {
+    _currentRoutine = _currentRoutine.copyWith(scheduledDays: days);
+     emit(ManageRoutineExercisesUpdated(_currentRoutine));
+  }
+
+  void addExerciseToRoutine(RoutineExercise exercise) {
+    final updatedExercises = List<RoutineExercise>.from(_currentRoutine.exercises)..add(exercise);
+    _currentRoutine = _currentRoutine.copyWith(exercises: updatedExercises);
+    emit(ManageRoutineExercisesUpdated(_currentRoutine));
+  }
+
+  void updateExerciseInRoutine(int index, RoutineExercise exercise) {
+    if (index < 0 || index >= _currentRoutine.exercises.length) return;
+    final updatedExercises = List<RoutineExercise>.from(_currentRoutine.exercises);
+    updatedExercises[index] = exercise;
+    _currentRoutine = _currentRoutine.copyWith(exercises: updatedExercises);
+    emit(ManageRoutineExercisesUpdated(_currentRoutine));
+  }
+
+  void removeExerciseFromRoutine(int index) {
+    if (index < 0 || index >= _currentRoutine.exercises.length) return;
+    final updatedExercises = List<RoutineExercise>.from(_currentRoutine.exercises)..removeAt(index);
+    _currentRoutine = _currentRoutine.copyWith(exercises: updatedExercises);
+    emit(ManageRoutineExercisesUpdated(_currentRoutine));
+  }
+
+  Future<void> saveRoutine() async {
+    final userId = _firebaseAuth.currentUser?.uid;
+    if (userId == null) {
+      emit(const ManageRoutineFailure("User not logged in."));
+      return;
+    }
+    if (_currentRoutine.name.trim().isEmpty) {
+      emit(const ManageRoutineFailure("Routine name cannot be empty."));
+      return;
+    }
+    if (_currentRoutine.exercises.isEmpty) {
+      emit(const ManageRoutineFailure("Routine must have at least one exercise."));
+      return;
+    }
+
+    emit(const ManageRoutineLoading(loadingMessage: "Saving routine..."));
+    
+    // Оновлюємо userId та timestamps перед збереженням
+    _currentRoutine = _currentRoutine.copyWith(
+        userId: userId, 
+        // createdAt тут не оновлюємо, якщо isEditing, timestamp оновлюється в репо
+        updatedAt: Timestamp.now(), // оновлюємо локально для консистентності
+    );
+
+    try {
+      if (_isEditing) {
+        await _routineRepository.updateRoutine(_currentRoutine);
+        emit(ManageRoutineSuccess("Routine updated successfully!", _currentRoutine));
+      } else {
+        // Для нової рутини ID буде присвоєно в репозиторії,
+        // але ми можемо створити тимчасовий локальний ID або чекати на повернення з репозиторію.
+        // Краще, щоб репозиторій повертав створений об'єкт або його ID.
+        // Наразі, припустимо, що репозиторій обробляє ID.
+        // Або, якщо `createRoutine` повертає `UserRoutine`:
+        // final savedRoutine = await _routineRepository.createRoutine(_currentRoutine);
+        // emit(ManageRoutineSuccess("Routine created successfully!", savedRoutine));
+        
+        // Поточна реалізація createRoutine не повертає об'єкт, тому ми просто
+        // передаємо _currentRoutine, припускаючи, що ID буде встановлено в Firestore
+        // і для наступного завантаження воно буде коректним.
+        await _routineRepository.createRoutine(_currentRoutine);
+        emit(ManageRoutineSuccess("Routine created successfully!", _currentRoutine));
+      }
+    } catch (e) {
+      emit(ManageRoutineFailure(e.toString().replaceFirst("Exception: ", "")));
+    }
+  }
+
+   Future<void> deleteRoutine() async {
+    if (!_isEditing || _currentRoutine.id.isEmpty) {
+      emit(const ManageRoutineFailure("Cannot delete a new or unsaved routine."));
+      return;
+    }
+     final userId = _firebaseAuth.currentUser?.uid;
+    if (userId == null) {
+      emit(const ManageRoutineFailure("User not logged in."));
+      return;
+    }
+
+    emit(const ManageRoutineLoading(loadingMessage: "Deleting routine..."));
+    try {
+      await _routineRepository.deleteRoutine(_currentRoutine.id);
+      emit(ManageRoutineSuccess("Routine deleted successfully!", _currentRoutine)); // Повертаємо видалену рутину для обробки в UI
+    } catch (e) {
+      emit(ManageRoutineFailure(e.toString().replaceFirst("Exception: ", "")));
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/cubit/manage_routine_cubit.dart ===
+
+
+=== FILE: lib/features/routines/presentation/cubit/manage_routine_state.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/cubit/manage_routine_state.dart
+part of 'manage_routine_cubit.dart';
+
+abstract class ManageRoutineState extends Equatable {
+  const ManageRoutineState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class ManageRoutineInitial extends ManageRoutineState {
+  final UserRoutine routine; // Поточний стан рутини, що редагується/створюється
+  final bool isEditing;
+
+  const ManageRoutineInitial({required this.routine, this.isEditing = false});
+
+  @override
+  List<Object?> get props => [routine, isEditing];
+}
+
+class ManageRoutineLoading extends ManageRoutineState {
+    final String? loadingMessage;
+    const ManageRoutineLoading({this.loadingMessage});
+
+    @override
+    List<Object?> get props => [loadingMessage];
+}
+
+class ManageRoutineSuccess extends ManageRoutineState {
+  final String message;
+  final UserRoutine savedRoutine; // Повертаємо збережену рутину
+
+  const ManageRoutineSuccess(this.message, this.savedRoutine);
+
+  @override
+  List<Object?> get props => [message, savedRoutine];
+}
+
+class ManageRoutineFailure extends ManageRoutineState {
+  final String error;
+
+  const ManageRoutineFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+// Додатковий стан для оновлення UI при зміні вправ у рутині
+class ManageRoutineExercisesUpdated extends ManageRoutineState {
+  final UserRoutine updatedRoutine;
+
+  const ManageRoutineExercisesUpdated(this.updatedRoutine);
+
+   @override
+  List<Object?> get props => [updatedRoutine];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/cubit/manage_routine_state.dart ===
+
+
+=== FILE: lib/features/routines/presentation/cubit/user_routines_cubit.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/cubit/user_routines_cubit.dart
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Для отримання UID
+import '../../../../core/domain/entities/routine.dart';
+import '../../../../core/domain/repositories/routine_repository.dart';
+
+part 'user_routines_state.dart';
+
+class UserRoutinesCubit extends Cubit<UserRoutinesState> {
+  final RoutineRepository _routineRepository;
+  final FirebaseAuth _firebaseAuth; // Для отримання UID
+
+  UserRoutinesCubit(this._routineRepository, this._firebaseAuth) : super(UserRoutinesInitial());
+
+  Future<void> fetchUserRoutines() async {
+    final userId = _firebaseAuth.currentUser?.uid;
+    if (userId == null) {
+      emit(const UserRoutinesError("User not logged in. Cannot fetch routines."));
+      return;
+    }
+
+    emit(UserRoutinesLoading());
+    try {
+      final routines = await _routineRepository.getUserRoutines(userId);
+      emit(UserRoutinesLoaded(routines));
+    } catch (e) {
+      emit(UserRoutinesError(e.toString().replaceFirst("Exception: ", "")));
+    }
+  }
+
+  // Метод для оновлення списку після видалення рутини
+  void routineDeleted(String routineId) {
+    if (state is UserRoutinesLoaded) {
+      final currentState = state as UserRoutinesLoaded;
+      final updatedRoutines = currentState.routines.where((r) => r.id != routineId).toList();
+      emit(UserRoutinesLoaded(updatedRoutines));
+    }
+  }
+   // Метод для оновлення списку після додавання/редагування рутини
+  void routineAddedOrUpdated(UserRoutine routine) {
+    if (state is UserRoutinesLoaded) {
+      final currentState = state as UserRoutinesLoaded;
+      List<UserRoutine> updatedRoutines = List.from(currentState.routines);
+      final index = updatedRoutines.indexWhere((r) => r.id == routine.id);
+      if (index != -1) { // Оновлення існуючої
+        updatedRoutines[index] = routine;
+      } else { // Додавання нової
+        updatedRoutines.insert(0, routine); // Додаємо на початок для кращого UX
+      }
+      emit(UserRoutinesLoaded(updatedRoutines));
+    } else {
+      // Якщо список ще не завантажений, просто завантажуємо його знову
+      fetchUserRoutines();
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/cubit/user_routines_cubit.dart ===
+
+
+=== FILE: lib/features/routines/presentation/cubit/user_routines_state.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/cubit/user_routines_state.dart
+part of 'user_routines_cubit.dart';
+
+abstract class UserRoutinesState extends Equatable {
+  const UserRoutinesState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class UserRoutinesInitial extends UserRoutinesState {}
+
+class UserRoutinesLoading extends UserRoutinesState {}
+
+class UserRoutinesLoaded extends UserRoutinesState {
+  final List<UserRoutine> routines;
+
+  const UserRoutinesLoaded(this.routines);
+
+  @override
+  List<Object> get props => [routines];
+}
+
+class UserRoutinesError extends UserRoutinesState {
+  final String message;
+
+  const UserRoutinesError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/cubit/user_routines_state.dart ===
+
+
+=== FILE: lib/features/routines/presentation/screens/create_edit_routine_screen.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/screens/create_edit_routine_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // для доступу до репо та auth
+import '../../../../core/domain/entities/routine.dart';
+import '../../../../core/domain/repositories/routine_repository.dart'; // для доступу до репо
+import '../cubit/manage_routine_cubit.dart';
+import '../cubit/user_routines_cubit.dart'; // для оновлення списку рутин
+import '../widgets/add_exercise_to_routine_dialog.dart'; // Діалог, який ми щойно створили
+
+class CreateEditRoutineScreen extends StatefulWidget {
+  final UserRoutine? routineToEdit;
+
+  const CreateEditRoutineScreen({super.key, this.routineToEdit});
+
+  @override
+  State<CreateEditRoutineScreen> createState() => _CreateEditRoutineScreenState();
+}
+
+class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
+  late final ManageRoutineCubit _manageRoutineCubit;
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  List<String> _selectedDays = []; // Для вибору днів тижня
+
+  final List<String> _availableDays = [
+    'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _manageRoutineCubit = ManageRoutineCubit(
+      RepositoryProvider.of<RoutineRepository>(context),
+      FirebaseAuth.instance, // Передаємо FirebaseAuth
+      initialRoutine: widget.routineToEdit,
+    );
+
+    if (widget.routineToEdit != null) {
+      _nameController.text = widget.routineToEdit!.name;
+      _descriptionController.text = widget.routineToEdit!.description ?? '';
+      _selectedDays = List<String>.from(widget.routineToEdit!.scheduledDays);
+    }
+
+    _nameController.addListener(() {
+      _manageRoutineCubit.updateRoutineName(_nameController.text);
+    });
+    _descriptionController.addListener(() {
+      _manageRoutineCubit.updateRoutineDescription(_descriptionController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _manageRoutineCubit.close();
+    super.dispose();
+  }
+
+  void _saveRoutine() {
+    if (_formKey.currentState!.validate()) {
+      // Переконуємось, що останні зміни з контролерів передані в кубіт
+      _manageRoutineCubit.updateRoutineName(_nameController.text);
+      _manageRoutineCubit.updateRoutineDescription(_descriptionController.text);
+      _manageRoutineCubit.updateScheduledDays(_selectedDays);
+      
+      _manageRoutineCubit.saveRoutine();
+    }
+  }
+
+  Future<void> _deleteRoutine() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: Text('Are you sure you want to delete "${_nameController.text}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      _manageRoutineCubit.deleteRoutine();
+    }
+  }
+
+
+  Widget _buildExerciseItem(BuildContext context, RoutineExercise exercise, int index) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        title: Text(exercise.exerciseNameSnapshot),
+        subtitle: Text('${exercise.numberOfSets} sets'),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+          onPressed: () {
+            _manageRoutineCubit.removeExerciseFromRoutine(index);
+          },
+        ),
+        onTap: () async {
+           // TODO: Редагування вправи в рутині (наприклад, зміна кількості підходів)
+          // Можна відкрити діалог схожий на той, що використовується для додавання,
+          // але з попередньо заповненими даними.
+          final TextEditingController setsCtrl = TextEditingController(text: exercise.numberOfSets.toString());
+          final TextEditingController notesCtrl = TextEditingController(text: exercise.notes ?? '');
+          final formKey = GlobalKey<FormState>();
+
+          final RoutineExercise? updatedExerciseDetails = await showDialog<RoutineExercise>(
+            context: context,
+            builder: (dialogCtx) => AlertDialog(
+              title: Text('Edit "${exercise.exerciseNameSnapshot}"'),
+              content: Form(
+                key: formKey,
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  TextFormField(
+                    controller: setsCtrl,
+                    decoration: const InputDecoration(labelText: 'Number of Sets'),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => (v == null || v.isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? 'Invalid sets' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(controller: notesCtrl, decoration: const InputDecoration(labelText: 'Notes (optional)')),
+                ]),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('Cancel')),
+                ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                       Navigator.pop(dialogCtx, RoutineExercise(
+                        predefinedExerciseId: exercise.predefinedExerciseId,
+                        exerciseNameSnapshot: exercise.exerciseNameSnapshot,
+                        numberOfSets: int.parse(setsCtrl.text),
+                        notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                      ));
+                    }
+                  },
+                  child: const Text('Update'),
+                ),
+              ],
+            ),
+          );
+          if (updatedExerciseDetails != null) {
+            _manageRoutineCubit.updateExerciseInRoutine(index, updatedExerciseDetails);
+          }
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider.value(
+      value: _manageRoutineCubit,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.routineToEdit == null ? 'Create Routine' : 'Edit Routine'),
+          actions: [
+            if (widget.routineToEdit != null)
+              IconButton(
+                icon: const Icon(Icons.delete_forever, color: Colors.red),
+                onPressed: _deleteRoutine,
+                tooltip: 'Delete Routine',
+              ),
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _saveRoutine,
+              tooltip: 'Save Routine',
+            ),
+          ],
+        ),
+        body: BlocConsumer<ManageRoutineCubit, ManageRoutineState>(
+          listener: (context, state) {
+            if (state is ManageRoutineSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+              );
+              // Оновлюємо список рутин на попередньому екрані
+              context.read<UserRoutinesCubit>().routineAddedOrUpdated(state.savedRoutine);
+
+              Navigator.of(context).pop(); // Повертаємось назад після успіху
+            } else if (state is ManageRoutineFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+              );
+            }
+          },
+          builder: (context, state) {
+            UserRoutine currentDisplayRoutine = _manageRoutineCubit.currentRoutineSnapshot;
+            if (state is ManageRoutineExercisesUpdated) { // Оновлюємо відображення, якщо вправи змінились
+              currentDisplayRoutine = state.updatedRoutine;
+            } else if (state is ManageRoutineInitial) {
+              currentDisplayRoutine = state.routine;
+            }
+
+
+            if (state is ManageRoutineLoading) {
+              return Center(child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  if(state.loadingMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(state.loadingMessage!),
+                  ]
+                ],
+              ));
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Routine Name'),
+                      validator: (value) => value == null || value.trim().isEmpty ? 'Name cannot be empty' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(labelText: 'Description (optional)'),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 24),
+                    Text('Scheduled Days:', style: Theme.of(context).textTheme.titleMedium),
+                    Wrap(
+                      spacing: 8.0,
+                      children: _availableDays.map((day) {
+                        final isSelected = _selectedDays.contains(day);
+                        return FilterChip(
+                          label: Text(day),
+                          selected: isSelected,
+                          onSelected: (bool selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedDays.add(day);
+                              } else {
+                                _selectedDays.remove(day);
+                              }
+                              // Оновлюємо кубіт, якщо потрібно, або перед збереженням
+                              _manageRoutineCubit.updateScheduledDays(List.from(_selectedDays));
+                            });
+                          },
+                          selectedColor: Theme.of(context).primaryColorLight,
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Exercises (${currentDisplayRoutine.exercises.length}):', style: Theme.of(context).textTheme.titleMedium),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.add_circle_outline),
+                          label: const Text('Add'),
+                          onPressed: () async {
+                            final RoutineExercise? newExercise = await showAddExerciseToRoutineDialog(context);
+                            if (newExercise != null) {
+                              _manageRoutineCubit.addExerciseToRoutine(newExercise);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (currentDisplayRoutine.exercises.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: Center(child: Text('No exercises added yet. Tap "Add" to begin.')),
+                      )
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(), // Для списку всередині SingleChildScrollView
+                        itemCount: currentDisplayRoutine.exercises.length,
+                        itemBuilder: (ctx, index) {
+                          return _buildExerciseItem(context, currentDisplayRoutine.exercises[index], index);
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/screens/create_edit_routine_screen.dart ===
+
+
+=== FILE: lib/features/routines/presentation/screens/user_routines_screen.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/screens/user_routines_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/domain/repositories/routine_repository.dart';
+import '../cubit/user_routines_cubit.dart';
+import '../widgets/routine_list_item.dart';
+import 'create_edit_routine_screen.dart';
+// import '../../../../core/domain/entities/routine.dart'; // <--- ВИДАЛЕНО
+
+class UserRoutinesScreen extends StatelessWidget {
+  const UserRoutinesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider( // Змінено на один BlocProvider, оскільки ManageRoutineCubit тут не надається глобально
+      create: (context) => UserRoutinesCubit(
+        RepositoryProvider.of<RoutineRepository>(context),
+        FirebaseAuth.instance,
+      )..fetchUserRoutines(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('My Routines'),
+        ),
+        body: BlocConsumer<UserRoutinesCubit, UserRoutinesState>(
+          listener: (context, state) {
+            if (state is UserRoutinesError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.message}'), backgroundColor: Colors.red),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is UserRoutinesLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is UserRoutinesLoaded) {
+              if (state.routines.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.fitness_center, size: 60, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No routines yet.',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('Create Your First Routine'),
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const CreateEditRoutineScreen(),
+                          ));
+                        },
+                      )
+                    ],
+                  ),
+                );
+              }
+              return ListView.builder(
+                itemCount: state.routines.length,
+                itemBuilder: (context, index) {
+                  final routine = state.routines[index];
+                  // RoutineListItem тепер сам обробляє залежності для видалення,
+                  // якщо RepositoryProvider доступний
+                  return RoutineListItem(routine: routine);
+                },
+              );
+            } else if (state is UserRoutinesError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Failed to load routines: ${state.message}'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<UserRoutinesCubit>().fetchUserRoutines(),
+                      child: const Text('Retry'),
+                    )
+                  ],
+                ),
+              );
+            }
+            return const Center(child: Text('Press button to load routines or create one.'));
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const CreateEditRoutineScreen(),
+            )).then((_) {
+              // Опціонально: оновити список після повернення зі створення/редагування,
+              // якщо ManageRoutineCubit не оновлює UserRoutinesCubit напряму.
+              // context.read<UserRoutinesCubit>().fetchUserRoutines();
+            });
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('New Routine'),
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/screens/user_routines_screen.dart ===
+
+
+=== FILE: lib/features/routines/presentation/widgets/add_exercise_to_routine_dialog.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/widgets/add_exercise_to_routine_dialog.dart
+import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart'; // <--- ВИДАЛЕНО, якщо не використовується тут напряму
+import '../../../../core/domain/entities/predefined_exercise.dart';
+import '../../../../core/domain/entities/routine.dart';
+import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
+
+
+Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) async {
+  final PredefinedExercise? selectedPredefinedExercise = await Navigator.of(context).push<PredefinedExercise>(
+    MaterialPageRoute(
+      builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true), // <--- ВИПРАВЛЕНО
+    ),
+  );
+
+  if (selectedPredefinedExercise == null) { // Перевірка mounted не потрібна перед pop
+    return null;
+  }
+
+  // Подальший код залишається без змін, але переконайся, що `context` для `showDialog` є валідним.
+  // Якщо `context` з попереднього екрану вже не валідний, це викличе помилку.
+  // Але оскільки ми одразу викликаємо showDialog, він, ймовірно, буде валідним.
+  // ignore: use_build_context_synchronously
+  if (!context.mounted) return null; // Додаємо перевірку для безпеки
+
+  return await showDialog<RoutineExercise>(
+    context: context,
+    builder: (dialogContext) {
+      final setsController = TextEditingController(text: "3");
+      final notesController = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+
+      return AlertDialog(
+        title: Text('Add "${selectedPredefinedExercise.name}"'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                  controller: setsController,
+                  decoration: const InputDecoration(labelText: 'Number of Sets'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Cannot be empty';
+                    final n = int.tryParse(value);
+                    if (n == null || n <= 0) return 'Must be a positive number';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes (optional)',
+                    hintText: 'E.g., focus on form, pyramid sets'
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(null),
+          ),
+          ElevatedButton(
+            child: const Text('Add Exercise'),
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.of(dialogContext).pop(RoutineExercise(
+                  predefinedExerciseId: selectedPredefinedExercise.id,
+                  exerciseNameSnapshot: selectedPredefinedExercise.name,
+                  numberOfSets: int.parse(setsController.text),
+                  notes: notesController.text.trim().isNotEmpty ? notesController.text.trim() : null,
+                ));
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/widgets/add_exercise_to_routine_dialog.dart ===
+
+
+=== FILE: lib/features/routines/presentation/widgets/routine_list_item.dart ===
+--------------------------------------------------
+// lib/features/routines/presentation/widgets/routine_list_item.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/domain/entities/routine.dart';
+import '../../../../core/domain/repositories/routine_repository.dart'; // <--- ІМПОРТ ІНТЕРФЕЙСУ
+import '../cubit/user_routines_cubit.dart';
+// ManageRoutineCubit може не знадобитись тут, якщо UserRoutinesCubit обробляє видалення
+// import '../cubit/manage_routine_cubit.dart'; 
+import '../screens/create_edit_routine_screen.dart';
+import 'dart:developer' as developer; // Для логування
+
+class RoutineListItem extends StatelessWidget {
+  final UserRoutine routine;
+
+  const RoutineListItem({super.key, required this.routine});
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    // Не використовуємо ManageRoutineCubit напряму тут, якщо UserRoutinesCubit має метод видалення.
+    // final manageRoutineCubit = BlocProvider.of<ManageRoutineCubit>(context, listen: false);
+    final userRoutinesCubit = BlocProvider.of<UserRoutinesCubit>(context, listen: false);
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete "${routine.name}"? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      // Ідеально: UserRoutinesCubit має метод для видалення
+      // await userRoutinesCubit.deleteRoutine(routine.id);
+
+      // Поточний варіант: видаляємо через репозиторій та оновлюємо список локально
+      // Важливо: переконайся, що context ще валідний після await
+      if (!context.mounted) return; 
+      try {
+        // Отримуємо репозиторій через RepositoryProvider
+        final routineRepository = RepositoryProvider.of<RoutineRepository>(context);
+        await routineRepository.deleteRoutine(routine.id);
+        userRoutinesCubit.routineDeleted(routine.id); // Оновлюємо список локально
+
+        if (context.mounted) { // Знову перевірка
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Routine "${routine.name}" deleted.'), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        developer.log('Error deleting routine: $e', name: 'RoutineListItem');
+        if (context.mounted) { // Перевірка
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error deleting routine: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: ListTile(
+        title: Text(routine.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (routine.description != null && routine.description!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(routine.description!, style: Theme.of(context).textTheme.bodySmall),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                '${routine.exercises.length} exercise(s)',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+              ),
+            ),
+            if (routine.scheduledDays.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  'Scheduled: ${routine.scheduledDays.join(", ")}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                ),
+              ),
+          ],
+        ),
+        isThreeLine: (routine.description != null && routine.description!.isNotEmpty) || routine.scheduledDays.isNotEmpty,
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'edit') {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => CreateEditRoutineScreen(routineToEdit: routine),
+              ));
+            } else if (value == 'delete') {
+              _confirmDelete(context);
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'edit',
+              child: ListTile(leading: Icon(Icons.edit), title: Text('Edit')),
+            ),
+            const PopupMenuItem<String>(
+              value: 'delete',
+              child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red))),
+            ),
+          ],
+        ),
+        onTap: () {
+          // TODO: Можливо, перехід на екран деталей рутини або початок тренування
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => CreateEditRoutineScreen(routineToEdit: routine),
+          ));
+        },
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/routines/presentation/widgets/routine_list_item.dart ===
 
 
 === FILE: web/index.html ===
