@@ -1,7 +1,14 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-05-29T01:43:25.461203
+Snapshot created on: 2025-05-29T02:08:35.012615
 ================================================================================
+
+=== FILE: .flutter-plugins-dependencies ===
+--------------------------------------------------
+{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_android","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_android-6.2.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[],"windows":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"web":[{"name":"cloud_firestore_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore_web-4.4.8\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_auth_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth_web-5.14.3\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_core_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core_web-2.23.0\\\\","dependencies":[],"dev_dependency":false},{"name":"google_sign_in_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_web-0.12.4+4\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"cloud_firestore","dependencies":["cloud_firestore_web","firebase_core"]},{"name":"cloud_firestore_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_auth","dependencies":["firebase_auth_web","firebase_core"]},{"name":"firebase_auth_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_core","dependencies":["firebase_core_web"]},{"name":"firebase_core_web","dependencies":[]},{"name":"google_sign_in","dependencies":["google_sign_in_android","google_sign_in_ios","google_sign_in_web"]},{"name":"google_sign_in_android","dependencies":[]},{"name":"google_sign_in_ios","dependencies":[]},{"name":"google_sign_in_web","dependencies":[]}],"date_created":"2025-05-29 01:43:54.143257","version":"3.32.0","swift_package_manager_enabled":{"ios":false,"macos":false}}
+--------------------------------------------------
+=== END OF FILE: .flutter-plugins-dependencies ===
+
 
 === FILE: .gitignore ===
 --------------------------------------------------
@@ -1275,12 +1282,104 @@ Runner/GeneratedPluginRegistrant.*
 === END OF FILE: ios/Flutter/Debug.xcconfig ===
 
 
+=== FILE: ios/Flutter/flutter_export_environment.sh ===
+--------------------------------------------------
+#!/bin/sh
+# This is a generated file; do not edit or check into version control.
+export "FLUTTER_ROOT=C:\Software\flutter\flutter"
+export "FLUTTER_APPLICATION_PATH=C:\Users\levndays\Desktop\muscle_up"
+export "COCOAPODS_PARALLEL_CODE_SIGN=true"
+export "FLUTTER_TARGET=lib\main.dart"
+export "FLUTTER_BUILD_DIR=build"
+export "FLUTTER_BUILD_NAME=0.1.0"
+export "FLUTTER_BUILD_NUMBER=0.1.0"
+export "DART_OBFUSCATION=false"
+export "TRACK_WIDGET_CREATION=true"
+export "TREE_SHAKE_ICONS=false"
+export "PACKAGE_CONFIG=.dart_tool/package_config.json"
+
+--------------------------------------------------
+=== END OF FILE: ios/Flutter/flutter_export_environment.sh ===
+
+
+=== FILE: ios/Flutter/Generated.xcconfig ===
+--------------------------------------------------
+// This is a generated file; do not edit or check into version control.
+FLUTTER_ROOT=C:\Software\flutter\flutter
+FLUTTER_APPLICATION_PATH=C:\Users\levndays\Desktop\muscle_up
+COCOAPODS_PARALLEL_CODE_SIGN=true
+FLUTTER_TARGET=lib\main.dart
+FLUTTER_BUILD_DIR=build
+FLUTTER_BUILD_NAME=0.1.0
+FLUTTER_BUILD_NUMBER=0.1.0
+EXCLUDED_ARCHS[sdk=iphonesimulator*]=i386
+EXCLUDED_ARCHS[sdk=iphoneos*]=armv7
+DART_OBFUSCATION=false
+TRACK_WIDGET_CREATION=true
+TREE_SHAKE_ICONS=false
+PACKAGE_CONFIG=.dart_tool/package_config.json
+
+--------------------------------------------------
+=== END OF FILE: ios/Flutter/Generated.xcconfig ===
+
+
 === FILE: ios/Flutter/Release.xcconfig ===
 --------------------------------------------------
 #include "Generated.xcconfig"
 
 --------------------------------------------------
 === END OF FILE: ios/Flutter/Release.xcconfig ===
+
+
+=== FILE: ios/Flutter/ephemeral/flutter_lldbinit ===
+--------------------------------------------------
+#
+# Generated file, do not edit.
+#
+
+command script import --relative-to-command-file flutter_lldb_helper.py
+
+--------------------------------------------------
+=== END OF FILE: ios/Flutter/ephemeral/flutter_lldbinit ===
+
+
+=== FILE: ios/Flutter/ephemeral/flutter_lldb_helper.py ===
+--------------------------------------------------
+#
+# Generated file, do not edit.
+#
+
+import lldb
+
+def handle_new_rx_page(frame: lldb.SBFrame, bp_loc, extra_args, intern_dict):
+    """Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and touch the pages."""
+    base = frame.register["x0"].GetValueAsAddress()
+    page_len = frame.register["x1"].GetValueAsUnsigned()
+
+    # Note: NOTIFY_DEBUGGER_ABOUT_RX_PAGES will check contents of the
+    # first page to see if handled it correctly. This makes diagnosing
+    # misconfiguration (e.g. missing breakpoint) easier.
+    data = bytearray(page_len)
+    data[0:8] = b'IHELPED!'
+
+    error = lldb.SBError()
+    frame.GetThread().GetProcess().WriteMemory(base, data, error)
+    if not error.Success():
+        print(f'Failed to write into {base}[+{page_len}]', error)
+        return
+
+def __lldb_init_module(debugger: lldb.SBDebugger, _):
+    target = debugger.GetDummyTarget()
+    # Caveat: must use BreakpointCreateByRegEx here and not
+    # BreakpointCreateByName. For some reasons callback function does not
+    # get carried over from dummy target for the later.
+    bp = target.BreakpointCreateByRegex("^NOTIFY_DEBUGGER_ABOUT_RX_PAGES$")
+    bp.SetScriptCallbackFunction('{}.handle_new_rx_page'.format(__name__))
+    bp.SetAutoContinue(True)
+    print("-- LLDB integration loaded --")
+
+--------------------------------------------------
+=== END OF FILE: ios/Flutter/ephemeral/flutter_lldb_helper.py ===
 
 
 === FILE: ios/Runner/AppDelegate.swift ===
@@ -2365,7 +2464,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/domain/repositories/user_profile_repository.dart';
 import 'core/domain/entities/user_profile.dart';
-import 'features/profile/presentation/cubit/user_profile_cubit.dart'; // Cubit для профілю
+import 'features/profile/presentation/cubit/user_profile_cubit.dart';
 import 'home_page.dart';
 import 'login_page.dart';
 import 'features/profile_setup/presentation/screens/profile_setup_screen.dart';
@@ -2388,10 +2487,8 @@ class AuthGate extends StatelessWidget {
 
         if (authSnapshot.hasData && authSnapshot.data != null) {
           developer.log("AuthGate: User is authenticated (UID: ${authSnapshot.data!.uid}). Checking profile.", name: "AuthGate");
-          // Користувач увійшов, передаємо FirebaseAuth instance, який вже є в RepositoryProvider з main.dart
-          return _ProfileCheckGate(
+          return _ProfileCheckGate( // Передаємо тільки userId
             userId: authSnapshot.data!.uid,
-            // firebaseAuth: RepositoryProvider.of<fb_auth.FirebaseAuth>(context), // Не потрібно, якщо кубіт отримує його напряму
           );
         }
         developer.log("AuthGate: User is not authenticated. Navigating to LoginPage.", name: "AuthGate");
@@ -2403,68 +2500,77 @@ class AuthGate extends StatelessWidget {
 
 class _ProfileCheckGate extends StatelessWidget {
   final String userId;
-  // final fb_auth.FirebaseAuth firebaseAuth; // Не потрібно, якщо кубіт отримує його напряму
 
   const _ProfileCheckGate({
-    super.key, // Додано super.key
+    super.key,
     required this.userId,
-    // required this.firebaseAuth,
   });
 
   @override
   Widget build(BuildContext context) {
     final userProfileRepository = RepositoryProvider.of<UserProfileRepository>(context);
-    final firebaseAuthFromProvider = RepositoryProvider.of<fb_auth.FirebaseAuth>(context); // Отримуємо з main.dart
+    final firebaseAuthFromProvider = RepositoryProvider.of<fb_auth.FirebaseAuth>(context); // Для UserProfileCubit
 
-    developer.log("_ProfileCheckGate: Building FutureBuilder for userId: $userId", name: "AuthGate._ProfileCheckGate");
+    developer.log("_ProfileCheckGate: Building StreamBuilder for userId: $userId", name: "AuthGate._ProfileCheckGate");
 
-    return FutureBuilder<UserProfile?>(
-      future: userProfileRepository.getUserProfile(userId),
+    return StreamBuilder<UserProfile?>(
+      stream: userProfileRepository.getUserProfileStream(userId),
       builder: (context, profileSnapshot) {
-        developer.log("_ProfileCheckGate: FutureBuilder received profileSnapshot - connectionState: ${profileSnapshot.connectionState}, hasData: ${profileSnapshot.hasData}, hasError: ${profileSnapshot.hasError}", name: "AuthGate._ProfileCheckGate");
+        developer.log(
+            "_ProfileCheckGate: StreamBuilder received profileSnapshot - connectionState: ${profileSnapshot.connectionState}, hasData: ${profileSnapshot.hasData}, hasError: ${profileSnapshot.hasError}, data: ${profileSnapshot.data?.profileSetupComplete}",
+            name: "AuthGate._ProfileCheckGate"
+        );
 
-        if (profileSnapshot.connectionState == ConnectionState.waiting) {
-          developer.log("_ProfileCheckGate: Profile fetch waiting for userId: $userId", name: "AuthGate._ProfileCheckGate");
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-
+        // 1. Обробка помилки потоку
         if (profileSnapshot.hasError) {
           developer.log(
-            "_ProfileCheckGate: Error fetching profile for $userId: ${profileSnapshot.error}",
-            name: "AuthGate._ProfileCheckGate",
-            error: profileSnapshot.error,
-            stackTrace: profileSnapshot.stackTrace
+            "_ProfileCheckGate: Error in profile stream for $userId: ${profileSnapshot.error}",
+            name: "AuthGate._ProfileCheckGate", error: profileSnapshot.error, stackTrace: profileSnapshot.stackTrace
           );
-          return const LoginPage(); // Або спеціальна сторінка помилки
+          // Можна спробувати вийти, щоб уникнути зациклення
+          // fb_auth.FirebaseAuth.instance.signOut();
+          return const LoginPage(); // Або екран помилки
+        }
+
+        // 2. Обробка стану очікування початкових даних
+        if (profileSnapshot.connectionState == ConnectionState.waiting && !profileSnapshot.hasData) {
+          developer.log("_ProfileCheckGate: Profile stream waiting for initial data for userId: $userId", name: "AuthGate._ProfileCheckGate");
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
         final userProfile = profileSnapshot.data;
 
+        // 3. Якщо профіль ще не створений (null з потоку)
         if (userProfile == null) {
-            developer.log(
-              "_ProfileCheckGate: Profile NOT FOUND for user $userId after login/auth change. This might be a sync issue or profile creation failed. Redirecting to login.",
-              name: "AuthGate._ProfileCheckGate"
-            );
-            // Можна спробувати вийти, щоб уникнути циклів, якщо щось пішло не так з створенням профілю
-            // fb_auth.FirebaseAuth.instance.signOut();
-            return const LoginPage();
+          developer.log(
+            "_ProfileCheckGate: Profile is STILL NULL for user $userId from stream. Waiting for Firestore creation/sync.",
+            name: "AuthGate._ProfileCheckGate"
+          );
+          // Показуємо індикатор, поки Firestore не синхронізує створений профіль
+          return const Scaffold(body: Center(child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text("Finalizing account setup..."), // Або "Loading profile..."
+            ],
+          )));
         }
         
-        developer.log("_ProfileCheckGate: Profile loaded for $userId. profileSetupComplete: ${userProfile.profileSetupComplete}", name: "AuthGate._ProfileCheckGate");
+        // 4. Профіль завантажений, перевіряємо profileSetupComplete
+        developer.log("_ProfileCheckGate: Profile loaded via stream for $userId. profileSetupComplete: ${userProfile.profileSetupComplete}", name: "AuthGate._ProfileCheckGate");
 
         if (userProfile.profileSetupComplete) {
-          developer.log("_ProfileCheckGate: Profile setup is complete. Navigating to HomePage with UserProfileCubit.", name: "AuthGate._ProfileCheckGate");
+          developer.log("_ProfileCheckGate: Profile setup is complete. Navigating to HomePage.", name: "AuthGate._ProfileCheckGate");
           return BlocProvider<UserProfileCubit>(
             create: (cubitContext) => UserProfileCubit(
-              userProfileRepository, // Вже отримано вище
-              firebaseAuthFromProvider, // Передаємо з RepositoryProvider
-            ), // fetchUserProfile буде викликано в конструкторі UserProfileCubit
+              userProfileRepository,
+              firebaseAuthFromProvider,
+            ),
             child: const HomePage(),
           );
         } else {
           developer.log("_ProfileCheckGate: Profile setup is NOT complete. Navigating to ProfileSetupScreen.", name: "AuthGate._ProfileCheckGate");
-          // ProfileSetupScreen сам створить свій ProfileSetupCubit,
-          // якому потрібен UserProfileRepository та FirebaseAuth, які вже є в RepositoryProvider.
           return const ProfileSetupScreen();
         }
       },

@@ -6,6 +6,7 @@ import 'dart:developer' as developer;
 
 import '../../../../core/domain/entities/app_notification.dart';
 import '../cubit/notifications_cubit.dart';
+import '../screens/notification_detail_screen.dart'; // <--- ДОДАНО ІМПОРТ
 
 class NotificationListItem extends StatelessWidget {
   final AppNotification notification;
@@ -42,7 +43,7 @@ class NotificationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeAgo = DateFormat.MMMd().add_jm().format(notification.timestamp.toDate()); // Ця змінна тепер буде використовуватися
+    final timeAgo = DateFormat.MMMd().add_jm().format(notification.timestamp.toDate());
     final bool isUnread = !notification.isRead;
 
     return Dismissible(
@@ -58,7 +59,6 @@ class NotificationListItem extends StatelessWidget {
             action: SnackBarAction(
               label: 'UNDO',
               onPressed: () {
-                // TODO: Реалізувати логіку скасування видалення, якщо потрібно
                 developer.log('UNDO pressed for ${notification.id} - not implemented', name: 'NotificationListItem');
               },
             ),
@@ -128,13 +128,12 @@ class NotificationListItem extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          // ВИПРАВЛЕНО: Відновлено код для trailing
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                timeAgo, // Використовуємо змінну
+                timeAgo,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: isUnread ? Theme.of(context).colorScheme.primary : Colors.grey.shade500,
                       fontSize: 11,
@@ -154,13 +153,15 @@ class NotificationListItem extends StatelessWidget {
             ],
           ),
           onTap: () {
+            // Позначаємо як прочитане, якщо ще не прочитане
             if (isUnread) {
               context.read<NotificationsCubit>().markNotificationAsRead(notification.id);
             }
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Tapped on: ${notification.title} (ID: ${notification.id})'),
-                duration: const Duration(seconds: 2),
+            // Переходимо на екран деталей
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NotificationDetailScreen(notification: notification),
               ),
             );
           },
