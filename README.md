@@ -1,26 +1,46 @@
+Чудово! Давай оновимо README.md, щоб відобразити реалізований функціонал сповіщень. Я постараюся бути максимально детальним.
+
+Оновлений README.md:
+
 # MuscleUP: Фітнес-застосунок для справжніх атлетів
 
 **Motto:** Level Up Your Lifts, Connect Your Crew, Achieve Your Goals. Build Your Strength, Together.
 
 ## 1. Вступ
 
-**MuscleUP** – це мобільний фітнес-застосунок, розроблений для підвищення мотивації та довгострокової залученості користувачів до тренувального процесу. Застосунок дозволяє відстежувати тренування, встановлювати фітнес-цілі, ділитися прогресом (в майбутньому) та отримувати підтримку від спільноти (в майбутньому).
+**MuscleUP** – це мобільний фітнес-застосунок, розроблений для підвищення мотивації та довгострокової залученості користувачів до тренувального процесу. Застосунок дозволяє відстежувати тренування, встановлювати фітнес-цілі, отримувати сповіщення, ділитися прогресом (в майбутньому) та отримувати підтримку від спільноти (в майбутньому).
 
-**Поточний стан (версія 0.1.0):**
-На даному етапі реалізовано ключовий функціонал:
+**Поточний стан (розширена версія 0.2.x - з функціоналом сповіщень):**
+На даному етапі реалізовано наступний функціонал:
 *   Автентифікація користувачів (Email/Password та Google Sign-In).
-*   Створення та зберігання профілю користувача в Cloud Firestore.
-*   Базовий дашборд.
-*   Перегляд бібліотеки стандартизованих вправ.
-*   Створення, перегляд, редагування та видалення користувацьких тренувальних рутин.
-*   Основна навігація за допомогою Bottom Navigation Bar.
+*   Створення початкового профілю користувача в Cloud Firestore після першої реєстрації.
+*   Екран "Profile Setup" для введення додаткових даних (username, стать, вага, зріст, цілі тощо) після першого входу, якщо профіль не завершено (`profileSetupComplete: false`).
+*   Оновлений `HomePage` як центральний хаб з AppBar, BottomNavigationBar та FloatingActionButton (для "Start Workout", відображається тільки на дашборді).
+*   Інтерактивний `DashboardScreen` як головний екран, що відображає:
+    *   Вітання користувача.
+    *   Статистику (вага, стрік тренувань - плейсхолдери для деяких значень).
+    *   **Секцію сповіщень:**
+        *   Заголовок "NOTIFICATIONS" з **лічильником непрочитаних сповіщень** (помаранчевий кружечок з числом).
+        *   Список **останніх 3-5 сповіщень** з їх заголовком, текстом, часом отримання та іконкою типу.
+        *   Візуальне виділення **непрочитаних сповіщень** (жирний шрифт, індикатор-крапка, яскравіша рамка).
+        *   Можливість **видалення сповіщення свайпом** вліво або вправо.
+        *   Кнопка "**READ ALL**" (шрифтом IBM Plex Mono) для позначення всіх сповіщень як прочитаних, якщо є непрочитані.
+        *   При тапі на сповіщення воно позначається як прочитане.
+*   Перегляд бібліотеки стандартизованих вправ (`ExerciseExplorerScreen`).
+*   Створення, перегляд, редагування та видалення користувацьких тренувальних рутин (`UserRoutinesScreen`, `CreateEditRoutineScreen`).
+*   Розширена модель користувача `UserProfile` для зберігання додаткових даних.
+*   **Новий модуль "Notifications"** для управління сповіщеннями:
+    *   Модель `AppNotification` для представлення даних сповіщення.
+    *   `NotificationRepository` та його імплементація для взаємодії з Firestore (отримання сповіщень, лічильника непрочитаних, позначення як прочитаних, видалення).
+    *   `NotificationsCubit` для управління станом сповіщень, підпискою на зміни в Firestore та оновленням UI в реальному часі.
+*   Репозиторії та Cubit'и для управління профілем, вправами та рутинами.
 
 ## 2. Ключові Архітектурні Принципи
 
-*   **Модульність:** Застосунок розроблено за принципом "feature-first", де кожна функціональна частина є окремим модулем.
+*   **Модульність:** Застосунок розроблено за принципом "feature-first", де кожна функціональна частина є окремим модулем (наприклад, `auth`, `profile_setup`, `exercise_explorer`, `routines`, `dashboard`, **`notifications`**).
 *   **Чітке Розділення Відповідальностей:** Використання шарів (Domain, Data, Presentation) в межах кожного модуля.
 *   **Управління Станом:** Застосування Flutter BLoC/Cubit для управління станом UI та бізнес-логіки.
-*   **Залежності:** Використання `RepositoryProvider` для надання залежностей репозиторіїв віджетам.
+*   **Залежності:** Використання `RepositoryProvider` для надання залежностей репозиторіїв (та `FirebaseAuth`) віджетам.
 *   **Масштабованість:** Архітектура передбачає легке додавання нових функцій та розширення існуючих.
 
 ## 3. Технологічний Стек
@@ -30,15 +50,16 @@
     *   **Мова:** Dart
     *   **Управління станом:** Flutter BLoC/Cubit (`flutter_bloc: ^9.1.1`)
     *   **Порівняння об'єктів:** Equatable (`equatable: ^2.0.5`)
+    *   **Форматування дати:** `intl: ^0.19.0`
     *   **Анімації:** `animated_background: ^2.0.0` (для сторінки логіну)
-    *   **Навігація:** Стандартна Flutter навігація (`MaterialPageRoute`, `Navigator.push/pop`).
+    *   **Навігація:** Стандартна Flutter навігація (`MaterialPageRoute`, `Navigator.push/pop/pushAndRemoveUntil`).
 *   **Бекенд (Firebase):**
     *   **Firebase Core:** `firebase_core: ^3.13.1`
     *   **Firebase Authentication:** `firebase_auth: ^5.5.4` (Email/Password, Google Sign-In)
     *   **Google Sign-In:** `google_sign_in: ^6.2.1`
-    *   **Cloud Firestore:** `cloud_firestore: ^5.6.8` (NoSQL база даних)
+    *   **Cloud Firestore:** `cloud_firestore: ^5.6.8` (NoSQL база даних для профілів, рутин, вправ та **сповіщень користувачів**).
     *   **Firebase Storage:** (Планується) для медіафайлів.
-    *   **Cloud Functions:** (Планується) для серверної логіки.
+    *   **Cloud Functions:** (Планується) для серверної логіки, включаючи потенційну генерацію деяких типів сповіщень.
 *   **Інструменти розробки:**
     *   **Лінтер:** `flutter_lints: ^5.0.0`
 
@@ -47,184 +68,255 @@
 
 muscle_up/
 ├── lib/
-│ ├── main.dart # Точка входу, ініціалізація Firebase, MaterialApp, RepositoryProviders
-│ ├── auth_gate.dart # Керування потоком автентифікації (логін/головний екран)
+│ ├── main.dart             # Точка входу, ініціалізація Firebase, MaterialApp, RepositoryProviders
+│ ├── auth_gate.dart        # Керування потоком автентифікації та перевіркою `profileSetupComplete`
 │ ├── firebase_options.dart # Конфігурація Firebase (згенеровано)
-│ ├── home_page.dart # Головний екран з BottomNavigationBar, що містить вкладки
-│ ├── login_page.dart # Екран входу/реєстрації, анімований фон
+│ ├── home_page.dart        # ГОЛОВНИЙ ЕКРАН: AppBar, BottomNavigationBar, FAB, керування вкладками. Надає NotificationsCubit.
+│ ├── login_page.dart       # Екран входу/реєстрації, анімований фон
 │ │
 │ ├── core/
 │ │ └── domain/
-│ │ ├── entities/
-│ │ │ ├── predefined_exercise.dart # Модель для стандартизованої вправи
-│ │ │ └── routine.dart # Моделі UserRoutine та RoutineExercise
-│ │ └── repositories/
-│ │ ├── predefined_exercise_repository.dart # Абстракція репозиторію вправ
-│ │ └── routine_repository.dart # Абстракція репозиторію рутин
+│ │   ├── entities/
+│ │   │ ├── app_notification.dart    # Модель для сповіщення (НОВА)
+│ │   │ ├── predefined_exercise.dart # Модель для стандартизованої вправи
+│ │   │ ├── routine.dart             # Моделі UserRoutine та RoutineExercise
+│ │   │ └── user_profile.dart      # Модель для профілю користувача
+│ │   └── repositories/
+│ │     ├── notification_repository.dart      # Абстракція репозиторію сповіщень (НОВА)
+│ │     ├── predefined_exercise_repository.dart # Абстракція репозиторію вправ
+│ │     ├── routine_repository.dart             # Абстракція репозиторію рутин
+│ │     └── user_profile_repository.dart      # Абстракція репозиторію профілю
 │ │
 │ └── features/ # Кожен модуль фічі
-│ ├── dashboard/
-│ │ └── presentation/
-│ │ └── screens/
-│ │ └── dashboard_screen.dart # UI для вкладки "Dashboard"
-│ │
-│ ├── exercise_explorer/ # Модуль бібліотеки вправ
-│ │ ├── data/
-│ │ │ └── repositories/
-│ │ │ └── predefined_exercise_repository_impl.dart # Реалізація репозиторію (Firestore)
-│ │ └── presentation/
-│ │ ├── cubit/
-│ │ │ ├── exercise_explorer_cubit.dart
-│ │ │ └── exercise_explorer_state.dart
-│ │ ├── screens/
-│ │ │ └── exercise_explorer_screen.dart # UI для вкладки "Exercises"
-│ │ └── widgets/
-│ │ └── exercise_list_item.dart # Віджет для елемента списку вправ
-│ │
-│ └── routines/ # Модуль користувацьких рутин
-│ ├── data/
-│ │ └── repositories/
-│ │ └── routine_repository_impl.dart # Реалізація репозиторію (Firestore)
-│ └── presentation/
-│ ├── cubit/
-│ │ ├── manage_routine_cubit.dart # Cubit для створення/редагування рутини
-│ │ ├── manage_routine_state.dart
-│ │ ├── user_routines_cubit.dart # Cubit для списку рутин користувача
-│ │ └── user_routines_state.dart
-│ ├── screens/
-│ │ ├── create_edit_routine_screen.dart # UI для створення/редагування рутини
-│ │ └── user_routines_screen.dart # UI для вкладки "Routines"
-│ └── widgets/
-│ ├── add_exercise_to_routine_dialog.dart # Діалог додавання вправи до рутини
-│ └── routine_list_item.dart # Віджет для елемента списку рутин
+│   ├── dashboard/
+│   │ └── presentation/
+│   │   └── screens/
+│   │     └── dashboard_screen.dart # UI для головного екрану/дашборду (вміст для HomePage). Відображає сповіщення.
+│   │
+│   ├── notifications/              # НОВИЙ МОДУЛЬ
+│   │   ├── data/
+│   │   │   └── repositories/
+│   │   │       └── notification_repository_impl.dart # Імплементація репозиторію сповіщень
+│   │   ├── presentation/
+│   │   │   ├── cubit/
+│   │   │   │   ├── notifications_cubit.dart   # Cubit для управління станом сповіщень
+│   │   │   │   └── notifications_state.dart   # Стани для NotificationsCubit
+│   │   │   └── widgets/
+│   │   │       └── notification_list_item.dart # Віджет для відображення одного сповіщення (з Dismissible)
+│   │
+│   ├── exercise_explorer/
+│   │   ├── data/
+│   │   │   └── repositories/
+│   │   │       └── predefined_exercise_repository_impl.dart
+│   │   └── presentation/
+│   │     ├── cubit/
+│   │     │   ├── exercise_explorer_cubit.dart
+│   │     │   └── exercise_explorer_state.dart
+│   │     ├── screens/
+│   │     │   └── exercise_explorer_screen.dart
+│   │     └── widgets/
+│   │       └── exercise_list_item.dart
+│   │
+│   ├── routines/
+│   │   ├── data/
+│   │   │   └── repositories/
+│   │   │       └── routine_repository_impl.dart
+│   │   └── presentation/
+│   │     ├── cubit/ # ... (кубіти для рутин)
+│   │     ├── screens/ # ... (екрани для рутин)
+│   │     └── widgets/ # ... (віджети для рутин)
+│   │
+│   └── profile_setup/
+│     ├── data/ # ... (репозиторій профілю)
+│     └── presentation/ # ... (кубіт та екран налаштування профілю)
+│
+│ # Інші екрани (PostsScreen, ProgressScreen, ProfileScreen) - плейсхолдери
 │
 ├── assets/
 │ ├── images/
-│ │ └── google_logo.png # Логотип Google
+│ │ └── google_logo.png
 │ └── fonts/
-│ └── Inter_...ttf # Файли шрифтів Inter
+│   ├── Inter_...ttf
+│   └── IBMPlexMono_...ttf
 │
-├── android/ # Специфічний код для Android
-├── ios/ # Специфічний код для iOS
-└── web/ # Специфічний код для Web (базовий шаблон)
+├── android/
+├── ios/
+└── web/
 
-## 5. Детальний Опис Ключових Компонентів
+5. Детальний Опис Ключових Компонентів
+5.1. Автентифікація та Налаштування Профілю
 
-### 5.1. Автентифікація та Управління Користувачем
+(Цей розділ залишається переважно без змін, оскільки основна логіка не змінювалася)
 
-*   **`main.dart`**: Ініціалізує Firebase. Надає `PredefinedExerciseRepository` та `RoutineRepository` через `MultiRepositoryProvider`. Визначає `MaterialApp` з глобальною темою та шрифтом 'Inter'.
-*   **`AuthGate` (`auth_gate.dart`)**: Використовує `StreamBuilder` для `FirebaseAuth.instance.authStateChanges()`. Перенаправляє на `HomePage` (якщо користувач увійшов) або `LoginPage`.
-*   **`LoginPage` (`login_page.dart`)**:
-    *   UI для входу та реєстрації з анімованим градієнтним фоном (`AnimationController`, `AlignmentTween`).
-    *   Форма з валідацією для email/password.
-    *   Логіка для `signInWithEmailAndPassword`, `createUserWithEmailAndPassword`.
-    *   Логіка для `signInWithCredential` (Google Sign-In).
-    *   **`_createInitialUserProfile(User user)`**: Після успішної першої реєстрації (email або Google) створює документ для користувача в колекції `users` Firestore. Поля: `uid`, `email`, `displayName`, `profilePictureUrl` (з `User` об'єкта), `username: null`, `xp: 0`, `level: 1`, `profileSetupComplete: false`, `createdAt`, `updatedAt` (через `FieldValue.serverTimestamp()`) та інші поля за замовчуванням.
-*   **`HomePage` (`home_page.dart`)**:
-    *   `StatefulWidget` з `BottomNavigationBar` для перемикання між вкладками (`DashboardScreen`, `ExerciseExplorerScreen`, `UserRoutinesScreen`).
-    *   Використовує `IndexedStack` для збереження стану вкладок.
-    *   Містить кнопку виходу (`FirebaseAuth.instance.signOut()`).
+main.dart: Ініціалізує Firebase. Надає репозиторії (включаючи NotificationRepository) та FirebaseAuth через MultiRepositoryProvider. Визначає MaterialApp.
 
-### 5.2. Модуль "Exercise Explorer" (`features/exercise_explorer/`)
+LoginPage: UI для входу/реєстрації. Створює початковий документ користувача з profileSetupComplete: false.
 
-*   **Сутності (`core/domain/entities/predefined_exercise.dart`)**:
-    *   `PredefinedExercise`: Модель даних для вправи (id, name, primaryMuscleGroup, etc.). Має `fromFirestore()` та `toJson()`.
-*   **Репозиторії**:
-    *   Абстракція: `core/domain/repositories/predefined_exercise_repository.dart`.
-    *   Реалізація: `features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart`. Отримує дані з колекції `predefinedExercises` Firestore, сортує за назвою.
-*   **Cubit (`features/exercise_explorer/presentation/cubit/`)**:
-    *   `ExerciseExplorerCubit`: Завантажує список вправ через репозиторій.
-    *   `ExerciseExplorerState`: Стани (Initial, Loading, Loaded, Error).
-*   **UI (`features/exercise_explorer/presentation/screens/`)**:
-    *   `ExerciseExplorerScreen`: Відображає список вправ. Використовує `BlocProvider` для `ExerciseExplorerCubit` та `BlocBuilder`. Може працювати в режимі вибору вправи (`isSelectionMode`).
-    *   `ExerciseListItem` (віджет): Відображає одну вправу. При `isSelectionMode = true` повертає обрану вправу через `Navigator.pop()`.
+AuthGate: Керує потоком на основі стану автентифікації та profileSetupComplete.
 
-### 5.3. Модуль "Routines" (`features/routines/`)
+ProfileSetupScreen: Екран для завершення налаштування профілю.
 
-*   **Сутності (`core/domain/entities/routine.dart`)**:
-    *   `RoutineExercise`: Модель для вправи всередині рутини (ID predefined вправи, назва-знімок, кількість підходів, нотатки). Має `fromMap()`, `toMap()`, `copyWith()`.
-    *   `UserRoutine`: Модель для користувацької рутини (id, userId, name, description, список `RoutineExercise`, дні тижня, isPublic, createdAt, updatedAt). Має `fromFirestore()`, `toMap()`, `copyWith()`.
-*   **Репозиторії**:
-    *   Абстракція: `core/domain/repositories/routine_repository.dart`.
-    *   Реалізація: `features/routines/data/repositories/routine_repository_impl.dart`. CRUD операції для `userRoutines` в Firestore. Всі операції враховують `userId` поточного користувача. `createdAt` та `updatedAt` встановлюються через `FieldValue.serverTimestamp()`.
-*   **Cubits (`features/routines/presentation/cubit/`)**:
-    *   `UserRoutinesCubit`: Завантажує список рутин поточного користувача. Має методи `routineDeleted()` та `routineAddedOrUpdated()` для локального оновлення списку.
-    *   `UserRoutinesState`: Стани (Initial, Loading, Loaded, Error).
-    *   `ManageRoutineCubit`: Управляє створенням та редагуванням однієї рутини. Зберігає внутрішній стан `_currentRoutine`. Методи для оновлення полів рутини, додавання/оновлення/видалення вправ. Метод `saveRoutine()` (викликає `createRoutine` або `updateRoutine` репозиторію) та `deleteRoutine()`.
-    *   `ManageRoutineState`: Стани (Initial, Loading, Success, Failure, ExercisesUpdated).
-*   **UI (`features/routines/presentation/screens/` та `widgets/`)**:
-    *   `UserRoutinesScreen`: Відображає список рутин користувача. Використовує `BlocProvider` для `UserRoutinesCubit` та `BlocConsumer`. Має FAB для переходу на `CreateEditRoutineScreen`.
-    *   `RoutineListItem` (віджет): Відображає одну рутину. Надає опції редагування/видалення через `PopupMenuButton`.
-    *   `CreateEditRoutineScreen`: Форма для створення/редагування рутини. Використовує `BlocProvider.value` для `ManageRoutineCubit`. Містить поля для назви, опису, вибору днів тижня. Дозволяє додавати, редагувати та видаляти вправи з рутини.
-    *   `AddExerciseToRoutineDialog` (віджет-діалог): Використовує `ExerciseExplorerScreen` в режимі `isSelectionMode` для вибору predefined вправи, потім запитує кількість підходів та нотатки.
+UserProfileCubit: Завантажує та надає дані UserProfile, слухає зміни в реальному часі.
 
-## 6. Структура Бекенду (Firebase)
+5.2. Головний Екран (HomePage та DashboardScreen)
 
-### 6.1. Firebase Authentication
-*   Управління користувачами (Email/Password, Google Sign-In).
-*   UID користувача є ключем для документів у колекції `users`.
+HomePage (home_page.dart):
 
-### 6.2. Cloud Firestore
+StatelessWidget, який надає NotificationsCubit для дочірніх віджетів (зокрема, _HomePageContent).
 
-*   **`users`**:
-    *   ID Документа: `userId` (Firebase Auth UID).
-    *   Поля: `uid`, `email`, `displayName`, `profilePictureUrl`, `username`, `xp`, `level`, `currentStreak`, `longestStreak`, `lastWorkoutTimestamp`, `scheduledWorkoutDays`, `preferredUnits`, `currentLeagueId`, `city`, `country`, `isProfilePublic`, `fcmTokens`, `appSettings`, `initialFitnessLevel`, `profileSetupComplete` (boolean), `createdAt` (Timestamp), `updatedAt` (Timestamp).
-*   **`predefinedExercises`**:
-    *   ID Документа: Автогенерований.
-    *   Поля: `name`, `normalizedName`, `primaryMuscleGroup`, `secondaryMuscleGroups`, `equipmentNeeded`, `description`, `videoDemonstrationUrl`, `difficultyLevel`, `tags`.
-*   **`userRoutines`**:
-    *   ID Документа: Автогенерований.
-    *   Поля: `userId` (String), `name` (String), `description` (String?), `exercises` (List of Maps: `predefinedExerciseId`, `exerciseNameSnapshot`, `numberOfSets`, `notes`), `scheduledDays` (List of Strings), `isPublic` (boolean), `createdAt` (Timestamp), `updatedAt` (Timestamp).
+_HomePageContent (StatefulWidget):
 
-### 6.3. Firebase Storage (Планується)
-*   `profile_pictures/{userId}/<filename>`
-*   Інші шляхи для медіа.
+Централізований AppBar (з назвою "MuscleUP"). Раніше мав іконку сповіщень, тепер лічильник інтегрований в DashboardScreen.
 
-### 6.4. Firebase Cloud Functions (Планується)
-*   Автоматичні обчислення, тригери, заплановані завдання, push-сповіщення.
+BottomNavigationBar для навігації між основними розділами.
 
-## 7. Налаштування та Запуск Проєкту
+FloatingActionButton ("START WORKOUT") відображається, коли активний дашборд.
 
-1.  **Передумови**:
-    *   Встановлений Flutter SDK (версія, сумісна з `^3.8.0` Dart SDK).
-    *   Налаштоване середовище розробки (Android Studio / VS Code).
-    *   Firebase CLI встановлено та налаштовано (`firebase login`).
-2.  **Клонування Репозиторію** (якщо проєкт у Git):
-    ```bash
-    git clone <URL_РЕПОЗИТОРІЮ>
-    cd muscle_up
-    ```
-3.  **Налаштування Firebase**:
-    *   Переконайтеся, що ви увійшли в Firebase CLI та обрали правильний проєкт.
-    *   Запустіть `flutterfire configure` для генерації `lib/firebase_options.dart` та оновлення нативних файлів конфігурації (якщо потрібно).
-    *   Для Android: файл `android/app/google-services.json` повинен існувати та бути актуальним.
-    *   Для iOS: файл `ios/Runner/GoogleService-Info.plist` (якщо вже додано) повинен бути актуальним. Додайте його до Xcode проєкту.
-4.  **Налаштування Google Sign-In**:
-    *   **Android**:
-        *   Додайте SHA-1 відбитки (debug/release) до налаштувань Android-застосунку в Firebase Console.
-        *   `google-services.json` має містити OAuth client ID типу 3.
-    *   **iOS**: (Якщо планується)
-        *   Додайте URL Scheme до `ios/Runner/Info.plist` (зазвичай `REVERSED_CLIENT_ID` з `GoogleService-Info.plist`).
-5.  **Встановлення Залежностей**:
-    ```bash
-    flutter pub get
-    ```
-6.  **Запуск Застосунку**:
-    *   Оберіть цільовий пристрій/емулятор.
-    *   Виконайте:
-        ```bash
-        flutter run
-        ```
+Керує відображенням контенту залежно від обраної вкладки (_selectedIndex = -1 для DashboardScreen).
 
-## 8. Подальший Розвиток
+DashboardScreen (features/dashboard/.../dashboard_screen.dart):
 
-*   **Логування Тренувань:** Реалізація запису виконаних сетів, повторень, ваги.
-*   **Розширений Дашборд:** Відображення статистики, прогресу, активності.
-*   **Гейміфікація:** Повноцінна система XP, рівнів, досягнень, стріків.
-*   **Соціальні Функції:** Стрічка активності, підписки, коментарі, публічні рекорди.
-*   **Цілі:** Створення та відстеження персоналізованих фітнес-цілей.
-*   **Профіль Користувача:** Завершення налаштування профілю (`profileSetupComplete`), редагування.
-*   **Firebase Storage:** Інтеграція для завантаження зображень профілю.
-*   **Cloud Functions:** Розробка функцій для фонових задач.
-*   **Тестування:** Написання unit, widget та integration тестів.
-*   **Покращення UI/UX:** Подальше вдосконалення дизайну та користувацького досвіду.
+Відображає вітальне повідомлення (використовуючи дані з UserProfileCubit).
+
+Плейсхолдери для основної статистики (вага, стрік).
+
+Інтегрована секція сповіщень:
+
+Використовує BlocBuilder<NotificationsCubit, ...> для отримання списку сповіщень та кількості непрочитаних.
+
+Відображає заголовок "NOTIFICATIONS" з лічильником непрочитаних.
+
+Якщо є непрочитані сповіщення, відображає кнопку "READ ALL" (шрифт IBM Plex Mono), яка позначає всі сповіщення як прочитані.
+
+Відображає список останніх N (наприклад, 5) сповіщень за допомогою віджета NotificationListItem.
+
+Кожне сповіщення в списку можна видалити свайпом вліво/вправо.
+
+При тапі на сповіщення воно позначається як прочитане (оновлення відбувається через NotificationsCubit).
+
+Не має власного Scaffold чи AppBar, оскільки є частиною HomePage.
+
+Містить тимчасову кнопку "Send Test Notifications" для генерації сповіщень через бекенд (Firestore) під час розробки.
+
+5.3. Модуль "Notifications" (features/notifications/) - НОВИЙ
+
+AppNotification (core/domain/entities/app_notification.dart):
+
+Сутність, що представляє сповіщення з полями: id, type (enum NotificationType), title, message, timestamp, isRead, relatedEntityId, relatedEntityType, iconName.
+
+Включає фабричний конструктор fromFirestore та метод toMap.
+
+NotificationRepository (core/domain/repositories/notification_repository.dart):
+
+Абстрактний клас, що визначає контракт для роботи зі сповіщеннями:
+
+getUserNotificationsStream(String userId): Потік списку сповіщень користувача.
+
+getUnreadNotificationsCountStream(String userId): Потік кількості непрочитаних сповіщень.
+
+markNotificationAsRead(String userId, String notificationId): Позначити сповіщення як прочитане.
+
+markAllNotificationsAsRead(String userId): Позначити всі сповіщення як прочитані.
+
+deleteNotification(String userId, String notificationId): Видалити сповіщення.
+
+NotificationRepositoryImpl (features/notifications/data/repositories/notification_repository_impl.dart):
+
+Імплементація NotificationRepository для взаємодії з Cloud Firestore.
+
+Зберігає сповіщення в підколекції users/{userId}/notifications.
+
+Включає метод createTestNotification для зручного створення сповіщень під час розробки.
+
+NotificationsCubit (features/notifications/presentation/cubit/notifications_cubit.dart):
+
+Керує станом списку сповіщень та лічильником непрочитаних.
+
+Підписується на потоки з NotificationRepository при вході користувача та оновлює стан NotificationsLoaded або NotificationsError.
+
+Надає методи для позначення сповіщень як прочитаних (markNotificationAsRead, markAllNotificationsAsRead) та видалення (deleteNotification).
+
+Використовує FirebaseAuth для отримання userId поточного користувача.
+
+NotificationListItem (features/notifications/presentation/widgets/notification_list_item.dart):
+
+Віджет для відображення одного елемента сповіщення.
+
+Обгорнутий у Dismissible для підтримки видалення свайпом.
+
+Відображає іконку типу сповіщення, заголовок, повідомлення, час та індикатор непрочитаності.
+
+При тапі позначає сповіщення як прочитане.
+
+5.4. Модуль "Exercise Explorer" (features/exercise_explorer/)
+
+(Без значних змін у цьому оновленні)
+
+5.5. Модуль "Routines" (features/routines/)
+
+(Без значних змін у цьому оновленні)
+
+6. Структура Бекенду (Firebase)
+6.1. Firebase Authentication
+
+Управління користувачами (Email/Password, Google Sign-In).
+
+6.2. Cloud Firestore
+
+users/{userId}:
+
+Поля: uid, email, displayName?, ..., profileSetupComplete, createdAt, updatedAt, та інші.
+
+Підколекція: notifications/{notificationId} (НОВА СТРУКТУРА)
+
+type: (String) наприклад, "achievementUnlocked", "workoutReminder", "systemMessage"
+
+title: (String) Заголовок сповіщення
+
+message: (String) Текст сповіщення
+
+timestamp: (Timestamp) Час створення
+
+isRead: (Boolean) false або true
+
+iconName: (String, optional) Назва іконки для відображення (наприклад, "emoji_events")
+
+relatedEntityId: (String, optional) ID пов'язаної сутності
+
+relatedEntityType: (String, optional) Тип пов'язаної сутності
+
+predefinedExercises: (Структура без змін)
+
+userRoutines: (Структура без змін)
+
+7. Налаштування та Запуск Проєкту
+
+(Без змін)
+
+8. Подальший Розвиток
+
+Повноцінна реалізація генерації сповіщень:
+
+Клієнтська генерація: при отриманні досягнень, завершенні тренувань тощо.
+
+Серверна генерація (Cloud Functions): для нагадувань про тренування, новин, оновлень.
+
+Навігація зі сповіщень: При тапі на сповіщення переходити до відповідного екрану (наприклад, екран досягнень, деталі рутини).
+
+Push-сповіщення: Інтеграція Firebase Cloud Messaging (FCM) для надсилання push-сповіщень, коли додаток не активний.
+
+Завершення екранів "Posts", "Progress", "Profile".
+
+Логування Тренувань.
+
+Розширений Дашборд з реальною статистикою.
+
+Гейміфікація (XP, рівні, стріки).
+
+Соціальні Функції.
+
+Firebase Storage для зображень.
+
+Тестування.
+
+Покращення UI/UX.

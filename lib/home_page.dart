@@ -1,8 +1,14 @@
 // lib/home_page.dart
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'dart:developer' as developer;
 
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/routines/presentation/screens/user_routines_screen.dart';
+import 'features/notifications/presentation/cubit/notifications_cubit.dart';
+// НЕ ПОТРІБЕН: import 'features/notifications/presentation/screens/notifications_screen.dart';
+import 'core/domain/repositories/notification_repository.dart';
 
 class PostsScreen extends StatelessWidget {
   const PostsScreen({super.key});
@@ -20,62 +26,80 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Profile")), body: const Center(child: Text("Profile Screen Content")));
 }
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider<NotificationsCubit>(
+      create: (cubitContext) => NotificationsCubit(
+        RepositoryProvider.of<NotificationRepository>(cubitContext),
+        fb_auth.FirebaseAuth.instance,
+      ),
+      child: const _HomePageContent(),
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = -1; 
+class _HomePageContent extends StatefulWidget {
+  const _HomePageContent();
+
+  @override
+  State<_HomePageContent> createState() => _HomePageContentState();
+}
+
+class _HomePageContentState extends State<_HomePageContent> {
+  int _selectedIndex = -1;
 
   static final List<Widget> _bottomNavScreens = <Widget>[
-    const UserRoutinesScreen(), // 0
-    const PostsScreen(),        // 1
-    const ProgressScreen(),     // 2
-    const ProfileScreen(),      // 3
+    const UserRoutinesScreen(),
+    const PostsScreen(),
+    const ProgressScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
+    developer.log("BottomNav tapped, index: $index", name: "HomePage");
     setState(() {
       _selectedIndex = index;
     });
   }
 
   void _navigateToDashboard() {
+    developer.log("Navigating to Dashboard", name: "HomePage");
     setState(() {
       _selectedIndex = -1;
     });
   }
 
-  // --- НОВІ КОЛБЕКИ ---
   void _navigateToProfile() {
+    developer.log("Navigating to Profile tab", name: "HomePage");
     setState(() {
-      _selectedIndex = 3; // Індекс вкладки "PROFILE"
+      _selectedIndex = 3;
     });
   }
 
   void _navigateToProgress() {
+    developer.log("Navigating to Progress tab", name: "HomePage");
     setState(() {
-      _selectedIndex = 2; // Індекс вкладки "PROGRESS"
+      _selectedIndex = 2;
     });
   }
-  // --- КІНЕЦЬ НОВИХ КОЛБЕКІВ ---
 
+  // ВИДАЛЕНО: void _navigateToNotifications() { ... }
 
   @override
   Widget build(BuildContext context) {
+    developer.log("HomePageContent building, _selectedIndex: $_selectedIndex", name: "HomePage");
     Widget currentBody;
     bool showFab = false;
 
     if (_selectedIndex == -1) {
-      // --- ПЕРЕДАЄМО КОЛБЕКИ В DASHBOARDSCREEN ---
       currentBody = DashboardScreen(
         onProfileTap: _navigateToProfile,
         onProgressTap: _navigateToProgress,
+        // ВИДАЛЕНО: onNotificationsTap: _navigateToNotifications,
       );
-      // --- КІНЕЦЬ ПЕРЕДАЧІ КОЛБЕКІВ ---
       showFab = true;
     } else {
       currentBody = _bottomNavScreens[_selectedIndex];
@@ -98,6 +122,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: appBarTitleWidget,
         centerTitle: true,
+        actions: const [ // Прибираємо іконку сповіщень звідси, бо лічильник тепер на дашборді
+          // Можна залишити, якщо хочете якусь іншу глобальну дію
+          // SizedBox(width: 8),
+        ],
       ),
       body: currentBody,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
