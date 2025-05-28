@@ -1,14 +1,7 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-05-29T01:13:28.329653
+Snapshot created on: 2025-05-29T01:43:25.461203
 ================================================================================
-
-=== FILE: .flutter-plugins-dependencies ===
---------------------------------------------------
-{"info":"This is a generated file; do not edit or check into version control.","plugins":{"ios":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"android":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_android","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_android-6.2.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"macos":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false},{"name":"google_sign_in_ios","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_ios-5.9.0\\\\","shared_darwin_source":true,"native_build":true,"dependencies":[],"dev_dependency":false}],"linux":[],"windows":[{"name":"cloud_firestore","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore-5.6.8\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_auth","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth-5.5.4\\\\","native_build":true,"dependencies":["firebase_core"],"dev_dependency":false},{"name":"firebase_core","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core-3.13.1\\\\","native_build":true,"dependencies":[],"dev_dependency":false}],"web":[{"name":"cloud_firestore_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\cloud_firestore_web-4.4.8\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_auth_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_auth_web-5.14.3\\\\","dependencies":["firebase_core_web"],"dev_dependency":false},{"name":"firebase_core_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\firebase_core_web-2.23.0\\\\","dependencies":[],"dev_dependency":false},{"name":"google_sign_in_web","path":"C:\\\\Users\\\\levndays\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\\\\google_sign_in_web-0.12.4+4\\\\","dependencies":[],"dev_dependency":false}]},"dependencyGraph":[{"name":"cloud_firestore","dependencies":["cloud_firestore_web","firebase_core"]},{"name":"cloud_firestore_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_auth","dependencies":["firebase_auth_web","firebase_core"]},{"name":"firebase_auth_web","dependencies":["firebase_core","firebase_core_web"]},{"name":"firebase_core","dependencies":["firebase_core_web"]},{"name":"firebase_core_web","dependencies":[]},{"name":"google_sign_in","dependencies":["google_sign_in_android","google_sign_in_ios","google_sign_in_web"]},{"name":"google_sign_in_android","dependencies":[]},{"name":"google_sign_in_ios","dependencies":[]},{"name":"google_sign_in_web","dependencies":[]}],"date_created":"2025-05-28 23:03:11.235073","version":"3.32.0","swift_package_manager_enabled":{"ios":false,"macos":false}}
---------------------------------------------------
-=== END OF FILE: .flutter-plugins-dependencies ===
-
 
 === FILE: .gitignore ===
 --------------------------------------------------
@@ -1282,104 +1275,12 @@ Runner/GeneratedPluginRegistrant.*
 === END OF FILE: ios/Flutter/Debug.xcconfig ===
 
 
-=== FILE: ios/Flutter/flutter_export_environment.sh ===
---------------------------------------------------
-#!/bin/sh
-# This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Software\flutter\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\levndays\Desktop\muscle_up"
-export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=lib\main.dart"
-export "FLUTTER_BUILD_DIR=build"
-export "FLUTTER_BUILD_NAME=0.1.0"
-export "FLUTTER_BUILD_NUMBER=0.1.0"
-export "DART_OBFUSCATION=false"
-export "TRACK_WIDGET_CREATION=true"
-export "TREE_SHAKE_ICONS=false"
-export "PACKAGE_CONFIG=.dart_tool/package_config.json"
-
---------------------------------------------------
-=== END OF FILE: ios/Flutter/flutter_export_environment.sh ===
-
-
-=== FILE: ios/Flutter/Generated.xcconfig ===
---------------------------------------------------
-// This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\Software\flutter\flutter
-FLUTTER_APPLICATION_PATH=C:\Users\levndays\Desktop\muscle_up
-COCOAPODS_PARALLEL_CODE_SIGN=true
-FLUTTER_TARGET=lib\main.dart
-FLUTTER_BUILD_DIR=build
-FLUTTER_BUILD_NAME=0.1.0
-FLUTTER_BUILD_NUMBER=0.1.0
-EXCLUDED_ARCHS[sdk=iphonesimulator*]=i386
-EXCLUDED_ARCHS[sdk=iphoneos*]=armv7
-DART_OBFUSCATION=false
-TRACK_WIDGET_CREATION=true
-TREE_SHAKE_ICONS=false
-PACKAGE_CONFIG=.dart_tool/package_config.json
-
---------------------------------------------------
-=== END OF FILE: ios/Flutter/Generated.xcconfig ===
-
-
 === FILE: ios/Flutter/Release.xcconfig ===
 --------------------------------------------------
 #include "Generated.xcconfig"
 
 --------------------------------------------------
 === END OF FILE: ios/Flutter/Release.xcconfig ===
-
-
-=== FILE: ios/Flutter/ephemeral/flutter_lldbinit ===
---------------------------------------------------
-#
-# Generated file, do not edit.
-#
-
-command script import --relative-to-command-file flutter_lldb_helper.py
-
---------------------------------------------------
-=== END OF FILE: ios/Flutter/ephemeral/flutter_lldbinit ===
-
-
-=== FILE: ios/Flutter/ephemeral/flutter_lldb_helper.py ===
---------------------------------------------------
-#
-# Generated file, do not edit.
-#
-
-import lldb
-
-def handle_new_rx_page(frame: lldb.SBFrame, bp_loc, extra_args, intern_dict):
-    """Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and touch the pages."""
-    base = frame.register["x0"].GetValueAsAddress()
-    page_len = frame.register["x1"].GetValueAsUnsigned()
-
-    # Note: NOTIFY_DEBUGGER_ABOUT_RX_PAGES will check contents of the
-    # first page to see if handled it correctly. This makes diagnosing
-    # misconfiguration (e.g. missing breakpoint) easier.
-    data = bytearray(page_len)
-    data[0:8] = b'IHELPED!'
-
-    error = lldb.SBError()
-    frame.GetThread().GetProcess().WriteMemory(base, data, error)
-    if not error.Success():
-        print(f'Failed to write into {base}[+{page_len}]', error)
-        return
-
-def __lldb_init_module(debugger: lldb.SBDebugger, _):
-    target = debugger.GetDummyTarget()
-    # Caveat: must use BreakpointCreateByRegEx here and not
-    # BreakpointCreateByName. For some reasons callback function does not
-    # get carried over from dummy target for the later.
-    bp = target.BreakpointCreateByRegex("^NOTIFY_DEBUGGER_ABOUT_RX_PAGES$")
-    bp.SetScriptCallbackFunction('{}.handle_new_rx_page'.format(__name__))
-    bp.SetAutoContinue(True)
-    print("-- LLDB integration loaded --")
-
---------------------------------------------------
-=== END OF FILE: ios/Flutter/ephemeral/flutter_lldb_helper.py ===
 
 
 === FILE: ios/Runner/AppDelegate.swift ===
@@ -2861,18 +2762,20 @@ class _HomePageContentState extends State<_HomePageContent> {
 
 === FILE: lib/login_page.dart ===
 --------------------------------------------------
-// lib/login_page.dart
+// FILE: lib/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer' as developer;
 
+// Припускаємо, що lava_lamp_background.dart знаходиться в lib/widgets/
+// Якщо ні, змініть шлях.
+import '../widgets/lava_lamp_background.dart';
+
 const Color primaryOrange = Color(0xFFED5D1A);
-const Color textBlack = Colors.black87;
-const Color textGrey = Color(0xFF757575);
-const Color subtleOrangeBase = Color(0xFFFFF0E5);
-const Color whiteWithOpacity = Colors.white70;
+const Color textBlackColor = Colors.black87; // Використовуємо більш узгоджену назву
+const Color textGreyColor = Color(0xFF757575); // Використовуємо більш узгоджену назву
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -2881,7 +2784,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -2890,48 +2793,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _isLogin = true;
   String? _errorMessage;
 
-  late AnimationController _gradientController1;
-  late AnimationController _gradientController2;
-  late Animation<Alignment> _alignmentAnimation1;
-  late Animation<Alignment> _alignmentAnimation2;
-
-  final List<Color> _gradientColors1 = [
-    primaryOrange.withOpacity(0.25),
-    subtleOrangeBase.withOpacity(0.4),
-    whiteWithOpacity.withOpacity(0.3),
-  ];
-  final List<Color> _gradientColors2 = [
-    subtleOrangeBase.withOpacity(0.5),
-    primaryOrange.withOpacity(0.15),
-    Colors.white.withOpacity(0.35),
-  ];
-
   @override
   void initState() {
     super.initState();
     developer.log("LoginPage initState", name: "LoginPage");
-    _gradientController1 = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 10),
-    )..repeat(reverse: true);
-
-    _gradientController2 = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 13),
-    )..repeat(reverse: true);
-
-    _alignmentAnimation1 = TweenSequence<Alignment>([
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.topLeft, end: Alignment.bottomRight), weight: 1),
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.bottomRight, end: Alignment.centerLeft), weight: 1),
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.centerLeft, end: Alignment.topRight), weight: 1),
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.topRight, end: Alignment.topLeft), weight: 1),
-    ]).animate(CurvedAnimation(parent: _gradientController1, curve: Curves.easeInOut));
-
-    _alignmentAnimation2 = TweenSequence<Alignment>([
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.bottomLeft, end: Alignment.topRight), weight: 1),
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.topRight, end: Alignment.centerRight), weight: 1),
-      TweenSequenceItem(tween: AlignmentTween(begin: Alignment.centerRight, end: Alignment.bottomLeft), weight: 1),
-    ]).animate(CurvedAnimation(parent: _gradientController2, curve: Curves.easeInOut));
   }
 
   Future<void> _createInitialUserProfile(User user) async {
@@ -2995,7 +2860,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
 
     final isValid = _formKey.currentState!.validate();
-    
+
     if (!isValid) {
       developer.log("Form is NOT valid. Validation errors should be visible.", name: "LoginPage._submitForm");
       return;
@@ -3029,7 +2894,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     } on FirebaseAuthException catch (e) {
       developer.log("FirebaseAuthException: ${e.code} - ${e.message}", name: "LoginPage._submitForm");
       if(mounted) setState(() => _errorMessage = e.message ?? 'Сталася помилка автентифікації.');
-    } catch (e, s) { // Додано stackTrace
+    } catch (e, s) {
       developer.log("Generic Exception in _submitForm: $e", name: "LoginPage._submitForm", error: e, stackTrace: s);
       if(mounted) setState(() => _errorMessage = 'Сталася невідома помилка: ${e.toString()}');
     } finally {
@@ -3057,7 +2922,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       );
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       developer.log("Firebase Sign-In with Google successful: ${userCredential.user?.uid}", name: "LoginPage._signInWithGoogle");
-      
+
       if (userCredential.additionalUserInfo?.isNewUser == true && userCredential.user != null) {
         developer.log("New user detected via Google Sign-In. Creating profile...", name: "LoginPage._signInWithGoogle");
         await _createInitialUserProfile(userCredential.user!);
@@ -3069,7 +2934,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     } on FirebaseAuthException catch (e) {
       developer.log("FirebaseAuthException during Google Sign-In: ${e.code} - ${e.message}", name: "LoginPage._signInWithGoogle");
        if(mounted) setState(() => _errorMessage = e.message ?? 'Помилка входу через Google.');
-    } catch (e, s) { // Додано stackTrace
+    } catch (e, s) {
       developer.log("Generic Exception during Google Sign-In: $e", name: "LoginPage._signInWithGoogle", error: e, stackTrace: s);
       if(mounted) setState(() => _errorMessage = 'Невідома помилка під час входу через Google: ${e.toString()}');
     } finally {
@@ -3085,8 +2950,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     developer.log("LoginPage dispose", name: "LoginPage");
     _emailController.dispose();
     _passwordController.dispose();
-    _gradientController1.dispose();
-    _gradientController2.dispose();
     super.dispose();
   }
 
@@ -3096,68 +2959,47 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     return Scaffold(
       body: Stack(
         children: [
-          AnimatedBuilder(
-            animation: _gradientController1,
-            builder: (context, child) {
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _gradientColors1,
-                    begin: _alignmentAnimation1.value,
-                    end: -_alignmentAnimation1.value,
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                ),
-              );
-            },
-          ),
-          AnimatedBuilder(
-            animation: _gradientController2,
-            builder: (context, child) {
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _gradientColors2,
-                    begin: _alignmentAnimation2.value,
-                    end: -_alignmentAnimation2.value,
-                    stops: const [0.0, 0.4, 1.0],
-                  ),
-                ),
-              );
-            },
-          ),
+          const Positioned.fill(child: LavaLampBackground()),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 15.0),
-                child: Form( // Дуже важливо: Form обгортає поля та має ключ
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0), // Збільшено вертикальний padding
+                child: Form(
                   key: _formKey,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center, // Центрування контенту
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Padding(
-                        padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
-                        child: RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            style: DefaultTextStyle.of(context).style.copyWith(fontFamily: 'Inter'),
-                            children: const <TextSpan>[
-                              TextSpan(
+                        padding: const EdgeInsets.only(bottom: 50.0), // Збільшено відступ знизу
+                        child: DefaultTextStyle(
+                          style: const TextStyle(decoration: TextDecoration.none),
+                          child: RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 36, // Збільшено розмір шрифту логотипа
+                                fontWeight: FontWeight.w900, // <--- ЗМІНЕНО НА Black
+                                decoration: TextDecoration.none,
+                              ),
+                              children: <TextSpan>[
+                                TextSpan(
                                   text: 'Muscle',
                                   style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
                                     color: primaryOrange,
-                                  )),
-                              TextSpan(
+                                    fontWeight: FontWeight.w900, // <--- ЗМІНЕНО НА Black
+                                  ),
+                                ),
+                                TextSpan(
                                   text: 'UP',
                                   style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                    color: textBlack,
-                                  )),
-                            ],
+                                    color: textBlackColor,
+                                    fontWeight: FontWeight.w900, // <--- ЗМІНЕНО НА Black
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -3166,17 +3008,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: textBlack,
+                          fontWeight: FontWeight.bold, // Залишаємо Bold, щоб відрізнялося від лого
+                          color: textBlackColor,
+                          decoration: TextDecoration.none,
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 25),
                       if (_errorMessage != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 15.0),
                           child: Text(
                             _errorMessage!,
-                            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 14),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 14,
+                              decoration: TextDecoration.none,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -3184,9 +3031,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         controller: _emailController,
                         decoration: InputDecoration(
                           hintText: 'Email',
-                          prefixIcon: const Icon(Icons.email_outlined, color: textGrey),
+                          prefixIcon: const Icon(Icons.email_outlined, color: textGreyColor),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.9),
+                          fillColor: Colors.white.withOpacity(0.85),
                            border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide.none,
@@ -3198,7 +3045,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: textBlack),
+                        style: const TextStyle(color: textBlackColor, decoration: TextDecoration.none),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) return 'Please enter your email';
                           if (!value.contains('@') || !value.contains('.')) return 'Please enter a valid email';
@@ -3210,9 +3057,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         controller: _passwordController,
                         decoration: InputDecoration(
                           hintText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outline, color: textGrey),
+                          prefixIcon: const Icon(Icons.lock_outline, color: textGreyColor),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.9),
+                          fillColor: Colors.white.withOpacity(0.85),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide.none,
@@ -3224,7 +3071,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                            contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
                         ),
                         obscureText: true,
-                        style: const TextStyle(color: textBlack),
+                        style: const TextStyle(color: textBlackColor, decoration: TextDecoration.none),
                         validator: (value) {
                           if (value == null || value.isEmpty) return 'Please enter your password';
                           if (!_isLogin && value.length < 6) return 'Password must be at least 6 characters';
@@ -3244,7 +3091,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             ),
                             elevation: 3,
                           ),
-                          onPressed: _submitForm, // Виклик _submitForm
+                          onPressed: _submitForm,
                           child: Text(
                             _isLogin ? 'Sign In' : 'Create Account',
                             style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
@@ -3255,11 +3102,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         icon: Image.asset('assets/images/google_logo.png', height: 22.0),
                         label: const Text(
                           'Sign in with Google',
-                          style: TextStyle(color: textBlack, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: textBlackColor, fontWeight: FontWeight.w500),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: textBlack,
+                          backgroundColor: Colors.white.withOpacity(0.9),
+                          foregroundColor: textBlackColor,
                           padding: const EdgeInsets.symmetric(vertical: 14.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.0),
@@ -3267,7 +3114,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           ),
                           elevation: 1,
                         ),
-                        onPressed: _signInWithGoogle, // Виклик _signInWithGoogle
+                        onPressed: _signInWithGoogle,
                       ),
                       const SizedBox(height: 24),
                       TextButton(
@@ -3291,6 +3138,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           style: const TextStyle(
                             color: primaryOrange,
                             fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ),
@@ -7109,6 +6957,203 @@ class RoutineListItem extends StatelessWidget {
 }
 --------------------------------------------------
 === END OF FILE: lib/features/routines/presentation/widgets/routine_list_item.dart ===
+
+
+=== FILE: lib/widgets/lava_lamp_background.dart ===
+--------------------------------------------------
+// FILE: lib/widgets/lava_lamp_background.dart
+import 'dart:math';
+import 'dart:ui'; // Для ImageFilter
+import 'package:flutter/material.dart';
+
+// Винесемо кольори, щоб легко їх змінювати або імпортувати з теми
+// Ці кольори можна взяти з вашої теми або визначити тут
+const Color lavaPrimaryColor = Color(0xFFED5D1A); // Основний помаранчевий
+const Color lavaSecondaryColor = Color(0xFFFF8A65); // Світліший помаранчевий
+const Color lavaAccentColor1 = Color(0xFFFFE0B2); // Дуже світлий, майже жовтий
+const Color lavaAccentColor2 = Color(0xFFFFCC80); // Теплий жовто-помаранчевий
+
+class LavaLampBackground extends StatefulWidget {
+  const LavaLampBackground({super.key});
+
+  @override
+  State<LavaLampBackground> createState() => _LavaLampBackgroundState();
+}
+
+class _LavaLampBackgroundState extends State<LavaLampBackground>
+    with TickerProviderStateMixin {
+  late List<_Blob> _blobs;
+  final int _blobCount = 4; // Кількість "крапель", 3-5 зазвичай добре виглядає
+  final Random _random = Random();
+
+  // Набір кольорів для блобів
+  final List<List<Color>> _blobColorsSets = [
+    [lavaPrimaryColor.withOpacity(0.7), lavaSecondaryColor.withOpacity(0.5)],
+    [lavaSecondaryColor.withOpacity(0.6), lavaAccentColor1.withOpacity(0.4)],
+    [lavaPrimaryColor.withOpacity(0.5), lavaAccentColor2.withOpacity(0.6)],
+    [lavaAccentColor2.withOpacity(0.7), lavaAccentColor1.withOpacity(0.3)],
+    [lavaSecondaryColor.withOpacity(0.8), lavaPrimaryColor.withOpacity(0.4)],
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _blobs = List.generate(_blobCount, (index) {
+      final size = _random.nextDouble() * 180 + 120; // Розмір від 120 до 300
+      final controller = AnimationController(
+        // Тривалість анімації однієї "пульсації" або циклу руху
+        duration: Duration(seconds: _random.nextInt(8) + 12), // 12-20 секунд
+        vsync: this,
+      )..repeat(reverse: true);
+
+      final colors = _blobColorsSets[index % _blobColorsSets.length];
+
+      return _Blob(
+        controller: controller,
+        initialSize: size,
+        colors: colors,
+        random: _random,
+        screenSizeProvider: () => MediaQuery.of(context).size, // Передаємо context безпечно
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    for (var blob in _blobs) {
+      blob.controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Якщо _blobs ще не ініціалізовані з screenSize (наприклад, якщо context не був доступний в initState)
+    // Це потрібно, якщо screenSize використовується для визначення початкових позицій в _Blob
+    if (_blobs.any((b) => !b.isInitialized)) {
+       final screenSize = MediaQuery.of(context).size;
+      for (var blob in _blobs) {
+        blob.initializePositions(screenSize);
+      }
+    }
+
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Базовий фоновий градієнт (може бути ледь помітним)
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                lavaAccentColor1.withOpacity(0.1),
+                lavaPrimaryColor.withOpacity(0.05),
+                Colors.white.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        // Контейнер для блобів
+        Stack(
+          children: _blobs.map((blob) {
+            return AnimatedBuilder(
+              animation: blob.controller,
+              builder: (context, child) {
+                final screenSize = MediaQuery.of(context).size; // Отримуємо актуальний розмір
+                if (!blob.isInitialized) blob.initializePositions(screenSize);
+
+                // Плавна зміна позиції за допомогою Tween
+                final AlignmentGeometry currentAlignment = blob.alignmentTween.evaluate(blob.controller);
+                
+                // Плавна зміна розміру
+                final double sizeMultiplier = 0.8 + 0.4 * sin(blob.controller.value * 2 * pi * blob.sizeChangeFrequency);
+                final double currentSize = blob.initialSize * sizeMultiplier;
+
+                return Align(
+                  alignment: currentAlignment,
+                  child: Container(
+                    width: currentSize,
+                    height: currentSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: blob.colors,
+                        center: Alignment.center,
+                        radius: 0.75, // Робить градієнт більш концентрованим до центру
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }).toList(),
+        ),
+        // BackdropFilter для ефекту "злиття"
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0), // Експериментуйте з значеннями
+            child: Container(
+              // Дуже важливо! Фільтр має накладатися на щось.
+              // Прозорий контейнер дозволяє фільтру обробляти те, що під ним.
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Blob {
+  final AnimationController controller;
+  final double initialSize;
+  final List<Color> colors;
+  final Random random;
+  final Size Function() screenSizeProvider; // Функція для отримання screenSize
+
+  late AlignmentTween alignmentTween;
+  late double sizeChangeFrequency;
+  bool isInitialized = false;
+
+  _Blob({
+    required this.controller,
+    required this.initialSize,
+    required this.colors,
+    required this.random,
+    required this.screenSizeProvider,
+  }) {
+    sizeChangeFrequency = random.nextDouble() * 1.5 + 0.5; // Частота зміни розміру (0.5-2.0)
+    // Початкова ініціалізація позицій буде в initializePositions
+  }
+
+  void initializePositions(Size screenSize) {
+    if (isInitialized) return;
+
+    // Генеруємо випадкові початкову та кінцеву точки для руху блоба
+    // в межах екрану. Ми використовуємо Alignment, де (-1, -1) - верхній лівий кут, (1, 1) - нижній правий.
+    Alignment begin = _getRandomAlignment();
+    Alignment end = _getRandomAlignment();
+    
+    // Щоб уникнути занадто коротких рухів, можна перевірити відстань або просто генерувати нову кінцеву точку,
+    // якщо вона занадто близька до початкової. Для простоти, поки що залишимо так.
+
+    alignmentTween = AlignmentTween(begin: begin, end: end);
+    isInitialized = true;
+  }
+
+  Alignment _getRandomAlignment() {
+    // Генерує Alignment трохи за межами видимого екрану, щоб блоби "впливали" і "випливали"
+    // наприклад, від -1.5 до 1.5 по кожній осі
+    return Alignment(
+      random.nextDouble() * 3.0 - 1.5, // X: від -1.5 до 1.5
+      random.nextDouble() * 3.0 - 1.5, // Y: від -1.5 до 1.5
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/widgets/lava_lamp_background.dart ===
 
 
 === FILE: web/index.html ===
