@@ -7,7 +7,7 @@ import 'auth_gate.dart';
 import 'core/domain/repositories/predefined_exercise_repository.dart';
 import 'features/exercise_explorer/data/repositories/predefined_exercise_repository_impl.dart';
 import 'core/domain/repositories/routine_repository.dart';
-import 'features/routines/data/repositories/routine_repository_impl.dart'; // Переконайтесь, що це правильний шлях
+import 'features/routines/data/repositories/routine_repository_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,13 +22,15 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryOrange = Color(0xFFED5D1A);
+    const Color textBlackColor = Colors.black87;
+
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<PredefinedExerciseRepository>(
           create: (context) => PredefinedExerciseRepositoryImpl(),
         ),
         RepositoryProvider<RoutineRepository>(
-          // FirebaseAuth.instance буде використано всередині RoutineRepositoryImpl
           create: (context) => RoutineRepositoryImpl(),
         ),
       ],
@@ -39,32 +41,33 @@ class MainApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amber, // Для зворотної сумісності, якщо десь використовується
+            accentColor: Colors.amber,
           ).copyWith(
-            secondary: Colors.amber, // Основний акцентний колір
-            primary: const Color(0xFFED5D1A), // Основний колір бренду
-            onPrimary: Colors.white, // Колір тексту/іконок на primary
-            surface: Colors.white, // Колір фону карток, діалогів
-            onSurface: Colors.black87, // Колір тексту на surface
+            primary: primaryOrange,
+            onPrimary: Colors.white,
+            secondary: Colors.amber,
+            surface: Colors.white,
+            onSurface: textBlackColor,
             error: Colors.redAccent,
           ),
           useMaterial3: true,
           fontFamily: 'Inter',
+          iconTheme: const IconThemeData(color: primaryOrange),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
-            fillColor: const Color(0xF2FFFFFF), 
+            fillColor: const Color(0xF2FFFFFF),
             hintStyle: TextStyle(color: Colors.grey[600]),
             border: OutlineInputBorder(
               borderRadius: const BorderRadius.all(Radius.circular(12.0)),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
-            enabledBorder: OutlineInputBorder( 
+            enabledBorder: OutlineInputBorder(
               borderRadius: const BorderRadius.all(Radius.circular(12.0)),
               borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0),
             ),
             focusedBorder: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12.0)),
-              borderSide: BorderSide(color: Color(0xFFED5D1A), width: 2.0),
+              borderSide: BorderSide(color: primaryOrange, width: 2.0),
             ),
             contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
           ),
@@ -73,7 +76,7 @@ class MainApp extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.0),
               ),
-              backgroundColor: const Color(0xFFED5D1A),
+              backgroundColor: primaryOrange,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               textStyle: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w600),
@@ -81,33 +84,44 @@ class MainApp extends StatelessWidget {
           ),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFED5D1A),
-               textStyle: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+              foregroundColor: primaryOrange,
+              textStyle: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
             )
           ),
-          appBarTheme: AppBarTheme(
+          appBarTheme: const AppBarTheme(
             centerTitle: true,
             elevation: 0.5,
-            backgroundColor: Colors.grey[50], 
-            titleTextStyle: const TextStyle(fontFamily: 'Inter', fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
-            iconTheme: const IconThemeData(color: Color(0xFFED5D1A)), 
+            backgroundColor: Colors.white,
+            // Загальний стиль для тексту AppBar. Якщо потрібна інша жирність для "MuscleUP",
+            // це краще встановити безпосередньо в RichText.
+            titleTextStyle: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 22, // Збільшено для назви додатку
+              fontWeight: FontWeight.w900, // BLACK жирність для "MuscleUP"
+              color: textBlackColor
+            ),
+            iconTheme: IconThemeData(color: primaryOrange), // Для іконок в AppBar, якщо вони будуть
           ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-            selectedItemColor: Color(0xFFED5D1A),
-            unselectedItemColor: Colors.grey,
             backgroundColor: Colors.white,
-            selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
+            selectedItemColor: textBlackColor,
+            unselectedItemColor: primaryOrange,
+            selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+            type: BottomNavigationBarType.fixed,
+            showUnselectedLabels: true,
+            elevation: 8.0,
           ),
-          // Виправлення тут:
-          cardTheme: CardThemeData( 
+          cardTheme: CardThemeData(
             elevation: 2,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
           ),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: Color(0xFFED5D1A),
+            backgroundColor: primaryOrange,
             foregroundColor: Colors.white,
+            elevation: 6.0, // Збільшена тінь для FAB
+            // shape: StadiumBorder(), // Можна глобально, якщо всі FAB будуть такими
           ),
         ),
         home: const AuthGate(),
