@@ -8,7 +8,15 @@ abstract class ActiveWorkoutState extends Equatable {
   List<Object?> get props => [];
 }
 
-class ActiveWorkoutInitial extends ActiveWorkoutState {}
+class ActiveWorkoutInitial extends ActiveWorkoutState {
+  // Можна додати конструктор, якщо потрібно, хоча для Initial він часто не потрібен
+  const ActiveWorkoutInitial();
+}
+
+// Клас для стану, коли активного тренування немає
+class ActiveWorkoutNone extends ActiveWorkoutState {
+  const ActiveWorkoutNone(); // Конструктор
+}
 
 class ActiveWorkoutLoading extends ActiveWorkoutState {
   final String? message;
@@ -37,21 +45,19 @@ class ActiveWorkoutInProgress extends ActiveWorkoutState {
   }
 }
 
-class ActiveWorkoutNone extends ActiveWorkoutState {}
-
-// Новий стан для успішного завершення з XP
 class ActiveWorkoutSuccessfullyCompleted extends ActiveWorkoutState {
   final WorkoutSession completedSession;
   final int xpGained;
-  // Можна додати інші дані, наприклад, чи був новий рівень
+  final UserProfile updatedUserProfile;
 
   const ActiveWorkoutSuccessfullyCompleted({
     required this.completedSession,
     required this.xpGained,
+    required this.updatedUserProfile,
   });
 
   @override
-  List<Object?> get props => [completedSession, xpGained];
+  List<Object?> get props => [completedSession, xpGained, updatedUserProfile];
 }
 
 // Стан для скасованого тренування
@@ -61,7 +67,6 @@ class ActiveWorkoutCancelled extends ActiveWorkoutState {
    @override
   List<Object?> get props => [message];
 }
-
 
 class ActiveWorkoutError extends ActiveWorkoutState {
   final String message;

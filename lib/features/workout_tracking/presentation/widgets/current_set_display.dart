@@ -113,7 +113,7 @@ class CurrentSetDisplay extends StatefulWidget {
   final int setIndex;
   final int totalSetsInExercise;
   final void Function({required bool next}) onRequestSetNavigation;
-  final VoidCallback onCompleteWorkoutRequested; // Колбек для запиту завершення тренування
+  final VoidCallback onCompleteWorkoutRequested;
 
   const CurrentSetDisplay({
     super.key,
@@ -123,7 +123,7 @@ class CurrentSetDisplay extends StatefulWidget {
     required this.setIndex,
     required this.totalSetsInExercise,
     required this.onRequestSetNavigation,
-    required this.onCompleteWorkoutRequested, // Додано
+    required this.onCompleteWorkoutRequested,
   });
   @override
   State<CurrentSetDisplay> createState() => _CurrentSetDisplayState();
@@ -155,7 +155,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   void _initializeSetData(LoggedSet set) {
     _weightController = TextEditingController(text: set.weightKg?.toStringAsFixed(0) ?? '0');
     _repsCount = set.reps ?? 8;
-    _rpePerRep = List.filled(20, 0); 
+    _rpePerRep = List.filled(20, 0);
     final rpeData = _parseRpeNotes(set.notes);
     if (rpeData != null) {
       for (int i = 0; i < rpeData.length; i++) {
@@ -167,10 +167,10 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
       }
     }
   }
-  
+
   List<int>? _parseRpeNotes(String? notes) { if (notes == null || !notes.startsWith("RPE_DATA:")) return null; try { final dataString = notes.substring("RPE_DATA:".length); if (dataString.isEmpty) return []; return dataString.split(',').map(int.parse).toList(); } catch (e) { return null; } }
   String _rpeToStringNotes(List<int> rpeValues, int activeReps) { if (activeReps <= 0 || rpeValues.isEmpty) return "RPE_DATA:"; final safeActiveReps = math.min(activeReps, rpeValues.length); if (safeActiveReps <= 0) return "RPE_DATA:"; return "RPE_DATA:${rpeValues.sublist(0, safeActiveReps).join(',')}"; }
-  
+
   void _saveSetDataToCubit() {
     final cubit = context.read<ActiveWorkoutCubit>();
     final weightText = _weightController.text.replaceAll(',', '.');
@@ -191,7 +191,28 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
 
   Future<void> _showEditWeightDialog() async {
     final tempWeightController = TextEditingController(text: _weightController.text);
-    final newWeight = await showDialog<String>(context: context, builder: (dialogCtx) { return AlertDialog(title: const Text("Set Weight (KG)", style: TextStyle(fontFamily: ibmPlexMonoFont)), content: TextField(controller: tempWeightController, autofocus: true, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false), decoration: const InputDecoration(hintText: "Enter weight"), style: const TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 18)), actions: [ TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text("Cancel")), ElevatedButton(onPressed: () => Navigator.pop(dialogCtx, tempWeightController.text), child: const Text("Set"))]); });
+    final newWeight = await showDialog<String>(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          title: const Text("Set Weight (KG)", style: TextStyle(fontFamily: ibmPlexMonoFont)),
+          // Обгортаємо контент діалогу, якщо він може переповнюватися
+          content: SingleChildScrollView(
+            child: TextField(
+              controller: tempWeightController,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+              decoration: const InputDecoration(hintText: "Enter weight"),
+              style: const TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 18)
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text("Cancel")),
+            ElevatedButton(onPressed: () => Navigator.pop(dialogCtx, tempWeightController.text), child: const Text("Set"))
+          ]
+        );
+      }
+    );
     if (newWeight != null && newWeight.isNotEmpty) {
       setState(() { _weightController.text = newWeight.replaceAll(',', '.'); });
     }
@@ -205,23 +226,42 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
     if (workoutState is ActiveWorkoutInProgress) {
       totalExercises = workoutState.session.completedExercises.length;
     }
-    
+
     bool isFirstSetOverall = widget.exerciseIndex == 0 && widget.setIndex == 0;
     bool isLastSetOfCurrentExercise = widget.setIndex == widget.totalSetsInExercise - 1;
     bool isLastExercise = totalExercises > 0 && widget.exerciseIndex == totalExercises - 1;
     bool isLastSetOverall = isLastExercise && isLastSetOfCurrentExercise;
 
-    return Expanded(
+    // Важливо! `Expanded` має бути прямим нащадком Flex-віджета (Column, Row, Flex).
+    // Тому ми повертаємо `SingleChildScrollView` напряму, а `Expanded` прибираємо.
+    // `CurrentSetDisplay` тепер сам по собі буде скролитися, якщо його вміст більший.
+    return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        // Використовуємо ConstrainedBox, щоб Column мав мінімальну висоту
+        // і розтягувався, якщо вміст менший, але дозволяв скрол, якщо більший.
+        // Це більш актуально, якщо `CurrentSetDisplay` єдиний елемент в `Expanded`
+        // В даному випадку `CurrentSetDisplay` вже є частиною `Column` в `_ActiveWorkoutViewState`,
+        // тому `ConstrainedBox` тут може бути зайвим або потребуватиме адаптації.
+        // Якщо `CurrentSetDisplay` сам є `Expanded` в батьківському віджеті,
+        // тоді логіка з `SingleChildScrollView` тут є коректною.
+
+        // Спрощений варіант: просто Column, Flutter подбає про overflow якщо батько скролиться.
+        // Якщо `CurrentSetDisplay` сам по собі єдиний елемент в `Expanded`,
+        // тоді `SingleChildScrollView` обгортає `Column` всередині.
+        // Оскільки `CurrentSetDisplay` є `Expanded` в `_ActiveWorkoutViewState`,
+        // то `SingleChildScrollView` тут є правильним рішенням.
+
         child: Column(
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween, // Якщо хочемо притиснути кнопки донизу
           children: [
+            // --- Верхня частина з назвою вправи та інформацією про сет/вагу ---
             const SizedBox(height: 15),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [ 
+              children: [
                 Text(widget.currentExercise.exerciseNameSnapshot.toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, fontSize: 24, color: textBlackColor)),
-                Text("CHEST, FRONT DELTOIDS", style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w600)), // TODO: Get from PredefinedExercise
+                Text("CHEST, FRONT DELTOIDS", style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 15),
                 Row(
                   children: [
@@ -233,18 +273,32 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
               ],
             ),
             const SizedBox(height: 25),
+
+            // --- Середня частина з кількістю повторень та RPE слайдерами ---
             Column(
               children: [
                 RichText(text: TextSpan(style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, fontSize: 26), children: [TextSpan(text: '$_repsCount ', style: const TextStyle(color: primaryOrange)), const TextSpan(text: 'REPETITIONS', style: TextStyle(color: textBlackColor))])),
                 const SizedBox(height: 6),
                 Text('Describe how hard it was to make a repetition\non a 0-10 scale.', textAlign: TextAlign.center, style: theme.textTheme.bodySmall?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 12, color: textBlackColor, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 15),
-                Container(height: 220, padding: const EdgeInsets.symmetric(vertical: 5), child: Row(children: [ _buildRepControlButton(Icons.remove, () { if (_repsCount > 0) { setState(() { _repsCount--; if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 0; }); } }), const SizedBox(width: 5), Expanded(child: _repsCount > 0 ? SingleChildScrollView(scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(), child: Row(children: List.generate(_repsCount, (index) { return Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0), child: SizedBox(height: double.infinity, child: RpeSlider(initialValue: _rpePerRep[index], onChanged: (val) { setState(() { _rpePerRep[index] = val; }); }))); }))) : Center(child: Text("Add reps", style: TextStyle(fontFamily: ibmPlexMonoFont, color: Colors.grey.shade600)))), const SizedBox(width: 5), _buildRepControlButton(Icons.add, () { if (_repsCount < _rpePerRep.length) { setState(() { if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 5; _repsCount++; }); } })])),
+                Container(
+                    height: 220, // Залишаємо фіксовану висоту для цього блоку
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Row(children: [
+                      _buildRepControlButton(Icons.remove, () { if (_repsCount > 0) { setState(() { _repsCount--; if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 0; }); } }),
+                      const SizedBox(width: 5),
+                      Expanded(child: _repsCount > 0 ? SingleChildScrollView(scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(), child: Row(children: List.generate(_repsCount, (index) { return Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0), child: SizedBox(height: double.infinity, child: RpeSlider(initialValue: _rpePerRep[index], onChanged: (val) { setState(() { _rpePerRep[index] = val; }); }))); }))) : Center(child: Text("Add reps", style: TextStyle(fontFamily: ibmPlexMonoFont, color: Colors.grey.shade600)))),
+                      const SizedBox(width: 5),
+                      _buildRepControlButton(Icons.add, () { if (_repsCount < _rpePerRep.length) { setState(() { if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 5; _repsCount++; }); } })
+                    ])
+                ),
               ],
             ),
-            const Spacer(), 
+            // const Spacer(), // Spacer тут може не знадобитися, якщо Column не в Expanded
+
+            // --- Нижня частина з кнопками навігації ---
             Padding(
-              padding: const EdgeInsets.only(bottom: 15.0),
+              padding: const EdgeInsets.only(bottom: 15.0, top: 25.0), // Додаємо top padding
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -254,15 +308,15 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                   ),
                   isLastSetOverall
                   ? ElevatedButton.icon(
-                      icon: const Icon(Icons.check_circle_outline, color: Colors.white, size: 18), // Трохи менша іконка
+                      icon: const Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
                       label: const Text('FINISH WORKOUT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                       onPressed: () {
                         _saveSetDataToCubit();
-                        widget.onCompleteWorkoutRequested(); // <--- ВИКЛИКАЄМО КОЛБЕК
+                        widget.onCompleteWorkoutRequested();
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).colorScheme.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Менші падінги
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       ),
                     )
                   : TextButton(

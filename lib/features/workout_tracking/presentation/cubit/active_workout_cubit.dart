@@ -1,6 +1,6 @@
 // lib/features/workout_tracking/presentation/cubit/active_workout_cubit.dart
 import 'dart:async';
-import 'package:bloc/bloc.dart';
+import 'package:bloc/bloc.dart'; // Імпорт пакету bloc
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
@@ -27,7 +27,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._workoutLogRepository,
     this._userProfileRepository,
     this._firebaseAuth,
-  ) : super(ActiveWorkoutInitial()) {
+  ) : super(ActiveWorkoutInitial()) { // Створюємо екземпляр стану
     _subscribeToActiveSession();
   }
 
@@ -37,12 +37,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final userId = _currentUserId;
     if (userId == null) {
       developer.log('ActiveWorkoutCubit: No user logged in, cannot subscribe.', name: 'ActiveWorkoutCubit');
-      emit(ActiveWorkoutNone());
+      emit(ActiveWorkoutNone()); // Створюємо екземпляр стану
       return;
     }
 
     emit(const ActiveWorkoutLoading(message: 'Checking for active workout...'));
-    _activeSessionSubscription?.cancel(); // Скасувати попередню підписку
+    _activeSessionSubscription?.cancel();
     _activeSessionSubscription = _workoutLogRepository.getActiveWorkoutSessionStream(userId).listen(
       (session) {
         if (session != null) {
@@ -50,13 +50,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           _startDurationTimer(session);
           emit(ActiveWorkoutInProgress(session: session, currentDuration: _calculateDuration(session.startedAt.toDate())));
         } else {
-          developer.log('ActiveWorkoutCubit: No active session found.', name: 'ActiveWorkoutCubit');
+          developer.log('ActiveWorkoutCubit: No active session found via stream.', name: 'ActiveWorkoutCubit');
           _durationTimer?.cancel();
-          emit(ActiveWorkoutNone());
+          if (state is! ActiveWorkoutLoading || (state as ActiveWorkoutLoading).message?.contains('Starting new') == false ) {
+             emit(ActiveWorkoutNone()); // Створюємо екземпляр стану
+          }
         }
       },
       onError: (error, stackTrace) {
-        developer.log('ActiveWorkoutCubit: Error in active session stream.', name: 'ActiveWorkoutCubit', error: error, stackTrace: stackTrace);
+        developer.log('ActiveWorkoutCubit: Error in active session stream: $error', error: error, stackTrace: stackTrace, name: 'ActiveWorkoutCubit');
         emit(ActiveWorkoutError('Failed to check for active session: ${error.toString()}'));
       },
     );
@@ -71,11 +73,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state is ActiveWorkoutInProgress) {
         final currentSessionState = state as ActiveWorkoutInProgress;
-        // Перевіряємо, чи сесія в стані все ще та сама, що й при запуску таймера
         if (currentSessionState.session.id == session.id && currentSessionState.session.status == WorkoutStatus.inProgress) {
           emit(currentSessionState.copyWith(currentDuration: _calculateDuration(session.startedAt.toDate())));
         } else {
-          timer.cancel(); // Зупиняємо, якщо сесія змінилася або вже не inProgress
+          timer.cancel(); 
         }
       } else {
         timer.cancel();
@@ -89,13 +90,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       emit(const ActiveWorkoutError("User not logged in. Cannot start workout."));
       return;
     }
-    // Якщо вже є активна сесія, не починаємо нову (стрім має це обробити)
-    if (state is ActiveWorkoutInProgress) {
-        developer.log('ActiveWorkoutCubit: Attempted to start new workout while one is in progress.', name: 'ActiveWorkoutCubit');
-        // Можна нічого не робити, бо UI має оновитися на основі ActiveWorkoutInProgress
-        return;
-    }
-
     emit(const ActiveWorkoutLoading(message: 'Starting new workout...'));
     try {
       List<LoggedExercise> initialExercises = [];
@@ -103,20 +97,20 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         initialExercises = fromRoutine.exercises.map((re) {
           List<LoggedSet> sets = List.generate(
             re.numberOfSets > 0 ? re.numberOfSets : 1,
-            (index) => LoggedSet(setNumber: index + 1), // isCompleted: false за замовчуванням
+            (index) => LoggedSet(setNumber: index + 1),
           );
           return LoggedExercise(
             predefinedExerciseId: re.predefinedExerciseId,
             exerciseNameSnapshot: re.exerciseNameSnapshot,
             targetSets: re.numberOfSets,
             completedSets: sets,
-            notes: re.notes, // Переносимо нотатки з рутини, якщо є
+            notes: re.notes,
           );
         }).toList();
       }
 
       final newSession = WorkoutSession(
-        id: '', // Буде присвоєно репозиторієм
+        id: '', 
         userId: userId,
         routineId: fromRoutine?.id,
         routineNameSnapshot: fromRoutine?.name,
@@ -125,13 +119,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         completedExercises: initialExercises,
       );
 
-      // Репозиторій поверне ID, але ми покладаємося на стрім для оновлення стану
-      await _workoutLogRepository.startWorkoutSession(newSession);
-      // Стрім _activeSessionSubscription має автоматично підхопити цю нову сесію
-      // і оновити стан на ActiveWorkoutInProgress.
-      developer.log('ActiveWorkoutCubit: Request to start new workout sent.', name: 'ActiveWorkoutCubit');
+      final sessionId = await _workoutLogRepository.startWorkoutSession(newSession);
+      final startedSession = newSession.copyWith(id: sessionId); 
+      
+       _startDurationTimer(startedSession);
+       emit(ActiveWorkoutInProgress(session: startedSession, currentDuration: Duration.zero));
+      developer.log('ActiveWorkoutCubit: New workout started, session ID: $sessionId', name: 'ActiveWorkoutCubit');
+
     } catch (e,s) {
-      developer.log('ActiveWorkoutCubit: Error starting new workout.', name: 'ActiveWorkoutCubit', error: e, stackTrace: s);
+      developer.log('ActiveWorkoutCubit: Error starting new workout: $e', error: e, stackTrace: s, name: 'ActiveWorkoutCubit');
       emit(ActiveWorkoutError('Failed to start workout: ${e.toString()}'));
     }
   }
@@ -157,9 +153,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final updatedSet = targetSet.copyWith(
       weightKg: weight,
       reps: reps,
-      isCompleted: isCompleted ?? targetSet.isCompleted, // Якщо isCompleted не передано, залишаємо поточне
-      notes: notes, // Якщо notes null, старе значення залишиться, якщо notes не null, воно оновиться
-      allowNullNotes: notes == null && targetSet.notes != null, // Дозволяє скинути нотатку, якщо передано null
+      isCompleted: isCompleted ?? ((weight != null && weight > 0 && reps != null && reps > 0) || targetSet.isCompleted),
+      notes: notes,
+      allowNullNotes: notes == null && targetSet.notes != null,
     );
 
     final updatedCompletedSets = List<LoggedSet>.from(targetExercise.completedSets);
@@ -171,18 +167,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
     final updatedSession = currentSession.copyWith(completedExercises: updatedExercisesList);
 
-    // Оновлюємо стан локально
     emit(currentSessionState.copyWith(session: updatedSession));
 
     try {
       await _workoutLogRepository.updateWorkoutSession(updatedSession);
       developer.log('ActiveWorkoutCubit: Set updated in Firestore. Ex: $exerciseIndex, Set: $setIndex', name: 'ActiveWorkoutCubit');
-    } catch (e,s) {
-      developer.log('ActiveWorkoutCubit: Error updating set in Firestore.', name: 'ActiveWorkoutCubit', error: e, stackTrace: s);
-      // Відновлюємо попередній стан сесії в UI, якщо збереження не вдалося
-      emit(currentSessionState.copyWith(session: currentSession)); // Повертаємо оригінальну сесію
-      // Можна також емітити помилку, яку UI покаже користувачу
-      // emit(ActiveWorkoutError('Failed to save set update: ${e.toString()}'));
+    } catch (e) {
+      developer.log('ActiveWorkoutCubit: Error updating set in Firestore: $e', name: 'ActiveWorkoutCubit');
+      emit(ActiveWorkoutError('Failed to save set update: ${e.toString()}'));
+      emit(currentSessionState.copyWith(session: currentSession));
     }
   }
   
@@ -209,11 +202,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     try {
       await _workoutLogRepository.updateWorkoutSession(updatedSession);
       developer.log('ActiveWorkoutCubit: New set added to ex: $exerciseIndex', name: 'ActiveWorkoutCubit');
-    } catch (e,s) {
-       developer.log('ActiveWorkoutCubit: Error adding set in Firestore.', name: 'ActiveWorkoutCubit', error:e, stackTrace:s);
-       // Відкат UI
-       emit(currentSessionState.copyWith(session: currentSession));
-       // emit(ActiveWorkoutError('Failed to save added set: ${e.toString()}'));
+    } catch (e) {
+       developer.log('ActiveWorkoutCubit: Error adding set in Firestore: $e', name: 'ActiveWorkoutCubit');
+       emit(ActiveWorkoutError('Failed to save added set: ${e.toString()}'));
+       final originalCompletedSets = List<LoggedSet>.from(targetExercise.completedSets);
+       final originalExercise = targetExercise.copyWith(completedSets: originalCompletedSets);
+       final originalExercisesList = List<LoggedExercise>.from(currentSession.completedExercises);
+       originalExercisesList[exerciseIndex] = originalExercise;
+       final originalSession = currentSession.copyWith(completedExercises: originalExercisesList);
+       emit(currentSessionState.copyWith(session: originalSession));
     }
   }
 
@@ -228,7 +225,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       return;
     }
 
-    emit(ActiveWorkoutLoading(message: 'Finishing workout...')); // Змінено повідомлення
+    emit(const ActiveWorkoutLoading(message: 'Completing workout...'));
     try {
       final endedAt = Timestamp.now();
       final duration = endedAt.seconds - currentSession.startedAt.seconds;
@@ -242,77 +239,66 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       );
 
       await _workoutLogRepository.completeWorkoutSession(sessionToComplete);
-      developer.log('ActiveWorkoutCubit: Workout ${sessionToComplete.id} completed. Total Volume: $totalVolume', name: 'ActiveWorkoutCubit');
+      developer.log('ActiveWorkoutCubit: Workout ${sessionToComplete.id} completed. Volume: $totalVolume', name: 'ActiveWorkoutCubit');
       
-      int xpGained = 50; // Базовий XP
+      int xpGained = 50; 
       if (totalVolume > 0) xpGained += (totalVolume / 100).round();
       if (duration > 0) xpGained += (duration / (5 * 60)).round();
       xpGained = xpGained.clamp(10, 200);
 
       UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
+      UserProfile? profileForCompletionScreen = userProfile;
+
       if (userProfile != null) {
         DateTime lastWorkoutDate = userProfile.lastWorkoutTimestamp?.toDate() ?? DateTime(1970);
         DateTime currentWorkoutDate = sessionToComplete.startedAt.toDate();
-        
         int newCurrentStreak = userProfile.currentStreak;
-        bool isSameDayAsLastWorkout = 
-            lastWorkoutDate.year == currentWorkoutDate.year &&
-            lastWorkoutDate.month == currentWorkoutDate.month &&
-            lastWorkoutDate.day == currentWorkoutDate.day;
+        bool isSameDayAsLastWorkout = lastWorkoutDate.year == currentWorkoutDate.year && lastWorkoutDate.month == currentWorkoutDate.month && lastWorkoutDate.day == currentWorkoutDate.day;
 
         if (!isSameDayAsLastWorkout) {
             DateTime nextDayAfterLast = lastWorkoutDate.add(const Duration(days: 1));
-            bool isConsecutiveDay = 
-                nextDayAfterLast.year == currentWorkoutDate.year &&
-                nextDayAfterLast.month == currentWorkoutDate.month &&
-                nextDayAfterLast.day == currentWorkoutDate.day;
-            if (isConsecutiveDay) {
-                newCurrentStreak++;
-            } else {
-                newCurrentStreak = 1;
-            }
+            bool isConsecutiveDay = nextDayAfterLast.year == currentWorkoutDate.year && nextDayAfterLast.month == currentWorkoutDate.month && nextDayAfterLast.day == currentWorkoutDate.day;
+            newCurrentStreak = isConsecutiveDay ? newCurrentStreak + 1 : 1;
         }
-
-        int newLongestStreak = userProfile.longestStreak;
-        if (newCurrentStreak > newLongestStreak) {
-          newLongestStreak = newCurrentStreak;
-        }
-        
+        int newLongestStreak = userProfile.longestStreak > newCurrentStreak ? userProfile.longestStreak : newCurrentStreak;
         int newXp = userProfile.xp + xpGained;
-        // TODO: Логіка підвищення рівня
-        // int newLevel = userProfile.level;
-        // if (newXp >= someThresholdForNextLevel(userProfile.level)) { newLevel++; newXp = newXp - someThreshold; }
-
-        UserProfile updatedProfile = userProfile.copyWith(
+        
+        final updatedProfileForDb = userProfile.copyWith(
             currentStreak: newCurrentStreak,
             longestStreak: newLongestStreak,
-            lastWorkoutTimestamp: () => sessionToComplete.endedAt ?? Timestamp.now(), // Використовуємо ValueGetter для nullable
+            lastWorkoutTimestamp: () => sessionToComplete.endedAt ?? Timestamp.now(),
             xp: newXp,
-            // level: newLevel,
         );
-        // Оновлюємо профіль, тільки якщо були зміни, щоб уникнути зайвих записів
-        if (updatedProfile != userProfile) {
-             await _userProfileRepository.updateUserProfile(updatedProfile);
-             developer.log('ActiveWorkoutCubit: User profile updated. XP: $newXp, Streak: $newCurrentStreak', name: 'ActiveWorkoutCubit');
+
+        if (!isSameDayAsLastWorkout || newCurrentStreak != userProfile.currentStreak || userProfile.xp != newXp) {
+            await _userProfileRepository.updateUserProfile(updatedProfileForDb);
+            profileForCompletionScreen = updatedProfileForDb;
+            developer.log('ActiveWorkoutCubit: User profile updated. XP: $newXp, Streak: $newCurrentStreak', name: 'ActiveWorkoutCubit');
         }
       }
 
       _durationTimer?.cancel();
-      emit(ActiveWorkoutSuccessfullyCompleted(completedSession: sessionToComplete, xpGained: xpGained));
-    } catch (e,s) {
-      developer.log('ActiveWorkoutCubit: Error completing workout.', name: 'ActiveWorkoutCubit', error:e, stackTrace:s);
+      if (profileForCompletionScreen == null) {
+          emit(const ActiveWorkoutError("Could not retrieve user profile for completion screen."));
+          return;
+      }
+      emit(ActiveWorkoutSuccessfullyCompleted(
+          completedSession: sessionToComplete, 
+          xpGained: xpGained,
+          updatedUserProfile: profileForCompletionScreen 
+      ));
+    } catch (e, s) {
+      developer.log('ActiveWorkoutCubit: Error completing workout: $e', error:e, stackTrace:s, name: 'ActiveWorkoutCubit');
       emit(ActiveWorkoutError('Failed to complete workout: ${e.toString()}'));
-      // Повертаємо до стану InProgress з оригінальною сесією, щоб користувач міг спробувати знову
-      emit(ActiveWorkoutInProgress(session: currentSession, currentDuration: currentSessionState.currentDuration));
+      emit(currentSessionState.copyWith());
     }
   }
 
   Future<void> cancelWorkout() async {
     if (state is! ActiveWorkoutInProgress) return;
-    final currentSessionState = state as ActiveWorkoutInProgress; // Отримуємо поточний стан
+    final currentSessionState = state as ActiveWorkoutInProgress;
     final currentSession = currentSessionState.session;
     final userId = _currentUserId;
-
      if (userId == null) {
       emit(const ActiveWorkoutError("User not logged in."));
       return;
@@ -324,10 +310,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       developer.log('ActiveWorkoutCubit: Workout ${currentSession.id} cancelled.', name: 'ActiveWorkoutCubit');
       _durationTimer?.cancel();
       emit(const ActiveWorkoutCancelled(message: 'Workout cancelled.'));
-    } catch (e,s) {
-      developer.log('ActiveWorkoutCubit: Error cancelling workout.', name: 'ActiveWorkoutCubit', error:e, stackTrace:s);
+    } catch (e) {
+      developer.log('ActiveWorkoutCubit: Error cancelling workout: $e', name: 'ActiveWorkoutCubit');
       emit(ActiveWorkoutError('Failed to cancel workout: ${e.toString()}'));
-      emit(ActiveWorkoutInProgress(session: currentSession, currentDuration: currentSessionState.currentDuration));
+      emit(currentSessionState.copyWith());
     }
   }
 
