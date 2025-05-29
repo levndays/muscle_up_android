@@ -1,26 +1,31 @@
 // lib/features/routines/presentation/screens/user_routines_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Потрібен для FirebaseAuth.instance
-import '../../../../core/domain/repositories/routine_repository.dart'; // Абстракція
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/domain/repositories/routine_repository.dart';
 import '../cubit/user_routines_cubit.dart';
-import '../widgets/routine_list_item.dart';
+import '../widgets/routine_list_item.dart'; // RoutineListItem тепер буде обробляти свій перехід
 import 'create_edit_routine_screen.dart';
 
 class UserRoutinesScreen extends StatelessWidget {
   const UserRoutinesScreen({super.key});
 
+  // Метод для обробки результату з CreateEditRoutineScreen
+  Future<void> _handleRoutineUpsertResult(BuildContext context, bool? routineWasSaved) async {
+    if (routineWasSaved == true) {
+      // Якщо рутина була збережена (нова або оновлена), оновлюємо список
+      context.read<UserRoutinesCubit>().fetchUserRoutines();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Якщо UserRoutinesScreen не надає BlocProvider сам, а очікує його ззовні,
-    // то тут BlocProvider не потрібен. Але якщо він його створює, то так:
-    return BlocProvider<UserRoutinesCubit>( // Уточнено тип
+    return BlocProvider<UserRoutinesCubit>(
       create: (context) => UserRoutinesCubit(
-        RepositoryProvider.of<RoutineRepository>(context), // Отримуємо з контексту
+        RepositoryProvider.of<RoutineRepository>(context),
         FirebaseAuth.instance,
       )..fetchUserRoutines(),
       child: Scaffold(
-        // AppBar тут не потрібен, оскільки він є в HomePage
         body: BlocConsumer<UserRoutinesCubit, UserRoutinesState>(
           listener: (context, state) {
             if (state is UserRoutinesError) {
@@ -30,13 +35,7 @@ class UserRoutinesScreen extends StatelessWidget {
             }
           },
           builder: (context, state) {
-            if (state is UserRoutinesInitial) {
-              // Можна викликати fetchUserRoutines, якщо він не був викликаний при створенні кубіта
-              // context.read<UserRoutinesCubit>().fetchUserRoutines();
-              // Або просто показувати завантаження
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state is UserRoutinesLoading) {
+            if (state is UserRoutinesInitial || state is UserRoutinesLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is UserRoutinesLoaded) {
               if (state.routines.isEmpty) {
@@ -48,25 +47,20 @@ class UserRoutinesScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.list_alt_outlined, size: 60, color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
                         const SizedBox(height: 16),
-                        const Text(
-                          'You have no routines yet.',
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
+                        const Text('You have no routines yet.', style: TextStyle(fontSize: 18, color: Colors.grey), textAlign: TextAlign.center),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Create a routine to start organizing your workouts!',
-                          style: TextStyle(fontSize: 15, color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
+                        const Text('Create a routine to start organizing your workouts!', style: TextStyle(fontSize: 15, color: Colors.grey), textAlign: TextAlign.center),
                         const SizedBox(height: 24),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.add_circle_outline),
                           label: const Text('Create Your First Routine'),
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
+                          onPressed: () async { // <--- ЗРОБИТИ ASYNC
+                            final result = await Navigator.of(context).push<bool>(MaterialPageRoute( // <--- ЧЕКАЄМО РЕЗУЛЬТАТ bool
                               builder: (_) => const CreateEditRoutineScreen(),
                             ));
+                            // ignore: use_build_context_synchronously
+                            if (!context.mounted) return;
+                            _handleRoutineUpsertResult(context, result); // <--- ОБРОБКА РЕЗУЛЬТАТУ
                           },
                         )
                       ],
@@ -75,11 +69,16 @@ class UserRoutinesScreen extends StatelessWidget {
                 );
               }
               return ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 70), // Відступ знизу для FAB
+                padding: const EdgeInsets.only(top: 8, bottom: 70),
                 itemCount: state.routines.length,
                 itemBuilder: (context, index) {
                   final routine = state.routines[index];
-                  return RoutineListItem(routine: routine);
+                  // Передаємо колбек для оновлення списку ПІСЛЯ редагування/видалення
+                  return RoutineListItem(
+                    routine: routine,
+                    onRoutineUpdated: () => context.read<UserRoutinesCubit>().fetchUserRoutines(),
+                    onRoutineDeleted: () => context.read<UserRoutinesCubit>().routineDeleted(routine.id), // Або fetchUserRoutines()
+                  );
                 },
               );
             } else if (state is UserRoutinesError) {
@@ -106,16 +105,13 @@ class UserRoutinesScreen extends StatelessWidget {
           },
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
+          onPressed: () async { // <--- ЗРОБИТИ ASYNC
+            final result = await Navigator.of(context).push<bool>(MaterialPageRoute( // <--- ЧЕКАЄМО РЕЗУЛЬТАТ bool
               builder: (_) => const CreateEditRoutineScreen(),
             ));
-            // .then((_) { // Цей .then може бути непотрібним, якщо ManageRoutineCubit оновлює UserRoutinesCubit
-            //   // final userRoutinesState = context.read<UserRoutinesCubit>().state;
-            //   // if (userRoutinesState is UserRoutinesLoaded) { // Оновлюємо, якщо вже завантажено
-            //   //   context.read<UserRoutinesCubit>().fetchUserRoutines();
-            //   // }
-            // });
+             // ignore: use_build_context_synchronously
+            if (!context.mounted) return;
+            _handleRoutineUpsertResult(context, result); // <--- ОБРОБКА РЕЗУЛЬТАТУ
           },
           icon: const Icon(Icons.add),
           label: const Text('New Routine'),

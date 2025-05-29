@@ -1,12 +1,12 @@
 // lib/features/routines/presentation/screens/create_edit_routine_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // для доступу до репо та auth
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/domain/entities/routine.dart';
-import '../../../../core/domain/repositories/routine_repository.dart'; // для доступу до репо
+import '../../../../core/domain/repositories/routine_repository.dart';
 import '../cubit/manage_routine_cubit.dart';
-import '../cubit/user_routines_cubit.dart'; // для оновлення списку рутин
-import '../widgets/add_exercise_to_routine_dialog.dart'; // Діалог, який ми щойно створили
+// import '../cubit/user_routines_cubit.dart'; // БІЛЬШЕ НЕ ПОТРІБЕН ТУТ
+import '../widgets/add_exercise_to_routine_dialog.dart';
 
 class CreateEditRoutineScreen extends StatefulWidget {
   final UserRoutine? routineToEdit;
@@ -22,18 +22,16 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  List<String> _selectedDays = []; // Для вибору днів тижня
+  List<String> _selectedDays = [];
 
-  final List<String> _availableDays = [
-    'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'
-  ];
+  final List<String> _availableDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   @override
   void initState() {
     super.initState();
     _manageRoutineCubit = ManageRoutineCubit(
       RepositoryProvider.of<RoutineRepository>(context),
-      FirebaseAuth.instance, // Передаємо FirebaseAuth
+      FirebaseAuth.instance,
       initialRoutine: widget.routineToEdit,
     );
 
@@ -61,11 +59,9 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
 
   void _saveRoutine() {
     if (_formKey.currentState!.validate()) {
-      // Переконуємось, що останні зміни з контролерів передані в кубіт
       _manageRoutineCubit.updateRoutineName(_nameController.text);
       _manageRoutineCubit.updateRoutineDescription(_descriptionController.text);
       _manageRoutineCubit.updateScheduledDays(_selectedDays);
-      
       _manageRoutineCubit.saveRoutine();
     }
   }
@@ -91,7 +87,6 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
     }
   }
 
-
   Widget _buildExerciseItem(BuildContext context, RoutineExercise exercise, int index) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -105,9 +100,6 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           },
         ),
         onTap: () async {
-           // TODO: Редагування вправи в рутині (наприклад, зміна кількості підходів)
-          // Можна відкрити діалог схожий на той, що використовується для додавання,
-          // але з попередньо заповненими даними.
           final TextEditingController setsCtrl = TextEditingController(text: exercise.numberOfSets.toString());
           final TextEditingController notesCtrl = TextEditingController(text: exercise.notes ?? '');
           final formKey = GlobalKey<FormState>();
@@ -164,16 +156,8 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           title: Text(widget.routineToEdit == null ? 'Create Routine' : 'Edit Routine'),
           actions: [
             if (widget.routineToEdit != null)
-              IconButton(
-                icon: const Icon(Icons.delete_forever, color: Colors.red),
-                onPressed: _deleteRoutine,
-                tooltip: 'Delete Routine',
-              ),
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: _saveRoutine,
-              tooltip: 'Save Routine',
-            ),
+              IconButton(icon: const Icon(Icons.delete_forever, color: Colors.red), onPressed: _deleteRoutine, tooltip: 'Delete Routine'),
+            IconButton(icon: const Icon(Icons.save), onPressed: _saveRoutine, tooltip: 'Save Routine'),
           ],
         ),
         body: BlocConsumer<ManageRoutineCubit, ManageRoutineState>(
@@ -182,10 +166,10 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message), backgroundColor: Colors.green),
               );
-              // Оновлюємо список рутин на попередньому екрані
-              context.read<UserRoutinesCubit>().routineAddedOrUpdated(state.savedRoutine);
+              // Оновлюємо список рутин на попередньому екрані - БІЛЬШЕ НЕ РОБИМО ТУТ
+              // context.read<UserRoutinesCubit>().routineAddedOrUpdated(state.savedRoutine);
 
-              Navigator.of(context).pop(); // Повертаємось назад після успіху
+              Navigator.of(context).pop(true); // <--- ПОВЕРТАЄМО true ПРИ УСПІХУ
             } else if (state is ManageRoutineFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
@@ -194,12 +178,11 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           },
           builder: (context, state) {
             UserRoutine currentDisplayRoutine = _manageRoutineCubit.currentRoutineSnapshot;
-            if (state is ManageRoutineExercisesUpdated) { // Оновлюємо відображення, якщо вправи змінились
+            if (state is ManageRoutineExercisesUpdated) {
               currentDisplayRoutine = state.updatedRoutine;
             } else if (state is ManageRoutineInitial) {
               currentDisplayRoutine = state.routine;
             }
-
 
             if (state is ManageRoutineLoading) {
               return Center(child: Column(
@@ -248,7 +231,6 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                               } else {
                                 _selectedDays.remove(day);
                               }
-                              // Оновлюємо кубіт, якщо потрібно, або перед збереженням
                               _manageRoutineCubit.updateScheduledDays(List.from(_selectedDays));
                             });
                           },
@@ -256,7 +238,6 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                         );
                       }).toList(),
                     ),
-
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -283,7 +264,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                     else
                       ListView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(), // Для списку всередині SingleChildScrollView
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: currentDisplayRoutine.exercises.length,
                         itemBuilder: (ctx, index) {
                           return _buildExerciseItem(context, currentDisplayRoutine.exercises[index], index);

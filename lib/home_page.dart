@@ -7,8 +7,11 @@ import 'dart:developer' as developer;
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/routines/presentation/screens/user_routines_screen.dart';
 import 'features/notifications/presentation/cubit/notifications_cubit.dart';
-// НЕ ПОТРІБЕН: import 'features/notifications/presentation/screens/notifications_screen.dart';
 import 'core/domain/repositories/notification_repository.dart';
+import 'core/domain/repositories/workout_log_repository.dart'; // <--- НОВИЙ ІМПОРТ
+import 'features/workout_tracking/presentation/screens/active_workout_screen.dart'; // <--- НОВИЙ ІМПОРТ
+import 'core/domain/entities/workout_session.dart'; // <--- НОВИЙ ІМПОРТ для WorkoutStatus
+// TODO: Розглянути можливість створення "WorkoutChooserDialog" для вибору рутини або порожнього тренування
 
 class PostsScreen extends StatelessWidget {
   const PostsScreen({super.key});
@@ -31,11 +34,16 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // NotificationsCubit надається тут
     return BlocProvider<NotificationsCubit>(
       create: (cubitContext) => NotificationsCubit(
         RepositoryProvider.of<NotificationRepository>(cubitContext),
         fb_auth.FirebaseAuth.instance,
       ),
+      // Можливо, варто додати сюди StreamProvider або BlocProvider для активної сесії,
+      // щоб FAB міг реагувати на її наявність.
+      // Або робити запит до репозиторію при натисканні FAB.
+      // Для простоти, поки що будемо робити запит.
       child: const _HomePageContent(),
     );
   }
@@ -49,13 +57,13 @@ class _HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<_HomePageContent> {
-  int _selectedIndex = -1;
+  int _selectedIndex = -1; // -1 для DashboardScreen
 
   static final List<Widget> _bottomNavScreens = <Widget>[
-    const UserRoutinesScreen(),
-    const PostsScreen(),
-    const ProgressScreen(),
-    const ProfileScreen(),
+    const UserRoutinesScreen(), // index 0
+    const PostsScreen(),        // index 1
+    const ProgressScreen(),     // index 2
+    const ProfileScreen(),      // index 3
   ];
 
   void _onItemTapped(int index) {
@@ -73,20 +81,76 @@ class _HomePageContentState extends State<_HomePageContent> {
   }
 
   void _navigateToProfile() {
-    developer.log("Navigating to Profile tab", name: "HomePage");
-    setState(() {
-      _selectedIndex = 3;
-    });
+    setState(() => _selectedIndex = 3);
   }
 
   void _navigateToProgress() {
-    developer.log("Navigating to Progress tab", name: "HomePage");
-    setState(() {
-      _selectedIndex = 2;
-    });
+    setState(() => _selectedIndex = 2);
   }
 
-  // ВИДАЛЕНО: void _navigateToNotifications() { ... }
+  // Обробник для FAB
+  Future<void> _handleFabPress() async {
+    final userId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to start a workout.')),
+      );
+      return;
+    }
+
+    final workoutLogRepo = RepositoryProvider.of<WorkoutLogRepository>(context);
+    
+    // Перевіряємо, чи є активна сесія через стрім (або одноразовий запит)
+    // Для простоти FAB, використаємо одноразовий запит через getActiveWorkoutSessionStream().first
+    // В ідеалі, HomePage мав би слухати цей стрім постійно, щоб оновлювати вигляд FAB.
+    WorkoutSession? activeSession;
+    try {
+      activeSession = await workoutLogRepo.getActiveWorkoutSessionStream(userId).first;
+    } catch (e) {
+      developer.log("Error checking active session for FAB: $e", name: "HomePage");
+    }
+    
+    if (mounted) { // Перевірка, чи віджет ще в дереві
+      if (activeSession != null && activeSession.status == WorkoutStatus.inProgress) {
+        developer.log("Resuming active workout: ${activeSession.id}", name: "HomePage.FAB");
+        Navigator.of(context).push(ActiveWorkoutScreen.route()); // Відкриваємо екран, Cubit підхопить активну сесію
+      } else {
+        developer.log("No active workout, showing options to start new.", name: "HomePage.FAB");
+        // TODO: Показати діалог вибору: Start from Routine / Start Empty Workout
+        // Поки що просто перехід на порожній ActiveWorkoutScreen
+        // (або краще на UserRoutinesScreen, щоб користувач вибрав рутину)
+
+        // Приклад простого діалогу:
+        showDialog(
+          context: context,
+          builder: (dialogCtx) => AlertDialog(
+            title: const Text('Start New Workout'),
+            content: const Text('How would you like to start?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogCtx).pop();
+                  setState(() { _selectedIndex = 0; }); // Перехід на екран Рутин
+                },
+                child: const Text('From Routine'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogCtx).pop();
+                  Navigator.of(context).push(ActiveWorkoutScreen.route()); // Порожнє тренування
+                },
+                child: const Text('Empty Workout'),
+              ),
+            ],
+          ),
+        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('Start Workout FAB Tapped! (Logic to be implemented: choose routine or empty)')),
+        // );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,15 +158,17 @@ class _HomePageContentState extends State<_HomePageContent> {
     Widget currentBody;
     bool showFab = false;
 
-    if (_selectedIndex == -1) {
+    if (_selectedIndex == -1) { // Dashboard
       currentBody = DashboardScreen(
         onProfileTap: _navigateToProfile,
         onProgressTap: _navigateToProgress,
-        // ВИДАЛЕНО: onNotificationsTap: _navigateToNotifications,
       );
       showFab = true;
     } else {
       currentBody = _bottomNavScreens[_selectedIndex];
+      if (_selectedIndex == 0) { // Routines screen also has FAB
+         showFab = false; // UserRoutinesScreen тепер має свій FAB
+      }
     }
 
     Widget appBarTitleWidget = GestureDetector(
@@ -122,33 +188,26 @@ class _HomePageContentState extends State<_HomePageContent> {
       appBar: AppBar(
         title: appBarTitleWidget,
         centerTitle: true,
-        actions: const [ // Прибираємо іконку сповіщень звідси, бо лічильник тепер на дашборді
-          // Можна залишити, якщо хочете якусь іншу глобальну дію
-          // SizedBox(width: 8),
-        ],
       ),
       body: currentBody,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: showFab
+      floatingActionButton: showFab // Показуємо FAB тільки на дашборді
           ? Container(
-              margin: const EdgeInsets.only(bottom: 3.0),
+              margin: const EdgeInsets.only(bottom: 12.0), // Збільшено відступ
               child: FloatingActionButton.extended(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Start Workout FAB Tapped! (Logic to be implemented)')),
-                  );
-                },
+                onPressed: _handleFabPress, // <--- НОВИЙ ОБРОБНИК
                 label: const Text(
                   'START WORKOUT',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w900, // Black
                     color: Colors.white,
                   ),
                 ),
                 icon: const Icon(Icons.fitness_center, color: Colors.white),
                 backgroundColor: const Color(0xFFED5D1A),
-                shape: const StadiumBorder(),
+                // shape: const StadiumBorder(), // Можна замінити на RoundedRectangleBorder
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
                 elevation: 6.0,
               ),
             )
@@ -161,9 +220,9 @@ class _HomePageContentState extends State<_HomePageContent> {
             label: 'ROUTINES',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
+            icon: Icon(Icons.search_outlined), // Раніше було posts, можливо, це буде ExerciseExplorer
             activeIcon: Icon(Icons.search),
-            label: 'POSTS',
+            label: 'EXPLORE', // Змінив на Explore
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events_outlined),

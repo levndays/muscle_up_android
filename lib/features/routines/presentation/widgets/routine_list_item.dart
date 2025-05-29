@@ -1,24 +1,26 @@
 // lib/features/routines/presentation/widgets/routine_list_item.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Потрібен для RepositoryProvider
 import '../../../../core/domain/entities/routine.dart';
-import '../../../../core/domain/repositories/routine_repository.dart'; // <--- ІМПОРТ ІНТЕРФЕЙСУ
-import '../cubit/user_routines_cubit.dart';
-// ManageRoutineCubit може не знадобитись тут, якщо UserRoutinesCubit обробляє видалення
-// import '../cubit/manage_routine_cubit.dart'; 
+import '../../../../core/domain/repositories/routine_repository.dart';
+// import '../cubit/user_routines_cubit.dart'; // Не потрібен для прямого виклику, якщо використовуємо колбеки
 import '../screens/create_edit_routine_screen.dart';
-import 'dart:developer' as developer; // Для логування
+import '../../../workout_tracking/presentation/screens/active_workout_screen.dart';
+import 'dart:developer' as developer;
 
 class RoutineListItem extends StatelessWidget {
   final UserRoutine routine;
+  final VoidCallback onRoutineUpdated; // Колбек для оновлення списку після редагування
+  final VoidCallback onRoutineDeleted; // Колбек для оновлення списку після видалення
 
-  const RoutineListItem({super.key, required this.routine});
+  const RoutineListItem({
+    super.key,
+    required this.routine,
+    required this.onRoutineUpdated,
+    required this.onRoutineDeleted,
+  });
 
   Future<void> _confirmDelete(BuildContext context) async {
-    // Не використовуємо ManageRoutineCubit напряму тут, якщо UserRoutinesCubit має метод видалення.
-    // final manageRoutineCubit = BlocProvider.of<ManageRoutineCubit>(context, listen: false);
-    final userRoutinesCubit = BlocProvider.of<UserRoutinesCubit>(context, listen: false);
-
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -26,10 +28,7 @@ class RoutineListItem extends StatelessWidget {
           title: const Text('Confirm Delete'),
           content: Text('Are you sure you want to delete "${routine.name}"? This action cannot be undone.'),
           actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-            ),
+            TextButton(child: const Text('Cancel'), onPressed: () => Navigator.of(dialogContext).pop(false)),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Delete'),
@@ -41,26 +40,20 @@ class RoutineListItem extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      // Ідеально: UserRoutinesCubit має метод для видалення
-      // await userRoutinesCubit.deleteRoutine(routine.id);
-
-      // Поточний варіант: видаляємо через репозиторій та оновлюємо список локально
-      // Важливо: переконайся, що context ще валідний після await
-      if (!context.mounted) return; 
+      if (!context.mounted) return;
       try {
-        // Отримуємо репозиторій через RepositoryProvider
         final routineRepository = RepositoryProvider.of<RoutineRepository>(context);
         await routineRepository.deleteRoutine(routine.id);
-        userRoutinesCubit.routineDeleted(routine.id); // Оновлюємо список локально
+        onRoutineDeleted(); // Викликаємо колбек
 
-        if (context.mounted) { // Знову перевірка
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Routine "${routine.name}" deleted.'), backgroundColor: Colors.green),
           );
         }
       } catch (e) {
         developer.log('Error deleting routine: $e', name: 'RoutineListItem');
-        if (context.mounted) { // Перевірка
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error deleting routine: $e'), backgroundColor: Colors.red),
           );
@@ -74,59 +67,50 @@ class RoutineListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        title: Text(routine.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        title: Text(routine.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (routine.description != null && routine.description!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Text(routine.description!, style: Theme.of(context).textTheme.bodySmall),
+                child: Text(routine.description!, style: Theme.of(context).textTheme.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
               ),
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
-                '${routine.exercises.length} exercise(s)',
+                '${routine.exercises.length} exercise(s)${routine.scheduledDays.isNotEmpty ? " | ${routine.scheduledDays.join(", ")}" : ""}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
             ),
-            if (routine.scheduledDays.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  'Scheduled: ${routine.scheduledDays.join(", ")}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                ),
-              ),
           ],
         ),
-        isThreeLine: (routine.description != null && routine.description!.isNotEmpty) || routine.scheduledDays.isNotEmpty,
+        isThreeLine: (routine.description != null && routine.description!.isNotEmpty) && routine.exercises.isNotEmpty,
         trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'edit') {
-              Navigator.of(context).push(MaterialPageRoute(
+          icon: const Icon(Icons.more_vert),
+          onSelected: (value) async { // <--- Зробити async
+            if (value == 'start') {
+              Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
+            } else if (value == 'edit') {
+              final result = await Navigator.of(context).push<bool>(MaterialPageRoute( // <--- Чекаємо результат
                 builder: (_) => CreateEditRoutineScreen(routineToEdit: routine),
               ));
+              if (result == true) { // Якщо результат true, викликаємо колбек
+                onRoutineUpdated();
+              }
             } else if (value == 'delete') {
               _confirmDelete(context);
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(
-              value: 'edit',
-              child: ListTile(leading: Icon(Icons.edit), title: Text('Edit')),
-            ),
-            const PopupMenuItem<String>(
-              value: 'delete',
-              child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red))),
-            ),
+            const PopupMenuItem<String>(value: 'start', child: ListTile(leading: Icon(Icons.play_circle_fill, color: Colors.green), title: Text('Start Workout'))),
+            const PopupMenuItem<String>(value: 'edit', child: ListTile(leading: Icon(Icons.edit_note), title: Text('Edit Routine'))),
+            const PopupMenuItem<String>(value: 'delete', child: ListTile(leading: Icon(Icons.delete_sweep_outlined, color: Colors.redAccent), title: Text('Delete Routine', style: TextStyle(color: Colors.redAccent)))),
           ],
         ),
         onTap: () {
-          // TODO: Можливо, перехід на екран деталей рутини або початок тренування
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => CreateEditRoutineScreen(routineToEdit: routine),
-          ));
+           Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
         },
       ),
     );

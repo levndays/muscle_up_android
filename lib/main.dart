@@ -14,8 +14,11 @@ import 'core/domain/repositories/routine_repository.dart';
 import 'features/routines/data/repositories/routine_repository_impl.dart';
 import 'core/domain/repositories/user_profile_repository.dart';
 import 'features/profile_setup/data/repositories/user_profile_repository_impl.dart';
-import 'core/domain/repositories/notification_repository.dart'; // <--- ДОДАНО
-import 'features/notifications/data/repositories/notification_repository_impl.dart'; // <--- ДОДАНО
+import 'core/domain/repositories/notification_repository.dart';
+import 'features/notifications/data/repositories/notification_repository_impl.dart';
+import 'core/domain/repositories/workout_log_repository.dart'; // <--- ДОДАНО НОВИЙ ІМПОРТ (інтерфейс)
+import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart'; // <--- ДОДАНО НОВИЙ ІМПОРТ (імплементація)
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,8 +50,11 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<fb_auth.FirebaseAuth>(
           create: (context) => fb_auth.FirebaseAuth.instance,
         ),
-        RepositoryProvider<NotificationRepository>( // <--- ДОДАНО
+        RepositoryProvider<NotificationRepository>(
           create: (context) => NotificationRepositoryImpl(),
+        ),
+        RepositoryProvider<WorkoutLogRepository>( // <--- ДОДАНО РЕЄСТРАЦІЮ НОВОГО РЕПОЗИТОРІЮ
+          create: (context) => WorkoutLogRepositoryImpl(),
         ),
       ],
       child: MaterialApp(
@@ -58,12 +64,12 @@ class MainApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amberAccent,
+            accentColor: Colors.amberAccent, // `accentColor` застаріло, використовуйте `secondary`
             brightness: Brightness.light,
           ).copyWith(
             primary: primaryOrange,
             onPrimary: Colors.white,
-            secondary: Colors.amberAccent,
+            secondary: Colors.amberAccent, // Ось сюди
             surface: Colors.white,
             onSurface: textBlackColor,
             background: const Color(0xFFF5F5F5),
