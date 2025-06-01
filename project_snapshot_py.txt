@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-06-01T08:19:03.695699
+Snapshot created on: 2025-06-01T21:08:28.433251
 ================================================================================
 
 === FILE: .firebaserc ===

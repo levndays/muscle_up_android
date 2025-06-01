@@ -16,8 +16,10 @@ import 'core/domain/repositories/user_profile_repository.dart';
 import 'features/profile_setup/data/repositories/user_profile_repository_impl.dart';
 import 'core/domain/repositories/notification_repository.dart';
 import 'features/notifications/data/repositories/notification_repository_impl.dart';
-import 'core/domain/repositories/workout_log_repository.dart'; // <--- ДОДАНО НОВИЙ ІМПОРТ (інтерфейс)
-import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart'; // <--- ДОДАНО НОВИЙ ІМПОРТ (імплементація)
+import 'core/domain/repositories/workout_log_repository.dart';
+import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart';
+import 'core/domain/repositories/league_repository.dart';
+import 'features/progress/data/repositories/league_repository_impl.dart';
 
 
 void main() async {
@@ -53,8 +55,11 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<NotificationRepository>(
           create: (context) => NotificationRepositoryImpl(),
         ),
-        RepositoryProvider<WorkoutLogRepository>( // <--- ДОДАНО РЕЄСТРАЦІЮ НОВОГО РЕПОЗИТОРІЮ
+        RepositoryProvider<WorkoutLogRepository>(
           create: (context) => WorkoutLogRepositoryImpl(),
+        ),
+        RepositoryProvider<LeagueRepository>(
+          create: (context) => LeagueRepositoryImpl(),
         ),
       ],
       child: MaterialApp(
@@ -64,12 +69,12 @@ class MainApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amberAccent, // `accentColor` застаріло, використовуйте `secondary`
+            accentColor: Colors.amberAccent, 
             brightness: Brightness.light,
           ).copyWith(
             primary: primaryOrange,
             onPrimary: Colors.white,
-            secondary: Colors.amberAccent, // Ось сюди
+            secondary: Colors.amberAccent, 
             surface: Colors.white,
             onSurface: textBlackColor,
             background: const Color(0xFFF5F5F5),
@@ -115,7 +120,7 @@ class MainApp extends StatelessWidget {
               borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12.0)),
+              borderRadius: const BorderRadius.all(Radius.circular(12.0)),
               borderSide: BorderSide(color: primaryOrange, width: 2.0),
             ),
             errorBorder: OutlineInputBorder(
@@ -169,7 +174,7 @@ class MainApp extends StatelessWidget {
             showUnselectedLabels: true,
             elevation: 8.0,
           ),
-          cardTheme: CardThemeData(
+          cardTheme: CardThemeData( // <--- ВИПРАВЛЕНО: CardTheme -> CardThemeData
             elevation: 1.5,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
@@ -185,7 +190,7 @@ class MainApp extends StatelessWidget {
             titleTextStyle: const TextStyle(fontFamily: 'Inter', color: textBlackColor, fontSize: 16, fontWeight: FontWeight.w500),
             subtitleTextStyle: TextStyle(fontFamily: 'Inter', color: Colors.grey[600], fontSize: 14),
           ),
-          dialogTheme: DialogThemeData(
+          dialogTheme: DialogThemeData( // <--- ВИПРАВЛЕНО: DialogTheme -> DialogThemeData
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
             titleTextStyle: const TextStyle(fontFamily: 'Inter', color: textBlackColor, fontSize: 20, fontWeight: FontWeight.w600),
