@@ -8,25 +8,18 @@ import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/routines/presentation/screens/user_routines_screen.dart';
 import 'features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'core/domain/repositories/notification_repository.dart';
-import 'core/domain/repositories/workout_log_repository.dart'; // <--- НОВИЙ ІМПОРТ
-import 'features/workout_tracking/presentation/screens/active_workout_screen.dart'; // <--- НОВИЙ ІМПОРТ
-import 'core/domain/entities/workout_session.dart'; // <--- НОВИЙ ІМПОРТ для WorkoutStatus
-// TODO: Розглянути можливість створення "WorkoutChooserDialog" для вибору рутини або порожнього тренування
+import 'core/domain/repositories/workout_log_repository.dart';
+import 'features/workout_tracking/presentation/screens/active_workout_screen.dart';
+import 'core/domain/entities/workout_session.dart';
+import 'features/profile/presentation/screens/profile_screen.dart';
+import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
 
-class PostsScreen extends StatelessWidget {
-  const PostsScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Posts")), body: const Center(child: Text("Posts Screen Content")));
-}
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Progress")), body: const Center(child: Text("Progress Screen Content")));
-}
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("Profile")), body: const Center(child: Text("Profile Screen Content")));
+  Widget build(BuildContext context) => const Scaffold( // ВИДАЛЕНО AppBar звідси
+      body: Center(child: Text("Progress Screen Content")),
+    );
 }
 
 class HomePage extends StatelessWidget {
@@ -34,16 +27,11 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // NotificationsCubit надається тут
     return BlocProvider<NotificationsCubit>(
       create: (cubitContext) => NotificationsCubit(
         RepositoryProvider.of<NotificationRepository>(cubitContext),
         fb_auth.FirebaseAuth.instance,
       ),
-      // Можливо, варто додати сюди StreamProvider або BlocProvider для активної сесії,
-      // щоб FAB міг реагувати на її наявність.
-      // Або робити запит до репозиторію при натисканні FAB.
-      // Для простоти, поки що будемо робити запит.
       child: const _HomePageContent(),
     );
   }
@@ -57,13 +45,20 @@ class _HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<_HomePageContent> {
-  int _selectedIndex = -1; // -1 для DashboardScreen
+  int _selectedIndex = -1;
 
   static final List<Widget> _bottomNavScreens = <Widget>[
-    const UserRoutinesScreen(), // index 0
-    const PostsScreen(),        // index 1
-    const ProgressScreen(),     // index 2
-    const ProfileScreen(),      // index 3
+    const UserRoutinesScreen(),
+    const ExerciseExplorerScreen(),
+    const ProgressScreen(),
+    const ProfileScreen(),
+  ];
+
+  static final List<String> _bottomNavScreenTitles = <String>[
+    'My Routines',
+    'Explore Exercises',
+    'My Progress',
+    'Profile',
   ];
 
   void _onItemTapped(int index) {
@@ -74,21 +69,26 @@ class _HomePageContentState extends State<_HomePageContent> {
   }
 
   void _navigateToDashboard() {
-    developer.log("Navigating to Dashboard", name: "HomePage");
+    developer.log("Navigating to Dashboard (AppBar tap)", name: "HomePage");
     setState(() {
       _selectedIndex = -1;
     });
   }
 
-  void _navigateToProfile() {
-    setState(() => _selectedIndex = 3);
+  void _navigateToProfileFromDashboard() {
+    developer.log("Dashboard request: Navigating to Profile", name: "HomePage");
+    setState(() {
+      _selectedIndex = 3;
+    });
   }
 
-  void _navigateToProgress() {
-    setState(() => _selectedIndex = 2);
+  void _navigateToProgressFromDashboard() {
+    developer.log("Dashboard request: Navigating to Progress", name: "HomePage");
+    setState(() {
+      _selectedIndex = 2;
+    });
   }
 
-  // Обробник для FAB
   Future<void> _handleFabPress() async {
     final userId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
@@ -97,30 +97,19 @@ class _HomePageContentState extends State<_HomePageContent> {
       );
       return;
     }
-
     final workoutLogRepo = RepositoryProvider.of<WorkoutLogRepository>(context);
-    
-    // Перевіряємо, чи є активна сесія через стрім (або одноразовий запит)
-    // Для простоти FAB, використаємо одноразовий запит через getActiveWorkoutSessionStream().first
-    // В ідеалі, HomePage мав би слухати цей стрім постійно, щоб оновлювати вигляд FAB.
     WorkoutSession? activeSession;
     try {
       activeSession = await workoutLogRepo.getActiveWorkoutSessionStream(userId).first;
     } catch (e) {
       developer.log("Error checking active session for FAB: $e", name: "HomePage");
     }
-    
-    if (mounted) { // Перевірка, чи віджет ще в дереві
+    if (mounted) {
       if (activeSession != null && activeSession.status == WorkoutStatus.inProgress) {
         developer.log("Resuming active workout: ${activeSession.id}", name: "HomePage.FAB");
-        Navigator.of(context).push(ActiveWorkoutScreen.route()); // Відкриваємо екран, Cubit підхопить активну сесію
+        Navigator.of(context).push(ActiveWorkoutScreen.route());
       } else {
         developer.log("No active workout, showing options to start new.", name: "HomePage.FAB");
-        // TODO: Показати діалог вибору: Start from Routine / Start Empty Workout
-        // Поки що просто перехід на порожній ActiveWorkoutScreen
-        // (або краще на UserRoutinesScreen, щоб користувач вибрав рутину)
-
-        // Приклад простого діалогу:
         showDialog(
           context: context,
           builder: (dialogCtx) => AlertDialog(
@@ -130,99 +119,146 @@ class _HomePageContentState extends State<_HomePageContent> {
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogCtx).pop();
-                  setState(() { _selectedIndex = 0; }); // Перехід на екран Рутин
+                  setState(() { _selectedIndex = 0; });
                 },
                 child: const Text('From Routine'),
               ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(dialogCtx).pop();
-                  Navigator.of(context).push(ActiveWorkoutScreen.route()); // Порожнє тренування
+                  Navigator.of(context).push(ActiveWorkoutScreen.route());
                 },
                 child: const Text('Empty Workout'),
               ),
             ],
           ),
         );
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(content: Text('Start Workout FAB Tapped! (Logic to be implemented: choose routine or empty)')),
-        // );
       }
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     developer.log("HomePageContent building, _selectedIndex: $_selectedIndex", name: "HomePage");
+    
     Widget currentBody;
     bool showFab = false;
+    Widget appBarTitle; 
+
+    final TextStyle? baseMuscleUpStyle = Theme.of(context).appBarTheme.titleTextStyle;
+    final Color muscleUpOrangeColor = const Color(0xFFED5D1A); 
+    final Color defaultAppBarTextColor = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.black87;
+
 
     if (_selectedIndex == -1) { // Dashboard
       currentBody = DashboardScreen(
-        onProfileTap: _navigateToProfile,
-        onProgressTap: _navigateToProgress,
+        onProfileTap: _navigateToProfileFromDashboard,
+        onProgressTap: _navigateToProgressFromDashboard,
       );
       showFab = true;
-    } else {
-      currentBody = _bottomNavScreens[_selectedIndex];
-      if (_selectedIndex == 0) { // Routines screen also has FAB
-         showFab = false; // UserRoutinesScreen тепер має свій FAB
-      }
-    }
-
-    Widget appBarTitleWidget = GestureDetector(
-      onTap: _navigateToDashboard,
-      child: RichText(
-        text: TextSpan(
-          style: Theme.of(context).appBarTheme.titleTextStyle,
-          children: const <TextSpan>[
-            TextSpan(text: 'Muscle', style: TextStyle(color: Color(0xFFED5D1A))),
-            TextSpan(text: 'UP'),
-          ],
+      appBarTitle = GestureDetector(
+        onTap: _navigateToDashboard, 
+        child: RichText(
+          text: TextSpan(
+            style: baseMuscleUpStyle,
+            children: <TextSpan>[
+              TextSpan(text: 'Muscle', style: TextStyle(color: muscleUpOrangeColor)),
+              const TextSpan(text: 'UP'),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    } else if (_selectedIndex >= 0 && _selectedIndex < _bottomNavScreens.length) {
+      currentBody = _bottomNavScreens[_selectedIndex];
+      showFab = false;
+      
+      final screenTitleText = _bottomNavScreenTitles[_selectedIndex];
+      
+      appBarTitle = Row(
+        mainAxisSize: MainAxisSize.min, 
+        children: [
+          GestureDetector(
+            onTap: _navigateToDashboard, 
+            child: RichText(
+              text: TextSpan(
+                style: baseMuscleUpStyle?.copyWith(fontSize: 20), 
+                children: <TextSpan>[
+                  TextSpan(text: 'Muscle', style: TextStyle(color: muscleUpOrangeColor)),
+                  const TextSpan(text: 'UP'),
+                ],
+              ),
+            ),
+          ),
+          Text(
+            '  |  $screenTitleText',
+            style: baseMuscleUpStyle?.copyWith(
+              fontSize: 18, 
+              // ВИДАЛЕНО УМОВНУ СТИЛІЗАЦІЮ ДЛЯ PROFILE
+              fontWeight: baseMuscleUpStyle.fontWeight, 
+              color: defaultAppBarTextColor, 
+            ),
+          ),
+        ],
+      );
+    } else {
+      currentBody = DashboardScreen(
+        onProfileTap: _navigateToProfileFromDashboard,
+        onProgressTap: _navigateToProgressFromDashboard,
+      );
+      showFab = true;
+      appBarTitle = GestureDetector(
+        onTap: _navigateToDashboard,
+        child: RichText(
+          text: TextSpan(
+            style: baseMuscleUpStyle,
+            children: <TextSpan>[
+              TextSpan(text: 'Muscle', style: TextStyle(color: muscleUpOrangeColor)),
+              const TextSpan(text: 'UP'),
+            ],
+          ),
+        ),
+      );
+      developer.log("HomePageContent: _selectedIndex out of bounds, defaulting to Dashboard", name: "HomePage", level: 1000);
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: appBarTitleWidget,
-        centerTitle: true,
+        title: appBarTitle,
+        centerTitle: true, 
       ),
       body: currentBody,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: showFab // Показуємо FAB тільки на дашборді
-          ? Container(
-              margin: const EdgeInsets.only(bottom: 12.0), // Збільшено відступ
+      floatingActionButton: showFab 
+          ? Container( 
+             margin: const EdgeInsets.only(bottom: 12.0), 
               child: FloatingActionButton.extended(
-                onPressed: _handleFabPress, // <--- НОВИЙ ОБРОБНИК
+                onPressed: _handleFabPress, 
                 label: const Text(
                   'START WORKOUT',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w900, // Black
+                    fontWeight: FontWeight.w900, 
                     color: Colors.white,
                   ),
                 ),
                 icon: const Icon(Icons.fitness_center, color: Colors.white),
-                backgroundColor: const Color(0xFFED5D1A),
-                // shape: const StadiumBorder(), // Можна замінити на RoundedRectangleBorder
+                backgroundColor: const Color(0xFFED5D1A), 
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
                 elevation: 6.0,
               ),
             )
           : null,
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.fitness_center_outlined),
             activeIcon: Icon(Icons.fitness_center),
             label: 'ROUTINES',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined), // Раніше було posts, можливо, це буде ExerciseExplorer
-            activeIcon: Icon(Icons.search),
-            label: 'EXPLORE', // Змінив на Explore
+            icon: Icon(Icons.explore_outlined), 
+            activeIcon: Icon(Icons.explore),
+            label: 'EXPLORE',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events_outlined),

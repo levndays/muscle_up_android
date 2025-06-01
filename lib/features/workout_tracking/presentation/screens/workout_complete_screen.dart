@@ -13,13 +13,13 @@ import '../../../../auth_gate.dart';
 class WorkoutCompleteScreen extends StatefulWidget {
   final WorkoutSession completedSession;
   final int xpGained;
-  final UserProfile userProfileAtCompletion;
+  final UserProfile userProfileAtCompletion; // <--- ДОДАНО: Профіль користувача на момент завершення
 
   const WorkoutCompleteScreen({
     super.key,
     required this.completedSession,
     required this.xpGained,
-    required this.userProfileAtCompletion,
+    required this.userProfileAtCompletion, // <--- ДОДАНО
   });
 
   static Route<void> route(WorkoutSession session, int xp, UserProfile profile) {
@@ -27,7 +27,7 @@ class WorkoutCompleteScreen extends StatefulWidget {
       builder: (_) => WorkoutCompleteScreen(
           completedSession: session, 
           xpGained: xp, 
-          userProfileAtCompletion: profile 
+          userProfileAtCompletion: profile // <--- Передаємо профіль
       ),
       fullscreenDialog: true,
     );
@@ -42,12 +42,12 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
   late AnimationController _xpFillController;
   late Animation<double> _xpFillAnimation;
 
-  final int xpPerLevelBase = 200; 
-  int currentLevelXpStart = 0;
-  int xpToNextLevelTotal = 200; // Загальна кількість XP для наступного рівня
-  int currentXpOnBarStart = 0; // XP на шкалі ДО цього тренування (відносно початку рівня)
-  int currentLevel = 1;
-  bool levelUp = false;
+  final int xpPerLevelBase = 200; // XP, необхідне для переходу з 1 на 2 рівень
+  int currentLevelXpStart = 0; // Сумарне XP до початку поточного рівня
+  int xpToNextLevelTotal = 200; // Загальна кількість XP для завершення поточного рівня
+  int currentXpOnBarStart = 0; // XP на шкалі ДО цього тренування (відносно початку поточного рівня)
+  int currentLevel = 1; // Рівень, з якого стартував користувач до цього тренування
+  bool levelUp = false; // Чи був левел ап
 
   @override
   void initState() {
@@ -55,31 +55,36 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
     _confettiController = ConfettiController(duration: const Duration(seconds: 3)); // Коротша анімація конфетті
     
     final profile = widget.userProfileAtCompletion;
-    currentLevel = profile.level;
-    // XP, який був *до* цього тренування відносно початку всіх рівнів
+    currentLevel = profile.level; // Поточний рівень (вже після оновлення, якщо був левел ап)
+
+    // Розраховуємо XP, яке було у користувача *до* цього тренування
     final totalXpBeforeThisWorkout = profile.xp - widget.xpGained; 
     
+    // XP, необхідне для досягнення початку поточного рівня
     currentLevelXpStart = _calculateTotalXpForLevelStart(currentLevel);
+    // XP, необхідне для досягнення початку наступного рівня
     final nextLevelXpTarget = _calculateTotalXpForLevelStart(currentLevel + 1);
-    xpToNextLevelTotal = nextLevelXpTarget - currentLevelXpStart;
-    if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase; // Захист
+    
+    xpToNextLevelTotal = nextLevelXpTarget - currentLevelXpStart; // XP, необхідне для завершення поточного рівня
+    if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase; // Захист від ділення на нуль
 
+    // XP, яке було на шкалі поточного рівня до цього тренування
     currentXpOnBarStart = (totalXpBeforeThisWorkout - currentLevelXpStart).clamp(0, xpToNextLevelTotal);
       
-    if (profile.xp >= nextLevelXpTarget) {
+    // Перевіряємо, чи відбувся Level Up
+    if (profile.xp >= nextLevelXpTarget || (currentLevel > 1 && profile.xp >= currentLevelXpStart && profile.level > widget.userProfileAtCompletion.level -1)) {
       levelUp = true;
     }
 
     _xpFillController = AnimationController(
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 1800), // Тривалість анімації заповнення
       vsync: this,
     );
 
     double initialFillPercent = (currentXpOnBarStart / xpToNextLevelTotal).clamp(0.0, 1.0);
-    // Кінцевий відсоток заповнення відносно поточного рівня (може бути > 1.0, якщо левел ап)
-    double finalRawFillPercent = ((currentXpOnBarStart + widget.xpGained) / xpToNextLevelTotal);
-    // Обмежуємо анімацію до 1.0, якщо немає левел апу, або якщо левел ап, але показуємо тільки заповнення поточного
-    double finalAnimatedFillPercent = levelUp ? 1.0 : finalRawFillPercent.clamp(0.0, 1.0);
+    // Кінцевий відсоток заповнення: якщо був левел ап, заповнюємо до 100%,
+    // інакше - до фактичного нового відсотка.
+    double finalAnimatedFillPercent = levelUp ? 1.0 : ((currentXpOnBarStart + widget.xpGained) / xpToNextLevelTotal).clamp(0.0, 1.0);
 
 
     _xpFillAnimation = Tween<double>(begin: initialFillPercent, end: finalAnimatedFillPercent).animate(
@@ -92,13 +97,14 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
     });
   }
 
+  // Допоміжна функція для розрахунку сумарного XP необхідного для досягнення початку даного рівня
   int _calculateTotalXpForLevelStart(int level) {
     if (level <= 1) return 0;
-    int totalXpForLevel = 0;
+    int totalXp = 0;
     for (int i = 1; i < level; i++) {
-      totalXpForLevel += (xpPerLevelBase + (i - 1) * 50);
+      totalXp += (xpPerLevelBase + (i - 1) * 50);
     }
-    return totalXpForLevel;
+    return totalXp;
   }
 
   @override
@@ -114,13 +120,8 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
     final durationMinutes = widget.completedSession.durationSeconds != null ? (widget.completedSession.durationSeconds! / 60).floor() : 0;
     final volumeFormatted = widget.completedSession.totalVolume?.toStringAsFixed(1) ?? "0";
 
-    // XP, яке буде відображатися під шкалою (поточне анімоване значення)
-    // int displayedXpOnBar = (currentXpOnBarStart + (widget.xpGained * _xpFillAnimation.value)).round().clamp(0, xpToNextLevelTotal);
-    // Якщо левел ап, то після заповнення шкали можемо показати XP для нового рівня
-    // Для простоти, поки що показуємо прогрес на поточній шкалі.
-
     return WillPopScope(
-      onWillPop: () async => false,
+      onWillPop: () async => false, // Забороняємо повернутися назад кнопкою Android
       child: Scaffold(
         body: Stack(
           alignment: Alignment.center,
@@ -147,16 +148,16 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                   AnimatedBuilder(
                     animation: _xpFillAnimation,
                     builder: (context, child) {
-                      // Розрахунок поточного відображуваного XP на шкалі
-                      int animatedXpOnBar = (currentXpOnBarStart + (widget.xpGained * (_xpFillAnimation.value - _xpFillAnimation.drive(Tween(begin:0.0, end:0.0)).value ))).round();
-                      // Якщо початкове значення було 0, анімація починається з 0.
-                      // Якщо початкове було >0, то анімація додає до нього.
-                      // Потрібно, щоб початкова точка анімації була xp ДО тренування, а кінцева - xp ПІСЛЯ.
-                      
-                      double currentAnimatedAbsoluteXp = (currentXpOnBarStart + (widget.xpGained * _xpFillAnimation.value)).toDouble();
-                      if (levelUp && _xpFillAnimation.value == 1.0) { // Якщо левел ап і анімація завершена
-                         currentAnimatedAbsoluteXp = (widget.userProfileAtCompletion.xp - _calculateTotalXpForLevelStart(widget.userProfileAtCompletion.level)).toDouble();
-                         xpToNextLevelTotal = _calculateTotalXpForLevelStart(widget.userProfileAtCompletion.level + 1) - _calculateTotalXpForLevelStart(widget.userProfileAtCompletion.level);
+                      // Визначаємо поточний прогрес XP на шкалі
+                      int currentAnimatedXpOnBar = (currentXpOnBarStart + (widget.xpGained * _xpFillAnimation.value)).round();
+                      currentAnimatedXpOnBar = currentAnimatedXpOnBar.clamp(0, xpToNextLevelTotal);
+
+                      // Якщо анімація завершилася і був левел ап, показуємо прогрес для НОВОГО рівня
+                      if (levelUp && _xpFillAnimation.isCompleted) {
+                         currentLevelXpStart = _calculateTotalXpForLevelStart(widget.userProfileAtCompletion.level);
+                         xpToNextLevelTotal = _calculateTotalXpForLevelStart(widget.userProfileAtCompletion.level + 1) - currentLevelXpStart;
+                         if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase; // Захист
+                         currentAnimatedXpOnBar = (widget.userProfileAtCompletion.xp - currentLevelXpStart).clamp(0, xpToNextLevelTotal);
                       }
 
 
@@ -178,12 +179,12 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('LVL ${levelUp ? widget.userProfileAtCompletion.level -1 : currentLevel}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                                Text('LVL ${levelUp && _xpFillAnimation.isCompleted ? widget.userProfileAtCompletion.level : currentLevel}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                                 Text(
-                                  '${currentAnimatedAbsoluteXp.round()}/${xpToNextLevelTotal} XP',
+                                  '${currentAnimatedXpOnBar}/${xpToNextLevelTotal} XP',
                                   style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'IBMPlexMono'),
                                 ),
-                                Text('LVL ${levelUp ? widget.userProfileAtCompletion.level : currentLevel + 1}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                                Text('LVL ${levelUp && _xpFillAnimation.isCompleted ? widget.userProfileAtCompletion.level + 1 : currentLevel + 1}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -194,7 +195,14 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                   const SizedBox(height: 30),
 
                   ElevatedButton(
-                    onPressed: () { Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const AuthGate()), (Route<dynamic> route) => false); },
+                    onPressed: () { 
+                       // Перенаправляємо на AuthGate, щоб він обробив перевірку профілю
+                       // і перейшов на HomePage або ProfileSetupScreen
+                       Navigator.of(context).pushAndRemoveUntil(
+                         MaterialPageRoute(builder: (context) => const AuthGate()),
+                         (Route<dynamic> route) => false,
+                       );
+                    },
                     style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16), textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     child: const Text('Awesome!'),
                   ),

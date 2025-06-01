@@ -5,8 +5,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer' as developer;
 
-// Припускаємо, що lava_lamp_background.dart знаходиться в lib/widgets/
-// Якщо ні, змініть шлях.
 import '../widgets/lava_lamp_background.dart';
 
 const Color primaryOrange = Color(0xFFED5D1A);
@@ -35,52 +33,8 @@ class _LoginPageState extends State<LoginPage> {
     developer.log("LoginPage initState", name: "LoginPage");
   }
 
-  Future<void> _createInitialUserProfile(User user) async {
-    developer.log("Attempting to create initial user profile for ${user.uid}", name: "LoginPage._createInitialUserProfile");
-    final firestore = FirebaseFirestore.instance;
-    final userDocRef = firestore.collection('users').doc(user.uid);
-
-    final docSnapshot = await userDocRef.get();
-    if (docSnapshot.exists) {
-      developer.log("User profile already exists for ${user.uid}", name: "LoginPage._createInitialUserProfile");
-      return;
-    }
-    try {
-      await userDocRef.set({
-        'uid': user.uid,
-        'email': user.email?.toLowerCase(),
-        'displayName': user.displayName,
-        'profilePictureUrl': user.photoURL,
-        'username': null,
-        'xp': 0,
-        'level': 1,
-        'currentStreak': 0,
-        'longestStreak': 0,
-        'lastWorkoutTimestamp': null,
-        'scheduledWorkoutDays': [],
-        'preferredUnits': 'kg',
-        'currentLeagueId': null,
-        'city': null,
-        'country': null,
-        'isProfilePublic': true,
-        'fcmTokens': [],
-        'appSettings': {},
-        'initialFitnessLevel': null,
-        'profileSetupComplete': false,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      developer.log("Initial user profile CREATED for ${user.uid}", name: "LoginPage._createInitialUserProfile");
-    } catch (e) {
-      developer.log("Error creating initial user profile: $e", name: "LoginPage._createInitialUserProfile");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Помилка створення профілю: ${e.toString()}')),
-        );
-      }
-    }
-    developer.log("Finished _createInitialUserProfile for ${user.uid}", name: "LoginPage._createInitialUserProfile");
-  }
+  // !! ВИДАЛІТЬ ЦЕЙ МЕТОД ПОВНІСТЮ (якщо він ще є) !!
+  // Future<void> _createInitialUserProfile(User user) async { /* ... */ }
 
   Future<void> _submitForm() async {
     developer.log("Entering _submitForm. _formKey.currentState is: ${_formKey.currentState}", name: "LoginPage._submitForm");
@@ -121,11 +75,10 @@ class _LoginPageState extends State<LoginPage> {
           password: _passwordController.text.trim(),
         );
         developer.log("Account creation successful with Firebase Auth: ${userCredential.user?.uid}", name: "LoginPage._submitForm");
-        if (userCredential.user != null) {
-          await _createInitialUserProfile(userCredential.user!);
-        } else {
-           developer.log("User is null after createUserWithEmailAndPassword, cannot create profile.", name: "LoginPage._submitForm");
-        }
+        // !! ВИДАЛІТЬ ЗВІДСИ ВИКЛИК _createInitialUserProfile !!
+        // if (userCredential.user != null) {
+        //   await _createInitialUserProfile(userCredential.user!);
+        // }
       }
     } on FirebaseAuthException catch (e) {
       developer.log("FirebaseAuthException: ${e.code} - ${e.message}", name: "LoginPage._submitForm");
@@ -159,14 +112,11 @@ class _LoginPageState extends State<LoginPage> {
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       developer.log("Firebase Sign-In with Google successful: ${userCredential.user?.uid}", name: "LoginPage._signInWithGoogle");
 
-      if (userCredential.additionalUserInfo?.isNewUser == true && userCredential.user != null) {
-        developer.log("New user detected via Google Sign-In. Creating profile...", name: "LoginPage._signInWithGoogle");
-        await _createInitialUserProfile(userCredential.user!);
-      } else if (userCredential.user != null) {
-        developer.log("Existing user via Google Sign-In or profile already handled.", name: "LoginPage._signInWithGoogle");
-      } else {
-        developer.log("User is null after Google Sign-In, cannot create profile.", name: "LoginPage._signInWithGoogle");
-      }
+      // !! ВИДАЛІТЬ ЗВІДСИ ВИКЛИК _createInitialUserProfile !!
+      // if (userCredential.additionalUserInfo?.isNewUser == true && userCredential.user != null) {
+      //   developer.log("New user detected via Google Sign-In. Creating profile...", name: "LoginPage._signInWithGoogle");
+      //   await _createInitialUserProfile(userCredential.user!);
+      // }
     } on FirebaseAuthException catch (e) {
       developer.log("FirebaseAuthException during Google Sign-In: ${e.code} - ${e.message}", name: "LoginPage._signInWithGoogle");
        if(mounted) setState(() => _errorMessage = e.message ?? 'Помилка входу через Google.');

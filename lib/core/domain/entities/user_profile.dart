@@ -1,7 +1,8 @@
 // lib/core/domain/entities/user_profile.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart' show ValueGetter; // Потрібно для ValueGetter
+import 'package:flutter/foundation.dart' show ValueGetter;
+import 'achievement.dart'; // <--- НОВИЙ ІМПОРТ
 
 class UserProfile extends Equatable {
   final String uid;
@@ -19,7 +20,10 @@ class UserProfile extends Equatable {
   final int level;
   final int currentStreak;
   final int longestStreak;
-  final Timestamp? lastWorkoutTimestamp; // <--- ДОДАНО ЦЕ ПОЛЕ
+  final Timestamp? lastWorkoutTimestamp;
+  final int followersCount;
+  final int followingCount;
+  final List<String> achievedRewardIds; // <--- НОВЕ ПОЛЕ (список String ID нагород)
   final bool profileSetupComplete;
   final Timestamp createdAt;
   final Timestamp updatedAt;
@@ -40,7 +44,10 @@ class UserProfile extends Equatable {
     required this.level,
     this.currentStreak = 0,
     this.longestStreak = 0,
-    this.lastWorkoutTimestamp, // <--- ДОДАНО
+    this.lastWorkoutTimestamp,
+    this.followersCount = 0,
+    this.followingCount = 0,
+    this.achievedRewardIds = const [], // <--- ЗНАЧЕННЯ ЗА ЗАМОВЧУВАННЯМ
     required this.profileSetupComplete,
     required this.createdAt,
     required this.updatedAt,
@@ -65,7 +72,10 @@ class UserProfile extends Equatable {
       level: data['level'] as int? ?? 1,
       currentStreak: data['currentStreak'] as int? ?? 0,
       longestStreak: data['longestStreak'] as int? ?? 0,
-      lastWorkoutTimestamp: data['lastWorkoutTimestamp'] as Timestamp?, // <--- ЗЧИТУВАННЯ
+      lastWorkoutTimestamp: data['lastWorkoutTimestamp'] as Timestamp?,
+      followersCount: data['followersCount'] as int? ?? 0,
+      followingCount: data['followingCount'] as int? ?? 0,
+      achievedRewardIds: List<String>.from(data['achievedRewardIds'] ?? []), // <--- ЗЧИТУВАННЯ
       profileSetupComplete: data['profileSetupComplete'] as bool? ?? false,
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp? ?? Timestamp.now(),
@@ -74,7 +84,6 @@ class UserProfile extends Equatable {
 
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid, // Зазвичай uid не зберігається в полях документа, а є його ID
       if (email != null) 'email': email,
       if (displayName != null) 'displayName': displayName,
       if (profilePictureUrl != null) 'profilePictureUrl': profilePictureUrl,
@@ -89,16 +98,18 @@ class UserProfile extends Equatable {
       'level': level,
       'currentStreak': currentStreak,
       'longestStreak': longestStreak,
-      if (lastWorkoutTimestamp != null) 'lastWorkoutTimestamp': lastWorkoutTimestamp, // <--- ЗАПИС
+      if (lastWorkoutTimestamp != null) 'lastWorkoutTimestamp': lastWorkoutTimestamp,
+      'followersCount': followersCount,
+      'followingCount': followingCount,
+      'achievedRewardIds': achievedRewardIds, // <--- ЗАПИС
       'profileSetupComplete': profileSetupComplete,
-      // createdAt і updatedAt зазвичай оновлюються через FieldValue.serverTimestamp()
     };
   }
 
   UserProfile copyWith({
     String? uid,
     String? email,
-    ValueGetter<String?>? displayName, // Використання ValueGetter для nullable полів
+    ValueGetter<String?>? displayName,
     ValueGetter<String?>? profilePictureUrl,
     ValueGetter<String?>? username,
     ValueGetter<String?>? gender,
@@ -111,14 +122,17 @@ class UserProfile extends Equatable {
     int? level,
     int? currentStreak,
     int? longestStreak,
-    ValueGetter<Timestamp?>? lastWorkoutTimestamp, // <--- ДОДАНО ValueGetter
+    ValueGetter<Timestamp?>? lastWorkoutTimestamp,
+    int? followersCount,
+    int? followingCount,
+    List<String>? achievedRewardIds, // <--- ДОДАНО
     bool? profileSetupComplete,
     Timestamp? createdAt,
     Timestamp? updatedAt,
   }) {
     return UserProfile(
       uid: uid ?? this.uid,
-      email: email ?? this.email, // email зазвичай не змінюється через copyWith, а береться з auth
+      email: email ?? this.email,
       displayName: displayName != null ? displayName() : this.displayName,
       profilePictureUrl: profilePictureUrl != null ? profilePictureUrl() : this.profilePictureUrl,
       username: username != null ? username() : this.username,
@@ -132,7 +146,10 @@ class UserProfile extends Equatable {
       level: level ?? this.level,
       currentStreak: currentStreak ?? this.currentStreak,
       longestStreak: longestStreak ?? this.longestStreak,
-      lastWorkoutTimestamp: lastWorkoutTimestamp != null ? lastWorkoutTimestamp() : this.lastWorkoutTimestamp, // <--- ОНОВЛЕНО
+      lastWorkoutTimestamp: lastWorkoutTimestamp != null ? lastWorkoutTimestamp() : this.lastWorkoutTimestamp,
+      followersCount: followersCount ?? this.followersCount,
+      followingCount: followingCount ?? this.followingCount,
+      achievedRewardIds: achievedRewardIds ?? this.achievedRewardIds, // <--- ВИКОРИСТАННЯ
       profileSetupComplete: profileSetupComplete ?? this.profileSetupComplete,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -143,7 +160,9 @@ class UserProfile extends Equatable {
   List<Object?> get props => [
         uid, email, displayName, profilePictureUrl, username, gender, dateOfBirth,
         heightCm, weightKg, fitnessGoal, activityLevel, xp, level,
-        currentStreak, longestStreak, lastWorkoutTimestamp, // <--- ДОДАНО
+        currentStreak, longestStreak, lastWorkoutTimestamp,
+        followersCount, followingCount,
+        achievedRewardIds, // <--- ДОДАНО В PROPS
         profileSetupComplete, createdAt, updatedAt
       ];
 }

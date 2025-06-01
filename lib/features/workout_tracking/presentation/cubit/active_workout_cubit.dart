@@ -238,54 +238,35 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         totalVolume: totalVolume,
       );
 
+      // Викликаємо оновлення сесії, що ініціює Cloud Function
       await _workoutLogRepository.completeWorkoutSession(sessionToComplete);
-      developer.log('ActiveWorkoutCubit: Workout ${sessionToComplete.id} completed. Volume: $totalVolume', name: 'ActiveWorkoutCubit');
+      developer.log('ActiveWorkoutCubit: Workout ${sessionToComplete.id} marked as completed. Waiting for Cloud Function to update profile.', name: 'ActiveWorkoutCubit');
       
-      int xpGained = 50; 
-      if (totalVolume > 0) xpGained += (totalVolume / 100).round();
-      if (duration > 0) xpGained += (duration / (5 * 60)).round();
-      xpGained = xpGained.clamp(10, 200);
-
-      UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
-      UserProfile? profileForCompletionScreen = userProfile;
-
-      if (userProfile != null) {
-        DateTime lastWorkoutDate = userProfile.lastWorkoutTimestamp?.toDate() ?? DateTime(1970);
-        DateTime currentWorkoutDate = sessionToComplete.startedAt.toDate();
-        int newCurrentStreak = userProfile.currentStreak;
-        bool isSameDayAsLastWorkout = lastWorkoutDate.year == currentWorkoutDate.year && lastWorkoutDate.month == currentWorkoutDate.month && lastWorkoutDate.day == currentWorkoutDate.day;
-
-        if (!isSameDayAsLastWorkout) {
-            DateTime nextDayAfterLast = lastWorkoutDate.add(const Duration(days: 1));
-            bool isConsecutiveDay = nextDayAfterLast.year == currentWorkoutDate.year && nextDayAfterLast.month == currentWorkoutDate.month && nextDayAfterLast.day == currentWorkoutDate.day;
-            newCurrentStreak = isConsecutiveDay ? newCurrentStreak + 1 : 1;
-        }
-        int newLongestStreak = userProfile.longestStreak > newCurrentStreak ? userProfile.longestStreak : newCurrentStreak;
-        int newXp = userProfile.xp + xpGained;
-        
-        final updatedProfileForDb = userProfile.copyWith(
-            currentStreak: newCurrentStreak,
-            longestStreak: newLongestStreak,
-            lastWorkoutTimestamp: () => sessionToComplete.endedAt ?? Timestamp.now(),
-            xp: newXp,
-        );
-
-        if (!isSameDayAsLastWorkout || newCurrentStreak != userProfile.currentStreak || userProfile.xp != newXp) {
-            await _userProfileRepository.updateUserProfile(updatedProfileForDb);
-            profileForCompletionScreen = updatedProfileForDb;
-            developer.log('ActiveWorkoutCubit: User profile updated. XP: $newXp, Streak: $newCurrentStreak', name: 'ActiveWorkoutCubit');
-        }
-      }
-
       _durationTimer?.cancel();
-      if (profileForCompletionScreen == null) {
-          emit(const ActiveWorkoutError("Could not retrieve user profile for completion screen."));
+
+      // Після того, як Cloud Function оновила профіль, зчитуємо його знову для UI
+      // Цей запит може бути швидшим, ніж оновлення через загальний стрім,
+      // оскільки ми явно запитуємо документ.
+      UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
+      
+      if (userProfile == null) {
+          emit(const ActiveWorkoutError("Could not retrieve user profile after workout completion."));
           return;
       }
+
+      // Для екрану завершення, нам все одно потрібно передати xpGained,
+      // оскільки Cloud Function не повертає його клієнту.
+      // XP GAINED ТУТ ЦЕ БУДЕ ОЦІНКА НА ОСНОВІ ТРИВАЛОСТІ/ОБ'ЄМУ, що збігається з функцією.
+      int xpGainedEstimated = 50; 
+      if (totalVolume > 0) xpGainedEstimated += (totalVolume / 100).round();
+      if (duration > 0) xpGainedEstimated += (duration / (5 * 60)).round();
+      xpGainedEstimated = xpGainedEstimated.clamp(10, 200);
+
+
       emit(ActiveWorkoutSuccessfullyCompleted(
           completedSession: sessionToComplete, 
-          xpGained: xpGained,
-          updatedUserProfile: profileForCompletionScreen 
+          xpGained: xpGainedEstimated, // Передаємо оцінене XP
+          updatedUserProfile: userProfile // Передаємо оновлений профіль
       ));
     } catch (e, s) {
       developer.log('ActiveWorkoutCubit: Error completing workout: $e', error:e, stackTrace:s, name: 'ActiveWorkoutCubit');

@@ -176,12 +176,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               );
               // Оновлюємо глобальний UserProfileCubit, якщо він існує
               try {
+                // `read` - це безпечний спосіб отримати кубіт, якщо він наданий у контексті.
+                // Якщо він не наданий, це викличе помилку, яку ми тут ловимо.
                 context.read<global_user_profile_cubit.UserProfileCubit>().updateUserProfileState(state.updatedProfile);
                  developer.log("Global UserProfileCubit updated", name: "ProfileSetupScreen.Listener");
               } catch (e) {
                 developer.log("Could not find or update global UserProfileCubit: $e", name: "ProfileSetupScreen.Listener");
               }
 
+              // Переходимо на AuthGate, щоб він зробив остаточну перевірку
+              // profileSetupComplete і перенаправив на HomePage.
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const HomePage()),
                 (Route<dynamic> route) => false,
@@ -193,7 +197,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               );
             }
           },
-          // Заповнюємо поля з ProfileSetupDataLoaded або ProfileSetupInitial
+          // Перебудовуємо UI тільки при певних змінах стану
           buildWhen: (previous, current) => current is ProfileSetupInitial || current is ProfileSetupDataLoaded || current is ProfileSetupLoading || current is ProfileSetupFailure,
           builder: (context, state) {
             developer.log("ProfileSetupScreen rebuilding UI with state: $state", name: "ProfileSetupScreen.Builder");
@@ -204,7 +208,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             } else if (state is ProfileSetupDataLoaded) {
               currentProfileUI = state.userProfile;
             } else if (state is ProfileSetupLoading && _profileSetupCubit.currentProfileSnapshot.uid.isNotEmpty) {
-              // Якщо завантаження, але є попередні дані, використовуємо їх
+              // Якщо завантаження, але є попередні дані, використовуємо їх, щоб UI не був порожнім
               currentProfileUI = _profileSetupCubit.currentProfileSnapshot;
             }
              else {
@@ -219,10 +223,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             }
 
             // Оновлюємо контролери та локальні змінні, якщо вони порожні,
-            // а в currentProfileUI є дані (це відбувається один раз при завантаженні даних)
-            // або якщо state є ProfileSetupDataLoaded.
+            // а в currentProfileUI є дані. Це відбувається після побудови фрейму,
+            // щоб уникнути викликів setState під час build.
              WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) { // Перевіряємо, чи віджет все ще в дереві
+                // Заповнюємо TextControllers
                 if (_usernameController.text.isEmpty && currentProfileUI.username != null) {
                   _usernameController.text = currentProfileUI.username!;
                 }
@@ -235,8 +240,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 if (_weightController.text.isEmpty && currentProfileUI.weightKg != null) {
                   _weightController.text = currentProfileUI.weightKg!.toStringAsFixed(1);
                 }
-                // Для Dropdown та DatePicker, setState викликається при зміні
-                // Але якщо вони null, а в currentProfileUI є значення, оновлюємо
+                // Для Dropdown та DatePicker, setState викликається при зміні користувачем.
+                // Але якщо вони null, а в currentProfileUI є значення, оновлюємо їх.
+                // Важливо: перевіряти, чи значення *поточних локальних змінних* є null,
+                // перш ніж оновлювати їх з `currentProfileUI`.
                 if (_selectedGender == null && currentProfileUI.gender != null) {
                   setState(() => _selectedGender = currentProfileUI.gender);
                 }

@@ -48,7 +48,7 @@ class ActiveWorkoutInProgress extends ActiveWorkoutState {
 class ActiveWorkoutSuccessfullyCompleted extends ActiveWorkoutState {
   final WorkoutSession completedSession;
   final int xpGained;
-  final UserProfile updatedUserProfile;
+  final UserProfile updatedUserProfile; // <--- ДОДАНО ЦЕ ПОЛЕ
 
   const ActiveWorkoutSuccessfullyCompleted({
     required this.completedSession,
