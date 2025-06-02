@@ -9,12 +9,12 @@ import '../../../profile/presentation/cubit/user_profile_cubit.dart';
 import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../../notifications/presentation/widgets/notification_list_item.dart';
 import '../../../../core/domain/repositories/workout_log_repository.dart';
-import '../../../../core/domain/repositories/routine_repository.dart'; // Для UpcomingScheduleCubit
+import '../../../../core/domain/repositories/routine_repository.dart'; 
 
 import '../cubit/dashboard_stats_cubit.dart';
 import '../widgets/volume_trend_chart_widget.dart';
-import '../cubit/upcoming_schedule_cubit.dart'; // Новий імпорт
-import '../widgets/upcoming_schedule_widget.dart'; // Новий імпорт
+import '../cubit/upcoming_schedule_cubit.dart'; 
+import '../widgets/upcoming_schedule_widget.dart'; 
 
 
 class DashboardScreen extends StatelessWidget {
@@ -70,15 +70,16 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     developer.log("DashboardScreen: Building UI", name: "DashboardScreen");
 
-    return MultiBlocProvider( // Використовуємо MultiBlocProvider
+    return MultiBlocProvider( 
       providers: [
         BlocProvider(
           create: (cubitContext) => DashboardStatsCubit(
             RepositoryProvider.of<WorkoutLogRepository>(cubitContext),
+            RepositoryProvider.of<RoutineRepository>(cubitContext), // Added RoutineRepository
             RepositoryProvider.of<fb_auth.FirebaseAuth>(cubitContext),
           ),
         ),
-        BlocProvider( // Додаємо UpcomingScheduleCubit
+        BlocProvider( 
           create: (cubitContext) => UpcomingScheduleCubit(
             RepositoryProvider.of<RoutineRepository>(cubitContext),
             RepositoryProvider.of<fb_auth.FirebaseAuth>(cubitContext),
@@ -104,7 +105,7 @@ class DashboardScreen extends StatelessWidget {
             weightStat = userProfile.weightKg != null
                 ? '${userProfile.weightKg!.toStringAsFixed(1)} KG'
                 : '-- KG';
-            streakStat = '${userProfile.currentStreak} DAY'; // Це поточний стрік
+            streakStat = '${userProfile.currentStreak} DAY'; 
             currentStreakForIcon = userProfile.currentStreak.toString();
           } else if (userState is UserProfileLoading) {
             greetingName = 'Loading...';
@@ -125,8 +126,8 @@ class DashboardScreen extends StatelessWidget {
                 context.read<UserProfileCubit>().fetchUserProfile(userId, forceRemote: true);
                 context.read<NotificationsCubit>().refreshNotifications(); 
               }
-              context.read<DashboardStatsCubit>().fetchVolumeTrend();
-              context.read<UpcomingScheduleCubit>().fetchUpcomingSchedule(); // Оновлюємо розклад
+              context.read<DashboardStatsCubit>().fetchAllDashboardStats(); // Changed to fetch all
+              context.read<UpcomingScheduleCubit>().fetchUpcomingSchedule(); 
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -241,20 +242,30 @@ class DashboardScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatsItem(context, weightStat, 'WEIGHT'),
-                      _buildStatsItem(context, streakStat, 'STREAK'), // Поточний стрік
-                      _buildStatsItem(context, '100%', 'ADHERENCE'),
-                    ],
+                  BlocBuilder<DashboardStatsCubit, DashboardStatsState>(
+                    builder: (context, statsState) {
+                      String adherenceDisplay = '-- %';
+                      if (statsState is DashboardStatsLoaded) {
+                        if (statsState.adherencePercentage != null) {
+                          adherenceDisplay = '${statsState.adherencePercentage!.toStringAsFixed(0)}%';
+                        } else {
+                          adherenceDisplay = 'N/A';
+                        }
+                      }
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildStatsItem(context, weightStat, 'WEIGHT'),
+                          _buildStatsItem(context, streakStat, 'STREAK'), 
+                          _buildStatsItem(context, adherenceDisplay, 'ADHERENCE'), // Updated
+                        ],
+                      );
+                    }
                   ),
                   const SizedBox(height: 32),
 
-                  // --- Новий віджет розкладу ---
                   const UpcomingScheduleWidget(),
                   const SizedBox(height: 32),
-                  // --- Кінець нового віджету ---
 
                   BlocBuilder<NotificationsCubit, NotificationsState>(
                     builder: (context, notificationsState) {

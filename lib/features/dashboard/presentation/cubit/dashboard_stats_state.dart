@@ -13,13 +13,16 @@ class DashboardStatsInitial extends DashboardStatsState {}
 class DashboardStatsLoading extends DashboardStatsState {}
 
 class DashboardStatsLoaded extends DashboardStatsState {
-  // Об'єми в кілограмах (не в тисячах), для точності передачі
-  final List<double> volumes; // Останні 7 тренувань, від старого до нового
+  final List<double> volumes; // Last 7 workouts, oldest to newest
+  final double? adherencePercentage; // Adherence for the last 7 days
 
-  const DashboardStatsLoaded({required this.volumes});
+  const DashboardStatsLoaded({
+    required this.volumes,
+    this.adherencePercentage,
+  });
 
   @override
-  List<Object?> get props => [volumes];
+  List<Object?> get props => [volumes, adherencePercentage];
 }
 
 class DashboardStatsError extends DashboardStatsState {
