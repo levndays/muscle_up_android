@@ -2,7 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer' as developer;
+
 import '../../../../core/domain/repositories/routine_repository.dart';
+import '../../../../core/domain/entities/routine.dart'; // Додаємо, якщо RoutineListItem його потребує
 import '../cubit/user_routines_cubit.dart';
 import '../widgets/routine_list_item.dart';
 import 'create_edit_routine_screen.dart';
@@ -10,10 +13,9 @@ import 'create_edit_routine_screen.dart';
 class UserRoutinesScreen extends StatelessWidget {
   const UserRoutinesScreen({super.key});
 
-  // Змінюємо метод: він тепер приймає сам Cubit, а не BuildContext
-  Future<void> _handleRoutineUpsertResult(UserRoutinesCubit cubit, bool? routineWasSaved) async {
-    if (routineWasSaved == true) {
-      // Якщо рутина була збережена (нова або оновлена), оновлюємо список
+  Future<void> _handleRoutineUpsertResult(UserRoutinesCubit cubit, bool? routineWasSavedOrUpdated) async {
+    if (routineWasSavedOrUpdated == true) {
+      developer.log("UserRoutinesScreen: Routine was saved/updated, fetching routines.", name: "UserRoutinesScreen.Handler");
       cubit.fetchUserRoutines();
     }
   }
@@ -35,56 +37,23 @@ class UserRoutinesScreen extends StatelessWidget {
             }
           },
           builder: (context, state) {
-            // Отримуємо екземпляр Cubit тут, з правильного контексту
             final userRoutinesCubit = context.read<UserRoutinesCubit>();
+            List<UserRoutine> routinesToDisplay = [];
+            bool isLoading = false;
 
-            if (state is UserRoutinesInitial || state is UserRoutinesLoading) {
+            if (state is UserRoutinesInitial) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is UserRoutinesLoaded) {
-              if (state.routines.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.list_alt_outlined, size: 60, color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
-                        const SizedBox(height: 16),
-                        const Text('You have no routines yet.', style: TextStyle(fontSize: 18, color: Colors.grey), textAlign: TextAlign.center),
-                        const SizedBox(height: 8),
-                        const Text('Create a routine to start organizing your workouts!', style: TextStyle(fontSize: 15, color: Colors.grey), textAlign: TextAlign.center),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Create Your First Routine'),
-                          onPressed: () async {
-                            final currentContext = context; // Захоплюємо context для Navigator
-                            final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
-                              builder: (_) => const CreateEditRoutineScreen(),
-                            ));
-                            if (!currentContext.mounted) return;
-                            // Використовуємо захоплений екземпляр Cubit
-                            _handleRoutineUpsertResult(userRoutinesCubit, result);
-                          },
-                        )
-                      ],
-                    ),
-                  ),
-                );
+            } else if (state is UserRoutinesLoading) {
+              routinesToDisplay = state.routines; // Використовуємо дані з UserRoutinesLoading
+              isLoading = true; // Позначаємо, що йде завантаження
+              // Якщо routinesToDisplay порожній і це перший раз (стан не був UserRoutinesLoaded),
+              // то покажемо індикатор завантаження
+              if (routinesToDisplay.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
               }
-              return ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 70),
-                itemCount: state.routines.length,
-                itemBuilder: (context, index) {
-                  final routine = state.routines[index];
-                  return RoutineListItem(
-                    routine: routine,
-                    // Колбеки тепер використовують userRoutinesCubit, отриманий з builder
-                    onRoutineUpdated: () => userRoutinesCubit.fetchUserRoutines(),
-                    onRoutineDeleted: () => userRoutinesCubit.routineDeleted(routine.id),
-                  );
-                },
-              );
+            } else if (state is UserRoutinesLoaded) {
+              routinesToDisplay = state.routines;
+              isLoading = false;
             } else if (state is UserRoutinesError) {
               return Center(
                  child: Padding(
@@ -105,24 +74,80 @@ class UserRoutinesScreen extends StatelessWidget {
                 )
               );
             }
-            return const Center(child: Text('Press button to load routines or create one.'));
+
+
+            if (routinesToDisplay.isEmpty && !isLoading) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.list_alt_outlined, size: 60, color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                      const SizedBox(height: 16),
+                      const Text('You have no routines yet.', style: TextStyle(fontSize: 18, color: Colors.grey), textAlign: TextAlign.center),
+                      const SizedBox(height: 8),
+                      const Text('Create a routine to start organizing your workouts!', style: TextStyle(fontSize: 15, color: Colors.grey), textAlign: TextAlign.center),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.add_circle_outline),
+                        label: const Text('Create Your First Routine'),
+                        onPressed: () async {
+                          final currentContext = context;
+                          final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
+                            builder: (_) => const CreateEditRoutineScreen(),
+                          ));
+                          if (!currentContext.mounted) return;
+                          _handleRoutineUpsertResult(userRoutinesCubit, result);
+                        },
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            // Якщо є дані для відображення (або йде оновлення і є старі дані)
+            return RefreshIndicator(
+              onRefresh: () => userRoutinesCubit.fetchUserRoutines(),
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 80),
+                itemCount: routinesToDisplay.length + (isLoading && routinesToDisplay.isNotEmpty ? 1 : 0), // Додаємо місце для індикатора внизу, якщо є дані і йде завантаження
+                itemBuilder: (context, index) {
+                  if (isLoading && routinesToDisplay.isNotEmpty && index == routinesToDisplay.length) {
+                    return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator()));
+                  }
+                  final routine = routinesToDisplay[index];
+                  return RoutineListItem(
+                    routine: routine,
+                    onRoutineUpdated: () => userRoutinesCubit.fetchUserRoutines(),
+                    onRoutineDeleted: () => userRoutinesCubit.routineDeleted(routine.id),
+                  );
+                },
+              ),
+            );
           },
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            // Так само отримуємо Cubit з контексту builder'а
-            final userRoutinesCubit = context.read<UserRoutinesCubit>();
-            final currentContext = context; // Захоплюємо context для Navigator
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Builder(
+          builder: (fabContext) {
+            return FloatingActionButton.extended(
+              onPressed: () async {
+                final userRoutinesCubit = fabContext.read<UserRoutinesCubit>();
+                final currentFabContext = fabContext; 
 
-            final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
-              builder: (_) => const CreateEditRoutineScreen(),
-            ));
-            if (!currentContext.mounted) return;
-            _handleRoutineUpsertResult(userRoutinesCubit, result);
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('New Routine'),
-          tooltip: 'Create a new routine',
+                final result = await Navigator.of(currentFabContext).push<bool>(MaterialPageRoute(
+                  builder: (_) => const CreateEditRoutineScreen(),
+                ));
+                if (!currentFabContext.mounted) return;
+                _handleRoutineUpsertResult(userRoutinesCubit, result);
+              },
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('NEW ROUTINE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              tooltip: 'Create a new routine',
+            );
+          }
         ),
       ),
     );

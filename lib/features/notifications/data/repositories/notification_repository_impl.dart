@@ -16,8 +16,6 @@ class NotificationRepositoryImpl implements NotificationRepository {
     return _firestore.collection('users').doc(userId).collection('notifications');
   }
 
-  // ... (getUserNotificationsStream, getUnreadNotificationsCountStream, markNotificationAsRead, markAllNotificationsAsRead - залишаються без змін) ...
-
   @override
   Stream<List<AppNotification>> getUserNotificationsStream(String userId) {
     if (userId.isEmpty) return Stream.value([]);
@@ -32,7 +30,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
           .toList();
     }).handleError((error, stackTrace) {
        developer.log('Error in notifications stream for user $userId: $error', error: error, stackTrace: stackTrace, name: 'NotificationRepoImpl');
-       return <AppNotification>[]; 
+       return <AppNotification>[];
     });
   }
 
@@ -103,8 +101,27 @@ class NotificationRepositoryImpl implements NotificationRepository {
     }
   }
 
-   Future<void> createTestNotification(String userId, {required String title, required String message, NotificationType type = NotificationType.custom}) async {
+   Future<void> createTestNotification(String userId, {required String title, required String message, required NotificationType type}) async {
     if (userId.isEmpty) return;
+    
+    String iconName;
+    switch (type) {
+      case NotificationType.achievementUnlocked:
+        iconName = 'emoji_events';
+        break;
+      case NotificationType.workoutReminder:
+        iconName = 'fitness_center';
+        break;
+      case NotificationType.advice: // <--- Додано обробку для нового типу
+        iconName = 'lightbulb_outline'; // Або інша іконка для порад
+        break;
+      case NotificationType.systemMessage:
+         iconName = 'info_outline';
+         break;
+      default:
+        iconName = 'notifications';
+    }
+
     final newNotif = AppNotification(
       id: '', 
       type: type,
@@ -112,13 +129,13 @@ class NotificationRepositoryImpl implements NotificationRepository {
       message: message,
       timestamp: Timestamp.now(),
       isRead: false,
-      iconName: type == NotificationType.achievementUnlocked ? 'emoji_events' : (type == NotificationType.workoutReminder ? 'fitness_center' : 'notifications'),
+      iconName: iconName,
     );
     try {
       await _userNotificationsCollection(userId).add(newNotif.toMap()..['timestamp'] = FieldValue.serverTimestamp());
-      developer.log('Test notification created for $userId', name: 'NotificationRepoImpl');
+      developer.log('Test notification (type: ${type.name}) created for $userId', name: 'NotificationRepoImpl');
     } catch (e,s) {
-      developer.log('Error creating test notification for $userId: $e', error: e, stackTrace: s, name: 'NotificationRepoImpl');
+      developer.log('Error creating test notification (type: ${type.name}) for $userId: $e', error: e, stackTrace: s, name: 'NotificationRepoImpl');
     }
   }
 }

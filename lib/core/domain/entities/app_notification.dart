@@ -8,6 +8,7 @@ enum NotificationType {
   newFollower,         // Новий підписник (на майбутнє)
   routineShared,       // Хтось поділився рутиною (на майбутнє)
   systemMessage,       // Системне повідомлення
+  advice,              // Новий тип для порад
   custom,              // Інший тип
 }
 

@@ -10,7 +10,15 @@ abstract class UserRoutinesState extends Equatable {
 
 class UserRoutinesInitial extends UserRoutinesState {}
 
-class UserRoutinesLoading extends UserRoutinesState {}
+class UserRoutinesLoading extends UserRoutinesState {
+  final List<UserRoutine> routines; // Може містити попередньо завантажені рутини
+
+  // Конструктор за замовчуванням, якщо немає попередніх даних
+  const UserRoutinesLoading({this.routines = const []}); 
+
+  @override
+  List<Object> get props => [routines];
+}
 
 class UserRoutinesLoaded extends UserRoutinesState {
   final List<UserRoutine> routines;

@@ -29,8 +29,15 @@ class ProgressLoaded extends ProgressState {
   final int xpForCurrentLevelStart; // Кількість XP, необхідна для досягнення початку поточного рівня.
   final int xpForNextLevelTotal; // Загальна кількість XP для завершення поточного рівня (відносно початку рівня).
   final Map<String, double> volumePerMuscleGroup7Days; // Мапа: ID групи м'язів (з SVG) -> Об'єм тренувань (наприклад, кількість сетів) за останні 7 днів.
-  final Map<String, double> avgRpePerExercise30Days;   // Мапа: ID predefinedExercise -> Середнє RPE за останні 30 днів.
-  final Map<String, double> avgWorkingWeights90Days; // Мапа: ID predefinedExercise -> Середня робоча вага за останні 90 днів.
+  
+  final Map<String, double> avgRpePerExercise30Days;
+  final Map<String, List<double>> rpePerWorkoutTrend;
+
+  final Map<String, double> avgWorkingWeights90Days; 
+  // Нове поле для тренду робочої ваги за останні N тренувань
+  // Ключ - exerciseId, значення - список середніх робочих ваг для цієї вправи за кожне тренування (де вона була)
+  final Map<String, List<double>> workingWeightPerWorkoutTrend;
+
 
   const ProgressLoaded({
     required this.userProfile,
@@ -39,7 +46,9 @@ class ProgressLoaded extends ProgressState {
     required this.xpForNextLevelTotal,
     this.volumePerMuscleGroup7Days = const {},
     this.avgRpePerExercise30Days = const {},
+    this.rpePerWorkoutTrend = const {},
     this.avgWorkingWeights90Days = const {},
+    this.workingWeightPerWorkoutTrend = const {}, // Ініціалізація нового поля
   });
 
   @override
@@ -50,10 +59,11 @@ class ProgressLoaded extends ProgressState {
         xpForNextLevelTotal,
         volumePerMuscleGroup7Days,
         avgRpePerExercise30Days,
+        rpePerWorkoutTrend,
         avgWorkingWeights90Days,
+        workingWeightPerWorkoutTrend, // Додано в props
       ];
 
-  // Метод для створення копії стану з можливістю оновлення окремих полів.
   ProgressLoaded copyWith({
     UserProfile? userProfile,
     LeagueInfo? currentLeague,
@@ -61,7 +71,9 @@ class ProgressLoaded extends ProgressState {
     int? xpForNextLevelTotal,
     Map<String, double>? volumePerMuscleGroup7Days,
     Map<String, double>? avgRpePerExercise30Days,
+    Map<String, List<double>>? rpePerWorkoutTrend,
     Map<String, double>? avgWorkingWeights90Days,
+    Map<String, List<double>>? workingWeightPerWorkoutTrend, // Оновлено тип
   }) {
     return ProgressLoaded(
       userProfile: userProfile ?? this.userProfile,
@@ -70,25 +82,23 @@ class ProgressLoaded extends ProgressState {
       xpForNextLevelTotal: xpForNextLevelTotal ?? this.xpForNextLevelTotal,
       volumePerMuscleGroup7Days: volumePerMuscleGroup7Days ?? this.volumePerMuscleGroup7Days,
       avgRpePerExercise30Days: avgRpePerExercise30Days ?? this.avgRpePerExercise30Days,
+      rpePerWorkoutTrend: rpePerWorkoutTrend ?? this.rpePerWorkoutTrend,
       avgWorkingWeights90Days: avgWorkingWeights90Days ?? this.avgWorkingWeights90Days,
+      workingWeightPerWorkoutTrend: workingWeightPerWorkoutTrend ?? this.workingWeightPerWorkoutTrend, // Оновлено
     );
   }
 }
 
-// Стан, що вказує на помилку під час завантаження або обробки даних.
 class ProgressError extends ProgressState {
-  final String message; // Повідомлення про помилку.
+  final String message;
   const ProgressError(this.message);
   @override
   List<Object?> get props => [message];
 }
 
-// Допоміжний клас для представлення точки даних на графіку (наприклад, для робочої ваги).
-// Хоча `avgWorkingWeights90Days` тепер зберігає лише середнє значення,
-// цей клас може бути корисним, якщо в майбутньому знадобиться відображати історію ваги.
 class WorkoutDataPoint extends Equatable {
-  final DateTime date; // Дата тренування.
-  final double value;  // Значення (наприклад, вага або RPE).
+  final DateTime date;
+  final double value;
 
   const WorkoutDataPoint(this.date, this.value);
 

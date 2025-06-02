@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
-import 'dart:ui' show lerpDouble;
+import 'dart:ui' as ui show lerpDouble, PathMetric, Path;
 
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../../../../core/domain/repositories/league_repository.dart';
@@ -13,12 +13,21 @@ import '../cubit/progress_cubit.dart';
 import '../widgets/league_title_widget.dart';
 import '../widgets/xp_progress_bar_widget.dart';
 import '../widgets/muscle_map_widget.dart';
+// Імпорти для сповіщень
+import '../../../../core/domain/entities/app_notification.dart';
+import '../../../notifications/presentation/cubit/notifications_cubit.dart';
+import '../../../notifications/presentation/widgets/notification_list_item.dart';
+
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // NotificationsCubit вже надається HomePage, тому ми можемо отримати його тут,
+    // якщо ProgressScreen є його нащадком.
+    // Якщо ні, його потрібно буде надати вище в дереві або тут.
+    // Для простоти, припустимо, що він доступний через context.watch або context.read.
     return BlocProvider(
       create: (context) => ProgressCubit(
         RepositoryProvider.of<UserProfileRepository>(context),
@@ -36,9 +45,36 @@ class _ProgressView extends StatelessWidget {
   const _ProgressView();
 
   static const Color primaryOrange = Color(0xFFED5D1A);
+  static const Color trendUpColor = Colors.green;
+  static const Color trendDownColor = Colors.redAccent;
+  static const Color trendNeutralColor = Colors.grey;
+
+  void _createTestAdviceNotifications(BuildContext ctx) {
+    final cubit = ctx.read<NotificationsCubit>();
+    cubit.createTestNotification(
+      title: "Hydration Tip",
+      message: "Remember to drink at least 8 glasses of water today, especially on training days!",
+      type: NotificationType.advice
+    );
+    cubit.createTestNotification(
+      title: "Rest & Recovery",
+      message: "Muscles grow during rest. Ensure you're getting 7-9 hours of sleep for optimal recovery.",
+      type: NotificationType.advice
+    );
+     cubit.createTestNotification(
+      title: "Nutrition Insight",
+      message: "Prioritize protein intake within an hour after your workout to aid muscle repair.",
+      type: NotificationType.advice
+    );
+    developer.log("Test ADVICE notifications creation requested from ProgressScreen", name: "ProgressScreen");
+     ScaffoldMessenger.of(ctx).showSnackBar(
+      const SnackBar(content: Text('Test advice sent! Check your notifications and ADVICE section.'), duration: Duration(seconds: 3),)
+    );
+  }
+
 
   Color _getRpeColor(double rpeValue) {
-    final double t = (rpeValue / 10.0).clamp(0.0, 1.0);
+    final double t = (rpeValue.clamp(0, 10) / 10.0);
     if (t <= 0.35) {
       return Color.lerp(Colors.green.shade500, Colors.yellow.shade600, t / 0.35)!;
     } else if (t <= 0.7) {
@@ -47,6 +83,16 @@ class _ProgressView extends StatelessWidget {
       return Color.lerp(Colors.orange.shade700, Colors.red.shade700, (t - 0.7) / 0.3)!;
     }
   }
+
+  Color _getTrendColor(List<double> dataPoints) {
+    if (dataPoints.length < 2) return trendNeutralColor;
+    final double first = dataPoints.first;
+    final double last = dataPoints.last;
+    if (last > first) return trendUpColor;
+    if (last < first) return trendDownColor;
+    return trendNeutralColor;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +106,6 @@ class _ProgressView extends StatelessWidget {
           if (state is ProgressInitial) {
             contentToShow = const Center(child: CircularProgressIndicator());
           } else if (state is ProgressLoading) {
-            // Показуємо індикатор завантаження з повідомленням, якщо воно є
             contentToShow = Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -95,8 +140,9 @@ class _ProgressView extends StatelessWidget {
           } else if (state is ProgressLoaded) {
             final userProfile = state.userProfile;
             final currentLeague = state.currentLeague;
-            final currentXpInLevel = (userProfile.xp - state.xpForCurrentLevelStart).clamp(0, state.xpForNextLevelTotal);
-            final xpToNext = state.xpForNextLevelTotal - currentXpInLevel;
+
+            final int currentXpInLevel = (userProfile.xp - state.xpForCurrentLevelStart).clamp(0, state.xpForNextLevelTotal);
+            final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel;
 
             final String gender = userProfile.gender?.toLowerCase() ?? 'male';
             final String frontSvgPath = gender == 'female'
@@ -105,15 +151,21 @@ class _ProgressView extends StatelessWidget {
             final String backSvgPath = gender == 'female'
                 ? 'assets/images/female_back.svg'
                 : 'assets/images/male_back.svg';
-            
-            const Color baseMuscleColor = Color(0xFFF0F0F0); 
-            const Color midMuscleColor = primaryOrange; 
-            const Color maxMuscleColor = Color(0xFFD50000); 
+
+            const Color baseMuscleColor = Color(0xFFF0F0F0);
+            const Color midMuscleColor = primaryOrange;
+            const Color maxMuscleColor = Color(0xFFD50000);
             const double midThresholdMuscle = 10.0;
             const double maxThresholdMuscle = 20.0;
 
-            developer.log("ProgressScreen building with MuscleMap. Gender: $gender, Front SVG: $frontSvgPath, Back SVG: $backSvgPath", name: "ProgressScreen.BuildLoaded");
-            developer.log("MuscleData for map: ${state.volumePerMuscleGroup7Days}", name: "ProgressScreen.BuildLoaded");
+            final exercisesWithRpeTrend = state.rpePerWorkoutTrend.entries
+                .where((entry) => entry.value.isNotEmpty)
+                .toList();
+
+            final exercisesWithWeightTrend = state.workingWeightPerWorkoutTrend.entries
+                .where((entry) => entry.value.isNotEmpty)
+                .toList();
+
 
             contentToShow = SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -135,8 +187,8 @@ class _ProgressView extends StatelessWidget {
                     XPProgressBarWidget(
                       currentXp: currentXpInLevel,
                       xpForNextLevel: state.xpForNextLevelTotal,
-                      startLevelXpText: '${state.xpForCurrentLevelStart}',
-                      endLevelXpText: '${state.xpForCurrentLevelStart + state.xpForNextLevelTotal}',
+                      startLevelXpText: '$currentXpInLevel',
+                      endLevelXpText: '${state.xpForNextLevelTotal}',
                     ),
                     Center(
                       child: Text(
@@ -151,12 +203,12 @@ class _ProgressView extends StatelessWidget {
 
                     Text('VOLUME (LAST 7 DAYS - SETS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    if (state.volumePerMuscleGroup7Days.isEmpty) // Показуємо, якщо дані порожні (після завантаження)
+                    if (state.volumePerMuscleGroup7Days.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20.0),
                         child: Center(child: Text("No workout data for the last 7 days to display on muscle map.", style: TextStyle(color: Colors.grey.shade600))),
                       )
-                    else 
+                    else
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -189,38 +241,68 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text('EXERTION (AVG RPE - LAST 30 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('EXERTION (RPE TREND - LAST ${ProgressCubit.maxWorkoutsForTrend} WORKOUTS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    if (state.avgRpePerExercise30Days.isEmpty)
-                      const Text('No RPE data logged in the last 30 days.', style: TextStyle(color: Colors.grey))
+                    if (exercisesWithRpeTrend.isEmpty)
+                      const Text('No RPE data logged recently for any exercise.', style: TextStyle(color: Colors.grey))
                     else
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: state.avgRpePerExercise30Days.length,
+                        itemCount: exercisesWithRpeTrend.length,
                         itemBuilder: (context, index) {
-                          final entry = state.avgRpePerExercise30Days.entries.elementAt(index);
-                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'Exercise ${entry.key.substring(0,5)}...';
-                          final rpeColor = _getRpeColor(entry.value);
+                          final entry = exercisesWithRpeTrend[index];
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'EXERCISE ${entry.key.substring(0,5)}...';
+                          final double rpeForColorAndAvg = state.avgRpePerExercise30Days[entry.key] ??
+                                                     (entry.value.isNotEmpty ? entry.value.reduce((a,b) => a+b) / entry.value.length : 5.0);
+                          final rpeColor = _getRpeColor(rpeForColorAndAvg);
+
                           return Card(
-                            elevation: 1,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            child: ListTile(
-                              title: Text(exerciseName, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
-                              trailing: Text(
-                                entry.value.toStringAsFixed(1),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: rpeColor,
-                                  shadows: [
-                                    Shadow(
-                                      blurRadius: 1.0,
-                                      color: Colors.black.withOpacity(0.2),
-                                      offset: const Offset(0.5, 0.5),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          exerciseName.toUpperCase(),
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.black87,
+                                            fontSize: 15,
+                                          )
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'AVG. RPE - ${rpeForColorAndAvg.toStringAsFixed(1)}',
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            color: rpeColor,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 2,
+                                    child: SizedBox(
+                                      height: 30,
+                                      child: ValueSparkline(
+                                        dataPoints: entry.value,
+                                        lineColor: rpeColor,
+                                        smooth: true,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -228,26 +310,67 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text('WORKING WEIGHTS (AVG - LAST 90 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('STRENGTH (WEIGHT TREND - LAST ${ProgressCubit.maxWorkoutsForTrend} WORKOUTS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                     if (state.avgWorkingWeights90Days.isEmpty)
-                      const Text('No weight data logged in the last 90 days.', style: TextStyle(color: Colors.grey))
+                     if (exercisesWithWeightTrend.isEmpty)
+                      const Text('No weight data logged recently for any exercise.', style: TextStyle(color: Colors.grey))
                     else
                        ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: state.avgWorkingWeights90Days.length,
+                        itemCount: exercisesWithWeightTrend.length,
                         itemBuilder: (context, index) {
-                          final entry = state.avgWorkingWeights90Days.entries.elementAt(index);
-                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'Exercise ${entry.key.substring(0,5)}...';
+                          final entry = exercisesWithWeightTrend[index];
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'EXERCISE ${entry.key.substring(0,5)}...';
+                          final double avgWeight = entry.value.isNotEmpty ? entry.value.reduce((a,b) => a+b) / entry.value.length : 0.0;
+                          final trendColor = _getTrendColor(entry.value);
+
                           return Card(
-                            elevation: 1,
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            child: ListTile(
-                              title: Text(exerciseName, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
-                              trailing: Text(
-                                'Avg: ${entry.value.toStringAsFixed(1)} KG',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: primaryOrange),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          exerciseName.toUpperCase(),
+                                           style: theme.textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.black87,
+                                            fontSize: 15,
+                                          )
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'AVG. WEIGHT - ${avgWeight.toStringAsFixed(1)} KG',
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            color: trendColor,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 2,
+                                    child: SizedBox(
+                                      height: 30,
+                                      child: ValueSparkline(
+                                        dataPoints: entry.value,
+                                        lineColor: trendColor,
+                                        smooth: true,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -257,25 +380,64 @@ class _ProgressView extends StatelessWidget {
 
                     Text('ADVICE', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text('Personalized advice based on your progress will appear here soon!', style: TextStyle(color: Colors.blueGrey)),
+                    BlocBuilder<NotificationsCubit, NotificationsState>(
+                      builder: (context, notificationsState) {
+                        if (notificationsState is NotificationsLoaded) {
+                          final adviceNotifications = notificationsState.notifications
+                              .where((n) => n.type == NotificationType.advice)
+                              .take(3) // Показуємо останні 3 поради
+                              .toList();
+                          if (adviceNotifications.isEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.blueGrey.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text('No new advice at the moment. Keep up the great work!', style: TextStyle(color: Colors.blueGrey)),
+                            );
+                          }
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: adviceNotifications.length,
+                            itemBuilder: (ctx, index) {
+                              // Використовуємо існуючий NotificationListItem для відображення поради
+                              return NotificationListItem(notification: adviceNotifications[index]);
+                            },
+                          );
+                        } else if (notificationsState is NotificationsLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (notificationsState is NotificationsError) {
+                          return Text('Error loading advice: ${notificationsState.message}', style: const TextStyle(color: Colors.red));
+                        }
+                        return const Text('Loading advice...');
+                      },
                     ),
+                    const SizedBox(height: 10),
+                     // ================== ТИМЧАСОВА ТЕСТОВА КНОПКА (початок) ==================
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.lightbulb_outline),
+                        label: const Text("Send Test Advice"),
+                        onPressed: () => _createTestAdviceNotifications(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.tealAccent.shade400,
+                          foregroundColor: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    // ================== ТИМЧАСОВА ТЕСТОВА КНОПКА (кінець) ==================
                     const SizedBox(height: 20),
                   ],
                 ),
               );
           } else {
-             // Якщо стан не ProgressInitial, ProgressLoading, ProgressError або ProgressLoaded,
-             // то це дійсно непередбачений стан.
             contentToShow = const Center(child: Text('An unexpected state occurred. Please try again.'));
             developer.log("ProgressScreen: Reached unexpected state: $state", name: "ProgressScreen.Build");
           }
-          
+
           return RefreshIndicator(
             onRefresh: () async {
               developer.log("Pull-to-refresh initiated on ProgressScreen", name: "ProgressScreen.Refresh");
@@ -286,5 +448,124 @@ class _ProgressView extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class ValueSparkline extends StatelessWidget {
+  final List<double> dataPoints;
+  final Color lineColor;
+  final double strokeWidth;
+  final bool smooth;
+
+  const ValueSparkline({
+    super.key,
+    required this.dataPoints,
+    this.lineColor = Colors.orange,
+    this.strokeWidth = 2.0,
+    this.smooth = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (dataPoints.length < 2) {
+      return Container(
+        alignment: Alignment.center,
+        child: Text('~', style: TextStyle(fontSize: 24, color: lineColor.withOpacity(0.5))),
+      );
+    }
+    return CustomPaint(
+      painter: _SparklinePainter(
+          dataPoints: dataPoints,
+          lineColor: lineColor,
+          strokeWidth: strokeWidth,
+          smooth: smooth),
+      size: Size.infinite,
+    );
+  }
+}
+
+class _SparklinePainter extends CustomPainter {
+  final List<double> dataPoints;
+  final Color lineColor;
+  final double strokeWidth;
+  final bool smooth;
+
+  _SparklinePainter({
+    required this.dataPoints,
+    required this.lineColor,
+    required this.strokeWidth,
+    required this.smooth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (dataPoints.length < 2) return;
+
+    final paint = Paint()
+      ..color = lineColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    double minVal = dataPoints.reduce((a, b) => a < b ? a : b);
+    double maxVal = dataPoints.reduce((a, b) => a > b ? a : b);
+
+    double paddingY = (maxVal - minVal) * 0.15;
+    if (paddingY < 0.5 && maxVal > 0) paddingY = 0.5;
+     // Якщо всі значення однакові (або майже однакові), забезпечуємо мінімальний діапазон для візуалізації
+    if (maxVal - minVal < 1.0) { // Наприклад, якщо різниця менше 1
+        minVal = minVal - 0.5; // Трохи розширюємо діапазон
+        maxVal = maxVal + 0.5;
+    } else { // Якщо діапазон достатній, додаємо невеликий відступ
+        paddingY = (maxVal - minVal) * 0.1; // 10% від діапазону
+        minVal -= paddingY;
+        maxVal += paddingY;
+    }
+    if (minVal == maxVal) { // Якщо після всіх маніпуляцій вони все ще рівні
+        minVal -= 0.5; // Гарантуємо, що діапазон не нульовий
+        maxVal += 0.5;
+    }
+
+
+    double valRange = maxVal - minVal;
+    if (valRange == 0) valRange = 1;
+
+    final path = Path();
+    final List<Offset> points = [];
+
+    for (int i = 0; i < dataPoints.length; i++) {
+      double x = (i / (dataPoints.length - 1)) * size.width;
+      double y = size.height * (1 - ((dataPoints[i] - minVal) / valRange));
+      points.add(Offset(x, y.clamp(0.0, size.height)));
+    }
+
+    if (!smooth || points.length < 2) {
+      path.moveTo(points[0].dx, points[0].dy);
+      for (int i = 1; i < points.length; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+    } else {
+      path.moveTo(points[0].dx, points[0].dy);
+      for (int i = 0; i < points.length - 1; i++) {
+        final p0 = points[i];
+        final p1 = points[i+1];
+
+        final cp1x = p0.dx + (p1.dx - p0.dx) / 2.5;
+        final cp1y = p0.dy;
+        final cp2x = p1.dx - (p1.dx - p0.dx) / 2.5;
+        final cp2y = p1.dy;
+
+        path.cubicTo(cp1x, cp1y, cp2x, cp2y, p1.dx, p1.dy);
+      }
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SparklinePainter oldDelegate) {
+    return oldDelegate.dataPoints != dataPoints ||
+           oldDelegate.lineColor != lineColor ||
+           oldDelegate.strokeWidth != strokeWidth ||
+           oldDelegate.smooth != smooth;
   }
 }

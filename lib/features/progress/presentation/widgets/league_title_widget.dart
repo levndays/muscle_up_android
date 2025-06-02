@@ -18,64 +18,76 @@ class LeagueTitleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const Color levelNumberColor = Color(0xFF0D47A1); // Насичений синій для числа рівня
-    const Color levelTextColor = Colors.black54; // Колір для слова "LEVEL"
+    // Колір для слова "LEVEL" - можна зробити трохи темнішим для кращого контрасту
+    final Color levelLabelColor = theme.textTheme.bodySmall?.color?.withOpacity(0.7) ?? Colors.grey.shade700;
 
-    final Shader textGradientShader = LinearGradient(
+    final Shader leagueNameGradientShader = LinearGradient(
       colors: gradientColors.length >= 2 ? gradientColors : [gradientColors.first, gradientColors.first],
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
-    ).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0));
+    ).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)); // Орієнтовні розміри для ліги
+
+    // Градієнт для номера рівня, використовуємо ті ж кольори, що й для ліги
+    final Shader levelNumberGradientShader = LinearGradient(
+      colors: gradientColors.length >= 2 ? gradientColors : [gradientColors.first, gradientColors.first],
+      begin: Alignment.topCenter, // Можна погратися з напрямком градієнту для числа
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(0.0, 0.0, 50.0, 50.0)); // Орієнтовні розміри для числа рівня
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start, // Вирівнювання по верху для всієї Row
+      crossAxisAlignment: CrossAxisAlignment.center, // <--- ЗМІНЕНО: вирівнюємо по центру по вертикалі
       children: [
         Expanded(
           child: GestureDetector(
             onTap: onLeagueTap,
             child: ShaderMask(
               blendMode: BlendMode.srcIn,
-              shaderCallback: (bounds) => textGradientShader,
+              shaderCallback: (bounds) => leagueNameGradientShader,
               child: Text(
                 leagueName.toUpperCase(),
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w900,
                   fontStyle: FontStyle.italic,
-                  color: Colors.white, // Базовий колір для градієнту
+                  color: Colors.white, 
                   height: 1.1,
                 ),
-                maxLines: 2, // Дозволимо два рядки, якщо назва ліги довга
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 16), // Відступ між назвою ліги та рівнем
         Column(
-          crossAxisAlignment: CrossAxisAlignment.end, // Вирівнювання по правому краю
-          mainAxisSize: MainAxisSize.min, // Щоб Column займав мінімальну висоту
+          crossAxisAlignment: CrossAxisAlignment.center, // <--- ЗМІНЕНО: центруємо текст рівня
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              level.toString(),
-              style: theme.textTheme.headlineLarge?.copyWith( // Збільшимо шрифт
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w900,
-                color: levelNumberColor, // Новий колір
-                fontSize: 40, // Збільшений розмір для числа
-                height: 0.9, // Зменшуємо висоту рядка, щоб наблизити до "LEVEL"
+            ShaderMask( // <--- ДОДАНО ShaderMask для номера рівня
+              blendMode: BlendMode.srcIn,
+              shaderCallback: (bounds) => levelNumberGradientShader, // Використовуємо градієнт ліги
+              child: Text(
+                level.toString(),
+                style: theme.textTheme.headlineLarge?.copyWith(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white, // Базовий колір для градієнту
+                  fontSize: 38, // Можна трохи зменшити, якщо 40 завелике
+                  height: 1.0,    // <--- ЗМІНЕНО: для кращого прилягання до "LEVEL"
+                ),
               ),
             ),
+            // SizedBox(height: 0), // Можна прибрати або зменшити відступ
             Text(
               'LEVEL',
               style: theme.textTheme.bodySmall?.copyWith(
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.bold,
-                color: levelTextColor, // Колір для тексту "LEVEL"
-                letterSpacing: 1.5, // Трохи розріджуємо букви
-                fontSize: 10, // Менший розмір для "LEVEL"
-                height: 0.9, // Зменшуємо висоту рядка
+                color: levelLabelColor, // Використовуємо визначений колір
+                letterSpacing: 1.5, 
+                fontSize: 10,
+                height: 1.0, // <--- ЗМІНЕНО: для кращого прилягання
               ),
             ),
           ],

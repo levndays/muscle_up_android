@@ -141,21 +141,30 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   @override
   void initState() {
     super.initState();
-    _initializeSetData(widget.currentSet);
+    _initializeSetData(widget.currentSet, widget.currentExercise, widget.setIndex);
   }
 
   @override
   void didUpdateWidget(covariant CurrentSetDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.currentSet != oldWidget.currentSet || widget.currentExercise != oldWidget.currentExercise) {
-      _initializeSetData(widget.currentSet);
+    if (widget.currentSet != oldWidget.currentSet || widget.currentExercise != oldWidget.currentExercise || widget.setIndex != oldWidget.setIndex) {
+      _initializeSetData(widget.currentSet, widget.currentExercise, widget.setIndex);
     }
   }
 
-  void _initializeSetData(LoggedSet set) {
-    _weightController = TextEditingController(text: set.weightKg?.toStringAsFixed(0) ?? '0');
+  void _initializeSetData(LoggedSet set, LoggedExercise exercise, int currentSetIndex) {
+    double? initialWeight = set.weightKg;
+
+    if (currentSetIndex > 0 && exercise.completedSets.length > currentSetIndex - 1) {
+      final previousSet = exercise.completedSets[currentSetIndex - 1];
+      if (previousSet.isCompleted && previousSet.weightKg != null && previousSet.weightKg! > 0) {
+        initialWeight = previousSet.weightKg;
+      }
+    }
+    
+    _weightController = TextEditingController(text: initialWeight?.toStringAsFixed(initialWeight % 1 == 0 ? 0 : 1) ?? '0');
     _repsCount = set.reps ?? 8;
-    _rpePerRep = List.filled(20, 0);
+    _rpePerRep = List.filled(20, 0); // Max 20 reps for RPE sliders
     final rpeData = _parseRpeNotes(set.notes);
     if (rpeData != null) {
       for (int i = 0; i < rpeData.length; i++) {
@@ -163,7 +172,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
       }
     } else {
       for (int i = 0; i < _repsCount; i++) {
-         if (i < _rpePerRep.length) _rpePerRep[i] = 5;
+         if (i < _rpePerRep.length) _rpePerRep[i] = 5; // Default RPE 5 for new repetitions
       }
     }
   }
@@ -188,6 +197,23 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   Widget _buildRepControlButton(IconData icon, VoidCallback onPressed) {
     return SizedBox(width: 44, height: 44, child: ElevatedButton(onPressed: onPressed, style: ElevatedButton.styleFrom(backgroundColor: primaryOrange, shape: const CircleBorder(), padding: EdgeInsets.zero, elevation: 2), child: Icon(icon, color: Colors.white, size: 22)));
   }
+  
+  Widget _buildWeightControlButton(IconData icon, VoidCallback onPressed, {bool isSmall = false}) {
+    return SizedBox(
+      width: isSmall ? 38 : 44, 
+      height: isSmall ? 38 : 44, 
+      child: ElevatedButton(
+        onPressed: onPressed, 
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryOrange.withOpacity(0.9), 
+          shape: const CircleBorder(), 
+          padding: EdgeInsets.zero, 
+          elevation: 1
+        ), 
+        child: Icon(icon, color: Colors.white, size: isSmall ? 18 : 22)
+      )
+    );
+  }
 
   Future<void> _showEditWeightDialog() async {
     final tempWeightController = TextEditingController(text: _weightController.text);
@@ -196,7 +222,6 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
       builder: (dialogCtx) {
         return AlertDialog(
           title: const Text("Set Weight (KG)", style: TextStyle(fontFamily: ibmPlexMonoFont)),
-          // Обгортаємо контент діалогу, якщо він може переповнюватися
           content: SingleChildScrollView(
             child: TextField(
               controller: tempWeightController,
@@ -231,50 +256,59 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
     bool isLastSetOfCurrentExercise = widget.setIndex == widget.totalSetsInExercise - 1;
     bool isLastExercise = totalExercises > 0 && widget.exerciseIndex == totalExercises - 1;
     bool isLastSetOverall = isLastExercise && isLastSetOfCurrentExercise;
+    
+    final double currentWeightValue = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
 
-    // Важливо! `Expanded` має бути прямим нащадком Flex-віджета (Column, Row, Flex).
-    // Тому ми повертаємо `SingleChildScrollView` напряму, а `Expanded` прибираємо.
-    // `CurrentSetDisplay` тепер сам по собі буде скролитися, якщо його вміст більший.
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        // Використовуємо ConstrainedBox, щоб Column мав мінімальну висоту
-        // і розтягувався, якщо вміст менший, але дозволяв скрол, якщо більший.
-        // Це більш актуально, якщо `CurrentSetDisplay` єдиний елемент в `Expanded`
-        // В даному випадку `CurrentSetDisplay` вже є частиною `Column` в `_ActiveWorkoutViewState`,
-        // тому `ConstrainedBox` тут може бути зайвим або потребуватиме адаптації.
-        // Якщо `CurrentSetDisplay` сам є `Expanded` в батьківському віджеті,
-        // тоді логіка з `SingleChildScrollView` тут є коректною.
-
-        // Спрощений варіант: просто Column, Flutter подбає про overflow якщо батько скролиться.
-        // Якщо `CurrentSetDisplay` сам по собі єдиний елемент в `Expanded`,
-        // тоді `SingleChildScrollView` обгортає `Column` всередині.
-        // Оскільки `CurrentSetDisplay` є `Expanded` в `_ActiveWorkoutViewState`,
-        // то `SingleChildScrollView` тут є правильним рішенням.
-
         child: Column(
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween, // Якщо хочемо притиснути кнопки донизу
           children: [
-            // --- Верхня частина з назвою вправи та інформацією про сет/вагу ---
             const SizedBox(height: 15),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.currentExercise.exerciseNameSnapshot.toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, fontSize: 24, color: textBlackColor)),
-                Text("CHEST, FRONT DELTOIDS", style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w600)),
+                Text("CHEST, FRONT DELTOIDS", style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w600)), // TODO: Get real secondary muscles
                 const SizedBox(height: 15),
                 Row(
                   children: [
                     RichText(text: TextSpan(style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.w900), children: [ const TextSpan(text: 'SET ', style: TextStyle(color: textBlackColor)), TextSpan(text: '${widget.setIndex + 1}', style: const TextStyle(color: primaryOrange))])),
                     const Spacer(),
-                    InkWell(onTap: _showEditWeightDialog, borderRadius: BorderRadius.circular(8), child: Padding(padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 6.0), child: Row(mainAxisSize: MainAxisSize.min, children: [ const Icon(Icons.edit, size: 18, color: textBlackColor), const SizedBox(width: 4), Text('WEIGHT: ', style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 14, color: textBlackColor, fontWeight: FontWeight.bold)), Text(_weightController.text.isNotEmpty ? _weightController.text : "XX", style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontWeight: FontWeight.bold, color: primaryOrange, fontSize: 16)), const SizedBox(width: 2), Text(' KG', style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, color: primaryOrange, fontSize: 14, fontWeight: FontWeight.bold))]))),
+                    // --- Вага та кнопки +/- ---
+                    _buildWeightControlButton(Icons.remove, () {
+                      double currentWeight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
+                      currentWeight = (currentWeight - 1.0).clamp(0.0, 999.0);
+                      setState(() { _weightController.text = currentWeight.toStringAsFixed(currentWeight % 1 == 0 ? 0 : 1); });
+                    }, isSmall: true),
+                    InkWell(
+                      onTap: _showEditWeightDialog, 
+                      borderRadius: BorderRadius.circular(8), 
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0), 
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min, 
+                          children: [ 
+                            const Icon(Icons.fitness_center, size: 18, color: textBlackColor), 
+                            const SizedBox(width: 4), 
+                            Text('WEIGHT: ', style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 13, color: textBlackColor, fontWeight: FontWeight.bold)), 
+                            Text(_weightController.text.isNotEmpty ? _weightController.text : "0", style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontWeight: FontWeight.bold, color: primaryOrange, fontSize: 15)), 
+                            const SizedBox(width: 2), 
+                            Text(' KG', style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, color: primaryOrange, fontSize: 13, fontWeight: FontWeight.bold))
+                          ]
+                        )
+                      )
+                    ),
+                     _buildWeightControlButton(Icons.add, () {
+                      double currentWeight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
+                      currentWeight += 1.0;
+                      setState(() { _weightController.text = currentWeight.toStringAsFixed(currentWeight % 1 == 0 ? 0 : 1); });
+                    }, isSmall: true),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 25),
-
-            // --- Середня частина з кількістю повторень та RPE слайдерами ---
             Column(
               children: [
                 RichText(text: TextSpan(style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, fontSize: 26), children: [TextSpan(text: '$_repsCount ', style: const TextStyle(color: primaryOrange)), const TextSpan(text: 'REPETITIONS', style: TextStyle(color: textBlackColor))])),
@@ -282,7 +316,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                 Text('Describe how hard it was to make a repetition\non a 0-10 scale.', textAlign: TextAlign.center, style: theme.textTheme.bodySmall?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 12, color: textBlackColor, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 15),
                 Container(
-                    height: 220, // Залишаємо фіксовану висоту для цього блоку
+                    height: 220,
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: Row(children: [
                       _buildRepControlButton(Icons.remove, () { if (_repsCount > 0) { setState(() { _repsCount--; if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 0; }); } }),
@@ -294,11 +328,8 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                 ),
               ],
             ),
-            // const Spacer(), // Spacer тут може не знадобитися, якщо Column не в Expanded
-
-            // --- Нижня частина з кнопками навігації ---
             Padding(
-              padding: const EdgeInsets.only(bottom: 15.0, top: 25.0), // Додаємо top padding
+              padding: const EdgeInsets.only(bottom: 15.0, top: 25.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
