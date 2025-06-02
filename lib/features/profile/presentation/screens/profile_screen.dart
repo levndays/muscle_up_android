@@ -1,4 +1,4 @@
-// lib/features/profile/presentation/screens/profile_screen.dart
+// FILE: lib/features/profile/presentation/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
@@ -6,8 +6,9 @@ import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
 
 import '../../../../core/domain/entities/user_profile.dart';
-import '../../../../core/domain/entities/achievement.dart'; // <--- НОВИЙ ІМПОРТ
+import '../../../../core/domain/entities/achievement.dart';
 import '../cubit/user_profile_cubit.dart';
+import '../../../profile_setup/presentation/screens/profile_setup_screen.dart';
 import '../../../../auth_gate.dart';
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
@@ -36,19 +37,11 @@ class _ProfileScreenContent extends StatelessWidget {
     'improve_strength': 'Improve Strength',
   };
 
-  static const Map<String, String> _activityLevelDisplayNames = {
-    'sedentary': 'Sedentary',
-    'light': 'Light',
-    'moderate': 'Moderate',
-    'active': 'Active',
-    'very_active': 'Very Active',
-  };
-
   String _getDisplayName(String? storedValue, Map<String, String> mapping) {
-    if (storedValue == null) {
+    if (storedValue == null || storedValue.isEmpty) {
       return 'N/A';
     }
-    return mapping[storedValue] ?? storedValue.replaceAll('_', ' ');
+    return mapping[storedValue] ?? storedValue.replaceAll('_', ' ').split(' ').map((e) => e[0].toUpperCase() + e.substring(1)).join(' ');
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -115,14 +108,34 @@ class _ProfileScreenContent extends StatelessWidget {
           }
           int currentLevelXpStart = calculateTotalXpForLevelStart(userProfile.level);
           int xpToNextLevelTotal = (xpPerLevelBase + (userProfile.level - 1) * 50);
+          if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase; 
           int currentXpOnBar = (userProfile.xp - currentLevelXpStart).clamp(0, xpToNextLevelTotal);
-          if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase;
-          String firstName = userProfile.displayName?.split(' ').first ?? userProfile.username ?? 'User';
-          String lastName = (userProfile.displayName != null && userProfile.displayName!.contains(" "))
-              ? userProfile.displayName!.split(' ').sublist(1).join(" ")
-              : "Fitness";
+          
+          String firstName = "User";
+          String lastName = ""; 
 
-          final List<AchievementId> displayableRewardIds = AchievementId.values;
+          if (userProfile.displayName != null && userProfile.displayName!.trim().isNotEmpty) {
+            final names = userProfile.displayName!.trim().split(' ');
+            firstName = names.first;
+            if (names.length > 1) {
+              lastName = names.sublist(1).join(' ');
+            }
+          } else if (userProfile.username != null && userProfile.username!.trim().isNotEmpty) {
+            firstName = userProfile.username!;
+          } else if (userProfile.email != null && userProfile.email!.contains('@')) {
+             firstName = userProfile.email!.split('@').first;
+          }
+
+          final List<AchievementId> achievedRewardIdsEnum = userProfile.achievedRewardIds
+              .map((idString) {
+                try {
+                  return AchievementId.values.firstWhere((e) => e.name == idString);
+                } catch (e) {
+                  return null; 
+                }
+              })
+              .whereType<AchievementId>() 
+              .toList();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -153,7 +166,7 @@ class _ProfileScreenContent extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          lastName.toUpperCase(),
+                          lastName.toUpperCase(), 
                           style: theme.textTheme.headlineSmall?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.w900, height: 1.1),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -216,10 +229,10 @@ class _ProfileScreenContent extends StatelessWidget {
                           children: [
                             const Icon(Icons.local_fire_department, color: profilePrimaryOrange, size: 28),
                             const SizedBox(width: 5),
-                            Text('${userProfile.currentStreak}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18, color: profileTextBlack)),
+                            Text('${userProfile.longestStreak}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18, color: profileTextBlack)), // <--- ВИПРАВЛЕНО НА longestStreak
                           ],
                         ),
-                        Text('BEST', style: theme.textTheme.bodyMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 11)),
+                        Text('BEST STREAK', style: theme.textTheme.bodyMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 11)), // <--- ВИПРАВЛЕНО НАПИС
                       ],
                     ),
                     Row(
@@ -282,32 +295,36 @@ class _ProfileScreenContent extends StatelessWidget {
                   child: Text('REWARDS', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: profileTextBlack, fontSize: 18)),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 115,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: displayableRewardIds.length,
-                    itemBuilder: (ctx, index) {
-                      final achievementId = displayableRewardIds[index];
-                      final achievement = allAchievements[achievementId];
-                      if (achievement == null) return const SizedBox.shrink();
+                if (achievedRewardIdsEnum.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15.0),
+                    child: Text(
+                      "No rewards unlocked yet. Keep training!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    height: 115,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: achievedRewardIdsEnum.length,
+                      itemBuilder: (ctx, index) {
+                        final achievementId = achievedRewardIdsEnum[index];
+                        final achievement = allAchievements[achievementId];
+                        if (achievement == null) return const SizedBox.shrink();
 
-                      final bool isAchieved = userProfile.achievedRewardIds.contains(achievementId.name);
-                      String? conditionMessage;
-                      if (!isAchieved && achievement.conditionCheckerMessage != null) {
-                        conditionMessage = achievement.conditionCheckerMessage!(userProfile);
-                      }
-
-                      return _buildRewardItem(
-                        context,
-                        achievement,
-                        isAchieved,
-                        conditionMessage,
-                      );
-                    },
+                        return _buildRewardItem(
+                          context,
+                          achievement,
+                          true, 
+                          null, 
+                        );
+                      },
+                    ),
                   ),
-                ),
                 const SizedBox(height: 25),
                  Align(
                   alignment: Alignment.center,
@@ -329,7 +346,10 @@ class _ProfileScreenContent extends StatelessWidget {
                   children: [
                     TextButton(
                       onPressed: () {
-                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Edit Profile - TBD")));
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => ProfileSetupScreen(userProfileToEdit: userProfile),
+                        )).then((updated) {
+                        });
                       },
                       style: TextButton.styleFrom(padding: EdgeInsets.zero),
                       child: Text('EDIT PROFILE', style: theme.textTheme.labelLarge?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 15)),
@@ -375,7 +395,7 @@ class _ProfileScreenContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Tooltip(
-            message: isAchieved ? achievement.description : (conditionMessage ?? achievement.description),
+            message: achievement.description, 
             padding: const EdgeInsets.all(8),
             margin: const EdgeInsets.symmetric(horizontal: 20),
             textStyle: const TextStyle(color: Colors.white, fontSize: 12),
@@ -387,20 +407,20 @@ class _ProfileScreenContent extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: isAchieved ? profilePurple.withOpacity(0.95) : Colors.grey.shade300,
+                color: profilePurple.withOpacity(0.95), 
                 borderRadius: BorderRadius.circular(10),
-                border: isAchieved ? Border.all(color: Colors.amber.shade300, width: 1.5) : null,
-                 boxShadow: isAchieved ? [
+                border: Border.all(color: Colors.amber.shade300, width: 1.5),
+                 boxShadow: [
                   BoxShadow(
                     color: profilePurple.withOpacity(0.4),
                     blurRadius: 6,
                     offset: const Offset(0, 3),
                   )
-                ] : [],
+                ],
               ),
               child: Icon(
                 achievement.icon,
-                color: isAchieved ? Colors.white : Colors.grey.shade600,
+                color: Colors.white, 
                 size: 30,
               ),
             ),
@@ -413,10 +433,10 @@ class _ProfileScreenContent extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                fontWeight: isAchieved ? FontWeight.bold : FontWeight.w500,
-                color: isAchieved ? profileTextBlack : Colors.grey.shade700,
+                fontWeight: FontWeight.bold, 
+                color: profileTextBlack,
               ),
             ),
           ),

@@ -9,13 +9,14 @@ import 'dart:developer' as developer;
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/profile_setup_cubit.dart';
-import '../../../../home_page.dart'; // Для навігації
-// Імпорт UserProfileCubit, який використовується HomePage, може знадобитися для оновлення стану
+import '../../../../home_page.dart'; 
 import '../../../profile/presentation/cubit/user_profile_cubit.dart' as global_user_profile_cubit;
 
 
 class ProfileSetupScreen extends StatefulWidget {
-  const ProfileSetupScreen({super.key});
+  final UserProfile? userProfileToEdit; // Новий параметр для редагування
+
+  const ProfileSetupScreen({super.key, this.userProfileToEdit});
 
   @override
   State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
@@ -35,15 +36,55 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String? _selectedActivityLevel;
 
   late ProfileSetupCubit _profileSetupCubit;
+  bool _isEditingMode = false; // Прапорець для режиму редагування
 
   @override
   void initState() {
     super.initState();
-    developer.log("ProfileSetupScreen initState", name: "ProfileSetupScreen");
+    developer.log("ProfileSetupScreen initState. Editing: ${widget.userProfileToEdit != null}", name: "ProfileSetupScreen");
+    _isEditingMode = widget.userProfileToEdit != null;
+
     _profileSetupCubit = ProfileSetupCubit(
       RepositoryProvider.of<UserProfileRepository>(context),
       RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
-    ); // _loadInitialData викликається в конструкторі кубіта
+      // Передаємо initialProfile, якщо він є (для редагування)
+      initialProfile: widget.userProfileToEdit, 
+    );
+    
+    // Ініціалізуємо поля, якщо це режим редагування
+    if (_isEditingMode && widget.userProfileToEdit != null) {
+      final profile = widget.userProfileToEdit!;
+      _usernameController.text = profile.username ?? '';
+      _displayNameController.text = profile.displayName ?? '';
+      _heightController.text = profile.heightCm?.toStringAsFixed(0) ?? '';
+      _weightController.text = profile.weightKg?.toStringAsFixed(1) ?? '';
+      _selectedGender = profile.gender;
+      _selectedDateOfBirth = profile.dateOfBirth?.toDate();
+      _selectedFitnessGoal = profile.fitnessGoal;
+      _selectedActivityLevel = profile.activityLevel;
+    } else {
+      // Для нового профілю можемо спробувати заповнити displayName з FirebaseAuth
+      final currentUser = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser;
+      if (currentUser?.displayName != null && currentUser!.displayName!.isNotEmpty) {
+        _displayNameController.text = currentUser.displayName!;
+      } else if (currentUser?.email != null && currentUser!.email!.contains('@')) {
+         _displayNameController.text = currentUser.email!.split('@').first;
+      }
+    }
+
+    // Слухачі для оновлення кубіта при зміні тексту
+    _usernameController.addListener(() {
+      _profileSetupCubit.updateField(username: _usernameController.text.trim());
+    });
+    _displayNameController.addListener(() {
+      _profileSetupCubit.updateField(displayName: _displayNameController.text.trim());
+    });
+     _heightController.addListener(() {
+      _profileSetupCubit.updateField(heightCm: double.tryParse(_heightController.text));
+    });
+    _weightController.addListener(() {
+      _profileSetupCubit.updateField(weightKg: double.tryParse(_weightController.text));
+    });
   }
 
   @override
@@ -64,16 +105,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       helpText: 'Select your date of birth',
-      builder: (context, child) { // Опціонально: для стилізації DatePicker
+      builder: (context, child) { 
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: Theme.of(context).colorScheme.primary, // Колір хедера
-                  onPrimary: Colors.white, // Колір тексту на хедері
+                  primary: Theme.of(context).colorScheme.primary, 
+                  onPrimary: Colors.white, 
                 ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary, // Колір кнопок
+                foregroundColor: Theme.of(context).colorScheme.primary, 
               ),
             ),
           ),
@@ -91,17 +132,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   void _handleSaveProfile() {
-    developer.log("Save Profile button pressed", name: "ProfileSetupScreen");
+    developer.log("Save Profile button pressed. IsEditing: $_isEditingMode", name: "ProfileSetupScreen");
     if (_formKey.currentState?.validate() ?? false) {
       developer.log("Form is valid, calling cubit.saveProfile()", name: "ProfileSetupScreen");
-      // Переконуємося, що останні дані з контролерів передані (якщо вони не оновлюються onchanged)
-      // Це вже робиться через onChanged, але для безпеки можна додати тут:
+      // Переконуємося, що всі дані з форми передані в кубіт перед збереженням
       _profileSetupCubit.updateField(
-        username: _usernameController.text.trim().isNotEmpty ? _usernameController.text.trim() : null,
+        username: _usernameController.text.trim(), // username завжди передаємо, бо він обов'язковий
         displayName: _displayNameController.text.trim().isNotEmpty ? _displayNameController.text.trim() : null,
         heightCm: double.tryParse(_heightController.text),
         weightKg: double.tryParse(_weightController.text),
-        // gender, dateOfBirth, fitnessGoal, activityLevel вже оновлюються через setState
+        gender: _selectedGender,
+        dateOfBirth: _selectedDateOfBirth != null ? Timestamp.fromDate(_selectedDateOfBirth!) : null,
+        fitnessGoal: _selectedFitnessGoal,
+        activityLevel: _selectedActivityLevel,
       );
       _profileSetupCubit.saveProfile();
     } else {
@@ -117,18 +160,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     required String label,
     String? Function(String?)? validator,
     TextInputType? keyboardType,
-    void Function(String)? onChanged,
     bool isOptional = false,
+    // onChanged більше не потрібен тут, бо ми використовуємо listeners для контролерів
   }) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         labelText: isOptional ? '$label (Optional)' : '$label*',
-        // contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0), // Зменшено
       ),
       keyboardType: keyboardType,
       validator: validator,
-      onChanged: onChanged,
       style: Theme.of(context).textTheme.bodyLarge,
     );
   }
@@ -137,25 +178,29 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     required T? value,
     required String label,
     required List<DropdownMenuItem<T>> items,
-    required void Function(T?)? onChanged,
+    required void Function(T?)? onChangedCallback, // Перейменовано для ясності
     String? Function(T?)? validator,
     bool isOptional = false,
-
   }) {
     return DropdownButtonFormField<T>(
       value: value,
       decoration: InputDecoration(
         labelText: isOptional ? '$label (Optional)' : '$label*',
-        // contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0), // Зменшено
       ),
       items: items,
-      onChanged: onChanged,
+      onChanged: (newValue) {
+        setState(() { // Оновлюємо локальний стан для UI
+          if (label.toLowerCase().contains('gender')) _selectedGender = newValue as String?;
+          if (label.toLowerCase().contains('goal')) _selectedFitnessGoal = newValue as String?;
+          if (label.toLowerCase().contains('activity')) _selectedActivityLevel = newValue as String?;
+        });
+        onChangedCallback?.call(newValue); // Викликаємо колбек для кубіта
+      },
       validator: validator,
       isExpanded: true,
       style: Theme.of(context).textTheme.bodyLarge,
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -163,33 +208,33 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       value: _profileSetupCubit,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Complete Your Profile'),
+          title: Text(_isEditingMode ? 'Edit Profile' : 'Complete Your Profile'),
           centerTitle: true,
         ),
         body: BlocConsumer<ProfileSetupCubit, ProfileSetupState>(
           listener: (context, state) {
             developer.log("ProfileSetupCubit state changed: $state", name: "ProfileSetupScreen.Listener");
             if (state is ProfileSetupSuccess) {
-              developer.log("ProfileSetupSuccess: Navigating to HomePage", name: "ProfileSetupScreen.Listener");
+              developer.log("ProfileSetupSuccess: Navigating...", name: "ProfileSetupScreen.Listener");
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile saved successfully!'), backgroundColor: Colors.green),
+                SnackBar(content: Text('Profile ${_isEditingMode ? "updated" : "saved"} successfully!'), backgroundColor: Colors.green),
               );
-              // Оновлюємо глобальний UserProfileCubit, якщо він існує
+              
               try {
-                // `read` - це безпечний спосіб отримати кубіт, якщо він наданий у контексті.
-                // Якщо він не наданий, це викличе помилку, яку ми тут ловимо.
                 context.read<global_user_profile_cubit.UserProfileCubit>().updateUserProfileState(state.updatedProfile);
-                 developer.log("Global UserProfileCubit updated", name: "ProfileSetupScreen.Listener");
+                developer.log("Global UserProfileCubit updated after profile setup/edit.", name: "ProfileSetupScreen.Listener");
               } catch (e) {
                 developer.log("Could not find or update global UserProfileCubit: $e", name: "ProfileSetupScreen.Listener");
               }
 
-              // Переходимо на AuthGate, щоб він зробив остаточну перевірку
-              // profileSetupComplete і перенаправив на HomePage.
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const HomePage()),
-                (Route<dynamic> route) => false,
-              );
+              if (_isEditingMode) {
+                Navigator.of(context).pop(true); // Повертаємо true, щоб ProfileScreen знав про оновлення
+              } else {
+                 Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const HomePage()), // Або AuthGate, якщо HomePage вимагає UserProfileCubit
+                  (Route<dynamic> route) => false,
+                );
+              }
             } else if (state is ProfileSetupFailure) {
               developer.log("ProfileSetupFailure: ${state.error}", name: "ProfileSetupScreen.Listener");
               ScaffoldMessenger.of(context).showSnackBar(
@@ -197,73 +242,29 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               );
             }
           },
-          // Перебудовуємо UI тільки при певних змінах стану
           buildWhen: (previous, current) => current is ProfileSetupInitial || current is ProfileSetupDataLoaded || current is ProfileSetupLoading || current is ProfileSetupFailure,
           builder: (context, state) {
             developer.log("ProfileSetupScreen rebuilding UI with state: $state", name: "ProfileSetupScreen.Builder");
-            UserProfile currentProfileUI;
-
-            if (state is ProfileSetupInitial) {
-              currentProfileUI = state.userProfile;
-            } else if (state is ProfileSetupDataLoaded) {
-              currentProfileUI = state.userProfile;
-            } else if (state is ProfileSetupLoading && _profileSetupCubit.currentProfileSnapshot.uid.isNotEmpty) {
-              // Якщо завантаження, але є попередні дані, використовуємо їх, щоб UI не був порожнім
-              currentProfileUI = _profileSetupCubit.currentProfileSnapshot;
-            }
-             else {
-              // Початковий стан або стан помилки без даних профілю (малоймовірно, але для безпеки)
-              currentProfileUI = UserProfile(
-                uid: RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid ?? '',
-                email: RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.email,
-                displayName: RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.displayName,
-                xp: 0, level: 1, profileSetupComplete: false,
-                createdAt: Timestamp.now(), updatedAt: Timestamp.now(),
-              );
+            
+            // Використовуємо дані з `widget.userProfileToEdit` для початкового заповнення,
+            // а потім оновлюємо з `state` якщо він ProfileSetupDataLoaded.
+            // Це допомагає уникнути перезапису полів, які користувач щойно змінив.
+            if (state is ProfileSetupDataLoaded && !_isEditingMode) {
+              // Якщо це НЕ режим редагування і кубіт завантажив дані (наприклад, після невдалої спроби збереження)
+              // оновлюємо контролери з даних кубіта
+              final profileFromCubit = state.userProfile;
+              _usernameController.text = profileFromCubit.username ?? _usernameController.text;
+              _displayNameController.text = profileFromCubit.displayName ?? _displayNameController.text;
+              _heightController.text = profileFromCubit.heightCm?.toStringAsFixed(0) ?? _heightController.text;
+              _weightController.text = profileFromCubit.weightKg?.toStringAsFixed(1) ?? _weightController.text;
+              // Dropdowns оновлюються через setState в onChanged, тому тут не потрібно
             }
 
-            // Оновлюємо контролери та локальні змінні, якщо вони порожні,
-            // а в currentProfileUI є дані. Це відбувається після побудови фрейму,
-            // щоб уникнути викликів setState під час build.
-             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) { // Перевіряємо, чи віджет все ще в дереві
-                // Заповнюємо TextControllers
-                if (_usernameController.text.isEmpty && currentProfileUI.username != null) {
-                  _usernameController.text = currentProfileUI.username!;
-                }
-                if (_displayNameController.text.isEmpty && (currentProfileUI.displayName != null || currentProfileUI.email != null)) {
-                  _displayNameController.text = currentProfileUI.displayName ?? currentProfileUI.email?.split('@').first ?? '';
-                }
-                 if (_heightController.text.isEmpty && currentProfileUI.heightCm != null) {
-                  _heightController.text = currentProfileUI.heightCm!.toStringAsFixed(0); // Без десяткових для зросту
-                }
-                if (_weightController.text.isEmpty && currentProfileUI.weightKg != null) {
-                  _weightController.text = currentProfileUI.weightKg!.toStringAsFixed(1);
-                }
-                // Для Dropdown та DatePicker, setState викликається при зміні користувачем.
-                // Але якщо вони null, а в currentProfileUI є значення, оновлюємо їх.
-                // Важливо: перевіряти, чи значення *поточних локальних змінних* є null,
-                // перш ніж оновлювати їх з `currentProfileUI`.
-                if (_selectedGender == null && currentProfileUI.gender != null) {
-                  setState(() => _selectedGender = currentProfileUI.gender);
-                }
-                if (_selectedDateOfBirth == null && currentProfileUI.dateOfBirth != null) {
-                   setState(() => _selectedDateOfBirth = currentProfileUI.dateOfBirth!.toDate());
-                }
-                if (_selectedFitnessGoal == null && currentProfileUI.fitnessGoal != null) {
-                   setState(() => _selectedFitnessGoal = currentProfileUI.fitnessGoal);
-                }
-                if (_selectedActivityLevel == null && currentProfileUI.activityLevel != null) {
-                   setState(() => _selectedActivityLevel = currentProfileUI.activityLevel);
-                }
-              }
-            });
 
-
-            if (state is ProfileSetupLoading && currentProfileUI.uid.isEmpty) { // Тільки якщо немає жодних даних для відображення
+            if (state is ProfileSetupLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-
+            
             return SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
               child: Form(
@@ -275,14 +276,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       controller: _usernameController,
                       label: 'Username',
                       validator: (value) => (value == null || value.trim().isEmpty) ? 'Username is required' : null,
-                      onChanged: (value) => _profileSetupCubit.updateField(username: value.trim()),
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _displayNameController,
                       label: 'Display Name',
                       isOptional: true,
-                      onChanged: (value) => _profileSetupCubit.updateField(displayName: value.trim().isNotEmpty ? value.trim() : null),
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField<String>(
@@ -292,10 +291,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       items: ['Male', 'Female', 'Other', 'Prefer not to say']
                           .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
                           .toList(),
-                      onChanged: (value) {
-                        setState(() => _selectedGender = value);
-                        _profileSetupCubit.updateField(gender: value);
-                      },
+                      onChangedCallback: (value) => _profileSetupCubit.updateField(gender: value),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
@@ -321,28 +317,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       controller: _heightController,
                       label: 'Height (cm)',
                       isOptional: true,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), // Зроблено цілочисельним
                       validator: (value) {
-                        if (value == null || value.isEmpty) return null; // Опціонально
-                        final n = double.tryParse(value);
-                        if (n == null || n <= 0 || n > 300) return 'Invalid height';
+                        if (value == null || value.isEmpty) return null;
+                        final n = int.tryParse(value); // Парсимо як int
+                        if (n == null || n <= 0 || n > 300) return 'Invalid height (1-300 cm)';
                         return null;
                       },
-                      onChanged: (value) => _profileSetupCubit.updateField(heightCm: double.tryParse(value)),
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _weightController,
                       label: 'Weight (kg)',
                       isOptional: true,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
                        validator: (value) {
-                        if (value == null || value.isEmpty) return null; // Опціонально
+                        if (value == null || value.isEmpty) return null;
                         final n = double.tryParse(value);
-                        if (n == null || n <= 0 || n > 500) return 'Invalid weight';
+                        if (n == null || n <= 0 || n > 500) return 'Invalid weight (1-500 kg)';
                         return null;
                       },
-                      onChanged: (value) => _profileSetupCubit.updateField(weightKg: double.tryParse(value)),
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField<String>(
@@ -352,10 +346,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       items: ['Lose Weight', 'Gain Muscle', 'Improve Stamina', 'General Fitness', 'Improve Strength']
                           .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
                           .toList(),
-                      onChanged: (value) {
-                        setState(() => _selectedFitnessGoal = value);
-                         _profileSetupCubit.updateField(fitnessGoal: value);
-                      },
+                      onChangedCallback: (value) => _profileSetupCubit.updateField(fitnessGoal: value),
                     ),
                     const SizedBox(height: 16),
                      _buildDropdownField<String>(
@@ -365,20 +356,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       items: ['Sedentary (little or no exercise)', 'Light (exercise 1-3 days/week)', 'Moderate (exercise 3-5 days/week)', 'Active (exercise 6-7 days/week)', 'Very Active (hard exercise or physical job)']
                           .map((label) {
                             final value = label.split(' ').first.toLowerCase();
-                            return DropdownMenuItem(value: value, child: Text(label, overflow: TextOverflow.ellipsis));
+                            return DropdownMenuItem(value: value, child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1,));
                           })
                           .toList(),
-                       onChanged: (value) {
-                        setState(() => _selectedActivityLevel = value);
-                         _profileSetupCubit.updateField(activityLevel: value);
-                      },
+                       onChangedCallback: (value) => _profileSetupCubit.updateField(activityLevel: value),
                     ),
                     const SizedBox(height: 30),
                     ElevatedButton(
                       onPressed: (state is ProfileSetupLoading) ? null : _handleSaveProfile,
                       child: (state is ProfileSetupLoading)
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3,))
-                          : const Text('Save and Continue'),
+                          : Text(_isEditingMode ? 'Save Changes' : 'Complete Profile'),
                     ),
                      const SizedBox(height: 20),
                   ],

@@ -1,8 +1,8 @@
-// lib/core/domain/entities/user_profile.dart
+// FILE: lib/core/domain/entities/user_profile.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart' show ValueGetter;
-import 'achievement.dart'; // <--- НОВИЙ ІМПОРТ
+import 'achievement.dart'; 
 
 class UserProfile extends Equatable {
   final String uid;
@@ -18,12 +18,15 @@ class UserProfile extends Equatable {
   final String? activityLevel;
   final int xp;
   final int level;
-  final int currentStreak;
-  final int longestStreak;
-  final Timestamp? lastWorkoutTimestamp;
+  final int currentStreak; // Тепер це "scheduled workout streak"
+  final int longestStreak; // Тепер це "longest scheduled workout streak"
+  final Timestamp? lastWorkoutTimestamp; // Загальний час останнього тренування (для інших цілей, не для цього стріку)
+  final Timestamp? lastScheduledWorkoutCompletionTimestamp; // Час останнього ВЧАСНОГО ЗАПЛАНОВАНОГО тренування
+  final String? lastScheduledWorkoutDayKey; // Ключ дня тижня останнього ВЧАСНОГО ЗАПЛАНОВАНОГО тренування (напр. "MON")
+
   final int followersCount;
   final int followingCount;
-  final List<String> achievedRewardIds; // <--- НОВЕ ПОЛЕ (список String ID нагород)
+  final List<String> achievedRewardIds;
   final bool profileSetupComplete;
   final Timestamp createdAt;
   final Timestamp updatedAt;
@@ -45,9 +48,11 @@ class UserProfile extends Equatable {
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.lastWorkoutTimestamp,
+    this.lastScheduledWorkoutCompletionTimestamp, // Нове поле
+    this.lastScheduledWorkoutDayKey,          // Нове поле
     this.followersCount = 0,
     this.followingCount = 0,
-    this.achievedRewardIds = const [], // <--- ЗНАЧЕННЯ ЗА ЗАМОВЧУВАННЯМ
+    this.achievedRewardIds = const [],
     required this.profileSetupComplete,
     required this.createdAt,
     required this.updatedAt,
@@ -73,9 +78,11 @@ class UserProfile extends Equatable {
       currentStreak: data['currentStreak'] as int? ?? 0,
       longestStreak: data['longestStreak'] as int? ?? 0,
       lastWorkoutTimestamp: data['lastWorkoutTimestamp'] as Timestamp?,
+      lastScheduledWorkoutCompletionTimestamp: data['lastScheduledWorkoutCompletionTimestamp'] as Timestamp?,
+      lastScheduledWorkoutDayKey: data['lastScheduledWorkoutDayKey'] as String?,
       followersCount: data['followersCount'] as int? ?? 0,
       followingCount: data['followingCount'] as int? ?? 0,
-      achievedRewardIds: List<String>.from(data['achievedRewardIds'] ?? []), // <--- ЗЧИТУВАННЯ
+      achievedRewardIds: List<String>.from(data['achievedRewardIds'] ?? []),
       profileSetupComplete: data['profileSetupComplete'] as bool? ?? false,
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp? ?? Timestamp.now(),
@@ -83,27 +90,19 @@ class UserProfile extends Equatable {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      if (email != null) 'email': email,
-      if (displayName != null) 'displayName': displayName,
-      if (profilePictureUrl != null) 'profilePictureUrl': profilePictureUrl,
-      if (username != null) 'username': username,
-      if (gender != null) 'gender': gender,
-      if (dateOfBirth != null) 'dateOfBirth': dateOfBirth,
-      if (heightCm != null) 'heightCm': heightCm,
-      if (weightKg != null) 'weightKg': weightKg,
-      if (fitnessGoal != null) 'fitnessGoal': fitnessGoal,
-      if (activityLevel != null) 'activityLevel': activityLevel,
-      'xp': xp,
-      'level': level,
-      'currentStreak': currentStreak,
-      'longestStreak': longestStreak,
-      if (lastWorkoutTimestamp != null) 'lastWorkoutTimestamp': lastWorkoutTimestamp,
-      'followersCount': followersCount,
-      'followingCount': followingCount,
-      'achievedRewardIds': achievedRewardIds, // <--- ЗАПИС
-      'profileSetupComplete': profileSetupComplete,
-    };
+    final Map<String, dynamic> data = {};
+    if (displayName != null) data['displayName'] = displayName;
+    if (profilePictureUrl != null) data['profilePictureUrl'] = profilePictureUrl;
+    if (username != null) data['username'] = username;
+    if (gender != null) data['gender'] = gender;
+    if (dateOfBirth != null) data['dateOfBirth'] = dateOfBirth;
+    if (heightCm != null) data['heightCm'] = heightCm;
+    if (weightKg != null) data['weightKg'] = weightKg;
+    if (fitnessGoal != null) data['fitnessGoal'] = fitnessGoal;
+    if (activityLevel != null) data['activityLevel'] = activityLevel;
+    data['profileSetupComplete'] = profileSetupComplete;
+    // Нові поля не додаються клієнтом, вони керуються функцією
+    return data;
   }
 
   UserProfile copyWith({
@@ -123,9 +122,11 @@ class UserProfile extends Equatable {
     int? currentStreak,
     int? longestStreak,
     ValueGetter<Timestamp?>? lastWorkoutTimestamp,
+    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp, // Нове
+    ValueGetter<String?>? lastScheduledWorkoutDayKey,             // Нове
     int? followersCount,
     int? followingCount,
-    List<String>? achievedRewardIds, // <--- ДОДАНО
+    List<String>? achievedRewardIds,
     bool? profileSetupComplete,
     Timestamp? createdAt,
     Timestamp? updatedAt,
@@ -147,9 +148,11 @@ class UserProfile extends Equatable {
       currentStreak: currentStreak ?? this.currentStreak,
       longestStreak: longestStreak ?? this.longestStreak,
       lastWorkoutTimestamp: lastWorkoutTimestamp != null ? lastWorkoutTimestamp() : this.lastWorkoutTimestamp,
+      lastScheduledWorkoutCompletionTimestamp: lastScheduledWorkoutCompletionTimestamp != null ? lastScheduledWorkoutCompletionTimestamp() : this.lastScheduledWorkoutCompletionTimestamp,
+      lastScheduledWorkoutDayKey: lastScheduledWorkoutDayKey != null ? lastScheduledWorkoutDayKey() : this.lastScheduledWorkoutDayKey,
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
-      achievedRewardIds: achievedRewardIds ?? this.achievedRewardIds, // <--- ВИКОРИСТАННЯ
+      achievedRewardIds: achievedRewardIds ?? this.achievedRewardIds,
       profileSetupComplete: profileSetupComplete ?? this.profileSetupComplete,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -161,8 +164,9 @@ class UserProfile extends Equatable {
         uid, email, displayName, profilePictureUrl, username, gender, dateOfBirth,
         heightCm, weightKg, fitnessGoal, activityLevel, xp, level,
         currentStreak, longestStreak, lastWorkoutTimestamp,
+        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey, // Нові
         followersCount, followingCount,
-        achievedRewardIds, // <--- ДОДАНО В PROPS
+        achievedRewardIds, 
         profileSetupComplete, createdAt, updatedAt
       ];
 }

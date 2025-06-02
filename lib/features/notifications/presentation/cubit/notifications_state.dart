@@ -10,7 +10,19 @@ abstract class NotificationsState extends Equatable {
 
 class NotificationsInitial extends NotificationsState {}
 
-class NotificationsLoading extends NotificationsState {}
+class NotificationsLoading extends NotificationsState {
+  // Додаємо поля для зберігання попередніх даних, якщо вони є
+  final List<AppNotification> previousNotifications;
+  final int previousUnreadCount;
+
+  const NotificationsLoading({
+    this.previousNotifications = const [],
+    this.previousUnreadCount = 0,
+  });
+
+  @override
+  List<Object?> get props => [previousNotifications, previousUnreadCount];
+}
 
 class NotificationsLoaded extends NotificationsState {
   final List<AppNotification> notifications;
@@ -21,7 +33,6 @@ class NotificationsLoaded extends NotificationsState {
     required this.unreadCount,
   });
 
-  // Конструктор копіювання, для зручного оновлення
   NotificationsLoaded copyWith({
     List<AppNotification>? notifications,
     int? unreadCount,

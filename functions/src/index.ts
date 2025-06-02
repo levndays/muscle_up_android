@@ -1,3 +1,4 @@
+// FILE: functions/src/index.ts
 // functions/src/index.ts
 
 import * as functionsV1 from "firebase-functions/v1";
@@ -9,7 +10,7 @@ import {
   FirestoreEvent,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import { DocumentSnapshot } from "firebase-admin/firestore";
+import { DocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 
 try {
   admin.initializeApp();
@@ -24,6 +25,20 @@ enum AchievementId {
 
 const defaultRegion = "us-central1";
 
+// Функція для отримання дня тижня (0 - НД, 1 - ПН, ..., 6 - СБ) з JS Date в UTC
+const getUTCDayOfWeek = (date: Date): number => {
+    return date.getUTCDay();
+};
+const getDayKeyFromJsDate = (date: Date): string => {
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    return days[getUTCDayOfWeek(date)];
+};
+
+// Функція для отримання дати на початок дня в UTC
+const getUTCDayStart = (jsDate: Date): Date => {
+    return new Date(Date.UTC(jsDate.getUTCFullYear(), jsDate.getUTCMonth(), jsDate.getUTCDate()));
+};
+
 export const createUserProfile = functionsV1.region(defaultRegion).auth.user().onCreate(async (user) => {
   logger.info("V1 Auth trigger: New user created.", {uid: user.uid, email: user.email});
   const userDocRef = admin.firestore().collection("users").doc(user.uid);
@@ -33,12 +48,30 @@ export const createUserProfile = functionsV1.region(defaultRegion).auth.user().o
       logger.warn(`V1 User profile for ${user.uid} already exists. Skipping creation.`);
       return null;
     }
+
     await userDocRef.set({
-      uid: user.uid, email: user.email?.toLowerCase() ?? null, displayName: user.displayName ?? null,
-      profilePictureUrl: user.photoURL ?? null, username: null, gender: null, dateOfBirth: null,
-      heightCm: null, weightKg: null, fitnessGoal: null, activityLevel: null, xp: 0, level: 1,
-      currentStreak: 0, longestStreak: 0, lastWorkoutTimestamp: null, followersCount: 0,
-      followingCount: 0, achievedRewardIds: [], profileSetupComplete: false,
+      uid: user.uid, 
+      email: user.email?.toLowerCase() ?? null, 
+      displayName: null, 
+      profilePictureUrl: user.photoURL ?? null, 
+      username: null,
+      gender: null, 
+      dateOfBirth: null,
+      heightCm: null, 
+      weightKg: null, 
+      fitnessGoal: null, 
+      activityLevel: null, 
+      xp: 0, 
+      level: 1,
+      currentStreak: 0, 
+      longestStreak: 0, 
+      lastWorkoutTimestamp: null,
+      lastScheduledWorkoutCompletionTimestamp: null, // Нове поле
+      lastScheduledWorkoutDayKey: null, // Нове поле
+      followersCount: 0,
+      followingCount: 0, 
+      achievedRewardIds: [], 
+      profileSetupComplete: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -56,66 +89,118 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
     const { userId, sessionId } = event.params;
 
     if (!event.data?.before?.exists || !event.data?.after?.exists) {
-      logger.warn("Document data missing in onUpdated event for workout log.", {userId, sessionId});
+      logger.warn("Doc data missing in onUpdated for workout log.", {userId, sessionId});
       return;
     }
     const oldWorkoutData = event.data.before.data()!;
     const newWorkoutData = event.data.after.data()!;
 
     const justCompleted = oldWorkoutData.status !== "completed" && newWorkoutData.status === "completed";
-    if (!justCompleted) {
-        return;
-    }
+    if (!justCompleted) return;
 
     logger.info("Workout completed. Calculating XP, streak, awards.", {userId, sessionId});
 
     const durationSeconds = newWorkoutData.durationSeconds || 0;
     const totalVolume = newWorkoutData.totalVolume || 0;
-    const completedAt = (newWorkoutData.endedAt instanceof admin.firestore.Timestamp) ? newWorkoutData.endedAt : admin.firestore.FieldValue.serverTimestamp();
+    const completedAt = (newWorkoutData.endedAt instanceof Timestamp) ? newWorkoutData.endedAt : Timestamp.now();
+    const startedAtTimestamp = (newWorkoutData.startedAt instanceof Timestamp) ? newWorkoutData.startedAt : Timestamp.now();
+    
     let xpGained = 50;
     if (totalVolume > 0) xpGained += Math.round(totalVolume / 100);
-    if (durationSeconds > 0) xpGained += Math.round(durationSeconds / (5 * 60)); // Кожні 5 хвилин
-    xpGained = Math.min(xpGained, 200); // Максимум 200 XP за тренування
+    if (durationSeconds > 0) xpGained += Math.round(durationSeconds / (5 * 60)); 
+    xpGained = Math.min(xpGained, 200); 
 
     const userProfileRef = admin.firestore().collection("users").doc(userId);
+    const userRoutinesRef = admin.firestore().collection("userRoutines").where("userId", "==", userId);
+
     try {
       await admin.firestore().runTransaction(async (transaction) => {
         const profileDoc = await transaction.get(userProfileRef);
+        const routinesSnapshot = await transaction.get(userRoutinesRef);
+
         if (!profileDoc.exists) {
             logger.error("User profile not found in transaction.", {userId});
             throw new Error(`User profile ${userId} not found.`);
         }
         const currentProfile = profileDoc.data()!;
-        logger.info("Current profile data fetched in transaction", { // <--- ДОДАНО ЛОГ
-            userId,
-            currentXP: currentProfile.xp,
-            currentLevel: currentProfile.level,
-        });
-
-
+        
         const newXp = (currentProfile.xp || 0) + xpGained;
-        let calculatedNewLevel = currentProfile.level || 1; // Починаємо з поточного рівня
+        let calculatedNewLevel = currentProfile.level || 1; 
+        
         let currentStreak = currentProfile.currentStreak || 0;
         let longestStreak = currentProfile.longestStreak || 0;
-        const lastWorkoutTimestamp = currentProfile.lastWorkoutTimestamp as admin.firestore.Timestamp | undefined;
-        const currentWorkoutDate = (newWorkoutData.startedAt as admin.firestore.Timestamp).toDate();
-        const lastWorkoutDate = lastWorkoutTimestamp ? lastWorkoutTimestamp.toDate() : new Date(0);
+        let newLastScheduledWorkoutCompletionTimestamp = currentProfile.lastScheduledWorkoutCompletionTimestamp as Timestamp | undefined;
+        let newLastScheduledWorkoutDayKey = currentProfile.lastScheduledWorkoutDayKey as string | undefined;
 
-        const isSameDay = lastWorkoutDate.getFullYear() === currentWorkoutDate.getFullYear() &&
-                          lastWorkoutDate.getMonth() === currentWorkoutDate.getMonth() &&
-                          lastWorkoutDate.getDate() === currentWorkoutDate.getDate();
-
-        if (!isSameDay) {
-          const nextDayAfterLast = new Date(lastWorkoutDate);
-          nextDayAfterLast.setDate(lastWorkoutDate.getDate() + 1);
-          const isConsecutive = nextDayAfterLast.getFullYear() === currentWorkoutDate.getFullYear() &&
-                                nextDayAfterLast.getMonth() === currentWorkoutDate.getMonth() &&
-                                nextDayAfterLast.getDate() === currentWorkoutDate.getDate();
-          currentStreak = isConsecutive ? currentStreak + 1 : 1;
+        const routineIdOfCompletedWorkout = newWorkoutData.routineId as string | undefined;
+        let workoutRoutineDoc: DocumentSnapshot | undefined;
+        if (routineIdOfCompletedWorkout) {
+            workoutRoutineDoc = routinesSnapshot.docs.find((doc) => doc.id === routineIdOfCompletedWorkout);
         }
+
+        const currentWorkoutDayKey = getDayKeyFromJsDate(startedAtTimestamp.toDate());
+        const currentWorkoutDayStartUTC = getUTCDayStart(startedAtTimestamp.toDate());
+
+        if (workoutRoutineDoc && workoutRoutineDoc.exists) {
+            const routineData = workoutRoutineDoc.data();
+            const scheduledDays = (routineData?.scheduledDays as string[] | undefined)?.map((d) => d.toUpperCase()) ?? [];
+
+            if (scheduledDays.length > 0 && scheduledDays.includes(currentWorkoutDayKey)) {
+                // Це тренування за розкладом
+                logger.info("Streak V3: Workout is on a scheduled day.", {userId, currentWorkoutDayKey, routineId: routineIdOfCompletedWorkout});
+
+                if (currentProfile.lastScheduledWorkoutCompletionTimestamp && currentProfile.lastScheduledWorkoutDayKey) {
+                    const lastScheduledCompletionJsDate = (currentProfile.lastScheduledWorkoutCompletionTimestamp as Timestamp).toDate();
+                    const lastScheduledCompletionDayStartUTC = getUTCDayStart(lastScheduledCompletionJsDate);
+
+                    if (currentWorkoutDayStartUTC.getTime() === lastScheduledCompletionDayStartUTC.getTime() && currentProfile.lastScheduledWorkoutDayKey === currentWorkoutDayKey) {
+                       logger.info("Streak V3: Workout on the same scheduled day as last. Streak not incremented.", {userId});
+                       // Не збільшуємо стрік, бо це вже зараховане тренування за цей день
+                    } else {
+                        // Перевіряємо, чи не було пропущено попереднього запланованого дня
+                        let wasPreviousScheduledDayMissed = false;
+                        let tempDate = new Date(lastScheduledCompletionDayStartUTC);
+                        tempDate.setUTCDate(tempDate.getUTCDate() + 1); // Починаємо з наступного дня після останнього запланованого
+
+                        while(tempDate.getTime() < currentWorkoutDayStartUTC.getTime()) {
+                            const dayKeyToTest = getDayKeyFromJsDate(tempDate);
+                            if (scheduledDays.includes(dayKeyToTest)) {
+                                wasPreviousScheduledDayMissed = true;
+                                logger.info("Streak V3: Missed scheduled day detected.", { userId, missedDay: tempDate.toISOString(), dayKey: dayKeyToTest });
+                                break;
+                            }
+                            tempDate.setUTCDate(tempDate.getUTCDate() + 1);
+                        }
+
+                        if (wasPreviousScheduledDayMissed) {
+                            currentStreak = 1; // Пропуск, скидаємо стрік
+                            logger.info("Streak V3: Previous scheduled day was missed. Streak reset to 1.", {userId});
+                        } else {
+                            currentStreak++; // Не було пропусків, збільшуємо стрік
+                            logger.info("Streak V3: No missed scheduled days. Streak incremented.", {userId, newStreak: currentStreak});
+                        }
+                        newLastScheduledWorkoutCompletionTimestamp = completedAt;
+                        newLastScheduledWorkoutDayKey = currentWorkoutDayKey;
+                    }
+                } else {
+                    // Перше заплановане тренування
+                    currentStreak = 1;
+                    newLastScheduledWorkoutCompletionTimestamp = completedAt;
+                    newLastScheduledWorkoutDayKey = currentWorkoutDayKey;
+                    logger.info("Streak V3: First ever scheduled workout. Streak set to 1.", {userId});
+                }
+            } else {
+              logger.info("Streak V3: Workout was from a routine, but not on a scheduled day of that routine (or routine has no schedule). Streak not affected by this logic.", {userId, currentWorkoutDayKey, routineScheduledDays: scheduledDays });
+              // Ad-hoc тренування або тренування за рутиною, але не в запланований день. Не впливає на "scheduled streak".
+              // Можна додати окрему логіку для "calendar day streak" тут, якщо потрібно.
+            }
+        } else {
+          logger.info("Streak V3: Workout was not from a routine with schedule. Streak not affected by this logic.", {userId});
+          // Тренування не за рутиною з розкладом. Не впливає на "scheduled streak".
+        }
+        
         longestStreak = Math.max(longestStreak, currentStreak);
 
-        // --- ВИПРАВЛЕНА ЛОГІКА РОЗРАХУНКУ РІВНЯ ---
         const xpPerLevelBase = 200;
         const calculateXpForNextLevelUp = (currentLevel: number): number => {
             return xpPerLevelBase + (currentLevel - 1) * 50;
@@ -127,31 +212,11 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             totalXpAtStartOfCurrentLevel += calculateXpForNextLevelUp(i);
         }
         
-        logger.info("Level Calc Start:", {
-          userId,
-          currentXpInDb: currentProfile.xp, // XP до нарахування за це тренування
-          currentLevelInDb: currentProfile.level,
-          xpGainedThisWorkout: xpGained,
-          newTotalXpAfterThisWorkout: newXp, // Загальне XP ПІСЛЯ нарахування
-          initialCalculatedLevelForLoop: calculatedNewLevel, // Рівень, з якого починаємо перевірку
-          xpNeededForCurrentLevelToCompleteInitial: xpNeededForCurrentLevelToComplete,
-          totalXpAtStartOfCurrentLevelInitial: totalXpAtStartOfCurrentLevel,
-        });
-
-        // Цикл для підвищення рівня, поки XP вистачає
         while (newXp >= totalXpAtStartOfCurrentLevel + xpNeededForCurrentLevelToComplete) {
-            totalXpAtStartOfCurrentLevel += xpNeededForCurrentLevelToComplete; // Додаємо XP поточного рівня до бази для наступного
-            calculatedNewLevel++; // Підвищуємо рівень
-            xpNeededForCurrentLevelToComplete = calculateXpForNextLevelUp(calculatedNewLevel); // Розраховуємо XP для нового поточного рівня
-            logger.info("Level Up! Iteration details:", { // <--- Оновлений лог
-                userId,
-                nowCalculatedLevel: calculatedNewLevel,
-                xpNeededForThisNewLevel: xpNeededForCurrentLevelToComplete,
-                newTotalXpAtStartOfThisNewLevel: totalXpAtStartOfCurrentLevel,
-                currentTotalXpOfUser: newXp,
-            });
+            totalXpAtStartOfCurrentLevel += xpNeededForCurrentLevelToComplete; 
+            calculatedNewLevel++; 
+            xpNeededForCurrentLevelToComplete = calculateXpForNextLevelUp(calculatedNewLevel);
         }
-        // --- КІНЕЦЬ ВИПРАВЛЕНОЇ ЛОГІКИ ---
 
         const achievedRewardIds: string[] = currentProfile.achievedRewardIds ? [...(currentProfile.achievedRewardIds as string[])] : [];
         if (!achievedRewardIds.includes(AchievementId.FIRST_WORKOUT)) {
@@ -166,35 +231,26 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
           });
         }
         
-        // <--- ДОДАНО ЛОГ ПЕРЕД ОНОВЛЕННЯМ ---
-        logger.info("Preparing to update profile in transaction", {
-          userId,
-          updatesToApply: {
-            xp: newXp,
-            level: calculatedNewLevel,
-            currentStreak,
-            longestStreak,
-            lastWorkoutTimestamp: completedAt,
-            achievedRewardIds,
-            // updatedAt: "FieldValue.serverTimestamp()" // це буде встановлено автоматично
-          }
-        });
-        // <--- КІНЕЦЬ ДОДАНОГО ЛОГУ ---
-
-        transaction.update(userProfileRef, {
+        const profileUpdateData: {[key: string]: any} = {
           xp: newXp,
-          level: calculatedNewLevel, // <--- Використовуємо розрахований рівень
+          level: calculatedNewLevel, 
           currentStreak,
           longestStreak,
-          lastWorkoutTimestamp: completedAt,
+          lastWorkoutTimestamp: completedAt, // Завжди оновлюємо загальний час останнього тренування
           achievedRewardIds,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        logger.info("User profile updated with XP, level, streak, rewards.", {
-            userId,
-            updatedXp: newXp,
-            updatedLevel: calculatedNewLevel, // <--- Логуємо оновлений рівень
-        });
+        };
+
+        if (newLastScheduledWorkoutCompletionTimestamp) {
+            profileUpdateData.lastScheduledWorkoutCompletionTimestamp = newLastScheduledWorkoutCompletionTimestamp;
+        }
+        if (newLastScheduledWorkoutDayKey) {
+            profileUpdateData.lastScheduledWorkoutDayKey = newLastScheduledWorkoutDayKey;
+        }
+        
+        logger.info("Preparing to update profile in transaction", { userId, updatesToApply: profileUpdateData });
+        transaction.update(userProfileRef, profileUpdateData);
+        logger.info("User profile updated.", { userId, updatedXp: newXp, updatedLevel: calculatedNewLevel, updatedCurrentStreak: currentStreak });
       });
     } catch (error: any) {
       logger.error("Error updating user profile after workout.", {userId, sessionId, error: error.message || error});

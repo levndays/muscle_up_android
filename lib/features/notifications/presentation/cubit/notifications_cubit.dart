@@ -25,7 +25,6 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   Stream<AppNotification> get achievementAlertStream => _achievementAlertController.stream;
   final Set<String> _alertedAchievementNotificationIds = {};
 
-  // Новий StreamController для сповіщень типу "порада"
   final StreamController<AppNotification> _adviceAlertController = StreamController<AppNotification>.broadcast();
   Stream<AppNotification> get adviceAlertStream => _adviceAlertController.stream;
   final Set<String> _alertedAdviceNotificationIds = {};
@@ -37,7 +36,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       if (user != null) {
         _currentUserId = user.uid;
         _alertedAchievementNotificationIds.clear();
-        _alertedAdviceNotificationIds.clear(); // Очищаємо для нового користувача
+        _alertedAdviceNotificationIds.clear();
         _subscribeToNotifications(user.uid);
       } else {
         _currentUserId = null;
@@ -57,14 +56,34 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     }
   }
 
+  void refreshNotifications() {
+    final userId = _currentUserId;
+    if (userId != null) {
+      developer.log('NotificationsCubit: Refreshing notifications for user $userId', name: 'NotificationsCubit');
+      _subscribeToNotifications(userId);
+    } else {
+      developer.log('NotificationsCubit: Cannot refresh notifications, no user.', name: 'NotificationsCubit');
+    }
+  }
+
   void _subscribeToNotifications(String userId) {
     developer.log('NotificationsCubit: Subscribing to notifications and unread count for user $userId', name: 'NotificationsCubit');
     _unsubscribeFromNotifications();
 
-    emit(NotificationsLoading());
+    // Зберігаємо поточні дані, якщо вони є, щоб не показувати пустий екран під час оновлення
+    List<AppNotification> previousNotifications = [];
+    int previousUnreadCount = 0;
+    if (state is NotificationsLoaded) {
+      final loadedState = state as NotificationsLoaded;
+      previousNotifications = loadedState.notifications;
+      previousUnreadCount = loadedState.unreadCount;
+    }
 
-    List<AppNotification> currentNotificationsList = [];
-    int currentUnreadCount = 0;
+    emit(NotificationsLoading(previousNotifications: previousNotifications, previousUnreadCount: previousUnreadCount));
+
+
+    List<AppNotification> currentNotificationsList = previousNotifications;
+    int currentUnreadCount = previousUnreadCount;
 
     _notificationsSubscription = _notificationRepository
         .getUserNotificationsStream(userId)
@@ -79,7 +98,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
           developer.log('NotificationsCubit: New achievement alert: ${n.title} (ID: ${n.id})', name: 'NotificationsCubit');
           _achievementAlertController.add(n);
           _alertedAchievementNotificationIds.add(n.id);
-        } else if (n.type == NotificationType.advice && // <--- Обробка нового типу
+        } else if (n.type == NotificationType.advice && 
                    !n.isRead &&
                    !_alertedAdviceNotificationIds.contains(n.id)) {
           developer.log('NotificationsCubit: New advice alert: ${n.title} (ID: ${n.id})', name: 'NotificationsCubit');
@@ -98,11 +117,16 @@ class NotificationsCubit extends Cubit<NotificationsState> {
         .listen((count) {
       developer.log('NotificationsCubit: Received unread count: $count for user $userId', name: 'NotificationsCubit');
       currentUnreadCount = count;
-      emit(NotificationsLoaded(notifications: currentNotificationsList, unreadCount: currentUnreadCount));
+      // Перевіряємо, чи ми все ще в стані завантаження або вже завантажені
+      if (state is NotificationsLoading || state is NotificationsLoaded) {
+        emit(NotificationsLoaded(notifications: currentNotificationsList, unreadCount: currentUnreadCount));
+      }
     }, onError: (error, stackTrace) {
       developer.log('NotificationsCubit: Error in unread count stream for $userId: $error', name: 'NotificationsCubit', error: error, stackTrace: stackTrace);
       if (state is NotificationsLoaded) {
         emit((state as NotificationsLoaded).copyWith(unreadCount: 0));
+      } else if (state is NotificationsLoading) {
+         emit(NotificationsLoaded(notifications: (state as NotificationsLoading).previousNotifications, unreadCount: 0));
       } else {
         emit(NotificationsError('Failed to load unread count: ${error.toString()}'));
       }
@@ -146,17 +170,16 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     try {
       await _notificationRepository.deleteNotification(userId, notificationId);
       _alertedAchievementNotificationIds.remove(notificationId);
-      _alertedAdviceNotificationIds.remove(notificationId); // Видаляємо з кешу порад
+      _alertedAdviceNotificationIds.remove(notificationId);
     } catch (e) {
       developer.log('NotificationsCubit: Error deleting notification $notificationId: $e', name: 'NotificationsCubit');
     }
   }
   
-  // Метод для створення тестових сповіщень (включно з порадами)
   Future<void> createTestNotification({
     required String title,
     required String message,
-    required NotificationType type, // Зробили тип обов'язковим
+    required NotificationType type,
   }) async {
     final userId = _currentUserId;
     if (userId == null) {
@@ -178,7 +201,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     _authStateSubscription?.cancel();
     _unsubscribeFromNotifications();
     _achievementAlertController.close();
-    _adviceAlertController.close(); // Закриваємо новий контролер
+    _adviceAlertController.close();
     return super.close();
   }
 }
