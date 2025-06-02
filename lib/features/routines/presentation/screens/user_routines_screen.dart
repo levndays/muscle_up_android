@@ -4,25 +4,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
 import '../cubit/user_routines_cubit.dart';
-import '../widgets/routine_list_item.dart'; // RoutineListItem тепер буде обробляти свій перехід
+import '../widgets/routine_list_item.dart';
 import 'create_edit_routine_screen.dart';
 
 class UserRoutinesScreen extends StatelessWidget {
   const UserRoutinesScreen({super.key});
 
-  // Метод для обробки результату з CreateEditRoutineScreen
-  Future<void> _handleRoutineUpsertResult(BuildContext context, bool? routineWasSaved) async {
+  // Змінюємо метод: він тепер приймає сам Cubit, а не BuildContext
+  Future<void> _handleRoutineUpsertResult(UserRoutinesCubit cubit, bool? routineWasSaved) async {
     if (routineWasSaved == true) {
       // Якщо рутина була збережена (нова або оновлена), оновлюємо список
-      context.read<UserRoutinesCubit>().fetchUserRoutines();
+      cubit.fetchUserRoutines();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<UserRoutinesCubit>(
-      create: (context) => UserRoutinesCubit(
-        RepositoryProvider.of<RoutineRepository>(context),
+      create: (cubitContext) => UserRoutinesCubit(
+        RepositoryProvider.of<RoutineRepository>(cubitContext),
         FirebaseAuth.instance,
       )..fetchUserRoutines(),
       child: Scaffold(
@@ -35,6 +35,9 @@ class UserRoutinesScreen extends StatelessWidget {
             }
           },
           builder: (context, state) {
+            // Отримуємо екземпляр Cubit тут, з правильного контексту
+            final userRoutinesCubit = context.read<UserRoutinesCubit>();
+
             if (state is UserRoutinesInitial || state is UserRoutinesLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is UserRoutinesLoaded) {
@@ -54,13 +57,14 @@ class UserRoutinesScreen extends StatelessWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.add_circle_outline),
                           label: const Text('Create Your First Routine'),
-                          onPressed: () async { // <--- ЗРОБИТИ ASYNC
-                            final result = await Navigator.of(context).push<bool>(MaterialPageRoute( // <--- ЧЕКАЄМО РЕЗУЛЬТАТ bool
+                          onPressed: () async {
+                            final currentContext = context; // Захоплюємо context для Navigator
+                            final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
                               builder: (_) => const CreateEditRoutineScreen(),
                             ));
-                            // ignore: use_build_context_synchronously
-                            if (!context.mounted) return;
-                            _handleRoutineUpsertResult(context, result); // <--- ОБРОБКА РЕЗУЛЬТАТУ
+                            if (!currentContext.mounted) return;
+                            // Використовуємо захоплений екземпляр Cubit
+                            _handleRoutineUpsertResult(userRoutinesCubit, result);
                           },
                         )
                       ],
@@ -73,11 +77,11 @@ class UserRoutinesScreen extends StatelessWidget {
                 itemCount: state.routines.length,
                 itemBuilder: (context, index) {
                   final routine = state.routines[index];
-                  // Передаємо колбек для оновлення списку ПІСЛЯ редагування/видалення
                   return RoutineListItem(
                     routine: routine,
-                    onRoutineUpdated: () => context.read<UserRoutinesCubit>().fetchUserRoutines(),
-                    onRoutineDeleted: () => context.read<UserRoutinesCubit>().routineDeleted(routine.id), // Або fetchUserRoutines()
+                    // Колбеки тепер використовують userRoutinesCubit, отриманий з builder
+                    onRoutineUpdated: () => userRoutinesCubit.fetchUserRoutines(),
+                    onRoutineDeleted: () => userRoutinesCubit.routineDeleted(routine.id),
                   );
                 },
               );
@@ -93,7 +97,7 @@ class UserRoutinesScreen extends StatelessWidget {
                       Text('Failed to load routines: ${state.message}', textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () => context.read<UserRoutinesCubit>().fetchUserRoutines(),
+                        onPressed: () => userRoutinesCubit.fetchUserRoutines(),
                         child: const Text('Try Again'),
                       )
                     ],
@@ -105,13 +109,16 @@ class UserRoutinesScreen extends StatelessWidget {
           },
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async { // <--- ЗРОБИТИ ASYNC
-            final result = await Navigator.of(context).push<bool>(MaterialPageRoute( // <--- ЧЕКАЄМО РЕЗУЛЬТАТ bool
+          onPressed: () async {
+            // Так само отримуємо Cubit з контексту builder'а
+            final userRoutinesCubit = context.read<UserRoutinesCubit>();
+            final currentContext = context; // Захоплюємо context для Navigator
+
+            final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
               builder: (_) => const CreateEditRoutineScreen(),
             ));
-             // ignore: use_build_context_synchronously
-            if (!context.mounted) return;
-            _handleRoutineUpsertResult(context, result); // <--- ОБРОБКА РЕЗУЛЬТАТУ
+            if (!currentContext.mounted) return;
+            _handleRoutineUpsertResult(userRoutinesCubit, result);
           },
           icon: const Icon(Icons.add),
           label: const Text('New Routine'),

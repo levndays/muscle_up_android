@@ -1,84 +1,109 @@
 name: muscle_up
 description: "Next-gen Fitness App. New height, New companions."
+# Запобігає випадковій публікації в pub.dev
 publish_to: 'none' 
-version: 0.1.0
+version: 0.1.0 # Поточна версія додатку
 
 environment:
-  sdk: ^3.8.0 # Або ваша актуальна версія Dart SDK
+  # Вказує мінімальну версію Dart SDK, необхідну для проєкту.
+  # Переконайтесь, що вона відповідає вашій встановленій версії.
+  sdk: ^3.8.0 
 
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^3.13.1
-  firebase_auth: ^5.5.4
-  google_sign_in: ^6.2.1
-  cloud_firestore: ^5.6.8
-  animated_background: ^2.0.0 # Для LoginPage
-  flutter_bloc: ^9.1.1 # Або ваша версія
-  bloc: 9.0.0 # Додайте або перевірте наявність цієї залежності (версія може відрізнятися)
-  equatable: ^2.0.5
-  intl: ^0.19.0 # Для форматування дати/часу
-  flutter_svg: ^2.0.10+1
   
-  # Додані пакети для WorkoutCompleteScreen
-  confetti: ^0.7.0 # Або актуальна версія
-  lottie: ^3.1.2 # Або актуальна версія
+  # Firebase SDK
+  firebase_core: ^3.13.1 # Базовий пакет для ініціалізації Firebase
+  firebase_auth: ^5.5.4 # Для автентифікації користувачів
+  google_sign_in: ^6.2.1 # Для автентифікації через Google
+  cloud_firestore: ^5.6.8 # Для роботи з NoSQL базою даних Firestore
+  
+  # Управління станом (State Management)
+  flutter_bloc: ^9.1.1 # Популярний пакет для реалізації BLoC патерну
+  bloc: ^9.0.0 # Основний пакет BLoC (може йти як транзитивна залежність)
+  
+  # Утиліти
+  equatable: ^2.0.5 # Для спрощення порівняння об'єктів (особливо в BLoC states/events)
+  intl: ^0.19.0 # Для інтернаціоналізації та форматування дат/часу
+  
+  # Графіка та Анімації
+  flutter_svg: ^2.0.10+1 # Для відображення SVG графіки (наприклад, карти м'язів)
+  animated_background: ^2.0.0 # Для анімованого фону на LoginPage
+  confetti: ^0.7.0 # Для ефекту конфетті (наприклад, на WorkoutCompleteScreen)
+  lottie: ^3.1.2 # Для відтворення Lottie анімацій (наприклад, трофею)
 
-  # Додано для колекцій (може знадобитися для firstWhereOrNull, хоча часто є в SDK)
-  # collection: ^1.18.0 # Якщо ви використовуєте specific collection utilities
+  # Інші пакети (якщо потрібні для специфічних функцій)
+  # collection: ^1.18.0 # Якщо використовуються розширені утиліти для колекцій (часто не потрібен, якщо є в SDK)
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0 # Або актуальна версія
-  flutter_launcher_icons: ^0.13.1
+  
+  # Лінтери та аналізатори коду
+  flutter_lints: ^5.0.0 # Набір рекомендованих правил лінтингу для Flutter проєктів
+  
+  # Генерація іконок додатку
+  flutter_launcher_icons: ^0.13.1 # Пакет для автоматичної генерації іконок для різних платформ
 
+# Конфігурація для flutter_launcher_icons
+# Дозволяє автоматично генерувати іконки додатку з одного зображення
 flutter_launcher_icons:
-  android: "launcher_icon" 
-  ios: true               
-  image_path: "assets/images/app_icon.png" 
-  min_sdk_android: 23  
+  android: "launcher_icon" # Використовувати адаптивні іконки для Android (true або назва файлу)
+  ios: true # Генерувати іконки для iOS
+  image_path: "assets/images/app_icon.png" # Шлях до основного зображення для іконки
+  min_sdk_android: 23 # Мінімальна версія Android SDK для генерації адаптивних іконок
+  # Приклади для інших платформ (закоментовано, можна активувати за потреби)
   # web:
   #   generate: true
-  #   image_path: "assets/images/app_icon_web.png"
-  #   background_color: "#ED5D1A" 
-  #   theme_color: "#ED5D1A"     
+  #   image_path: "assets/images/app_icon_web.png" # Окреме зображення для вебу
+  #   background_color: "#ED5D1A" # Колір фону для веб-іконки
+  #   theme_color: "#ED5D1A"     # Колір теми для веб-іконки
   # windows:
   #   generate: true
   #   image_path: "assets/images/app_icon_windows.png"
-  #   icon_size: 48 
+  #   icon_size: 48 # Розмір іконки для Windows
   # macos:
   #   generate: true
   #   image_path: "assets/images/app_icon_macos.png"
 
 flutter:
+  # Вказує, що проєкт використовує Material Design
   uses-material-design: true
 
+  # Ресурси (асети), які використовуються в додатку
   assets:
-    - assets/images/ 
-    - assets/fonts/ 
-    - assets/animations/ # <--- ДОДАНО ДЛЯ LOTTIE АНІМАЦІЙ
+    - assets/images/ # Загальна папка для зображень
+    # Якщо ви додаєте SVG для жіночого тіла, переконайтеся, що вони тут вказані
+    # або вся папка assets/images/ вже покриває їх.
+    - assets/images/male_front.svg 
+    - assets/images/male_back.svg
+    - assets/images/female_front.svg # Новий асет
+    - assets/images/female_back.svg  # Новий асет
+    - assets/fonts/    # Папка для шрифтів
+    - assets/animations/ # Папка для Lottie анімацій
 
+  # Конфігурація шрифтів
   fonts:
-    - family: Inter
+    - family: Inter # Назва сімейства шрифтів
       fonts:
-        - asset: assets/fonts/Inter_18pt-Regular.ttf
-        - asset: assets/fonts/Inter_18pt-Italic.ttf
+        - asset: assets/fonts/Inter_18pt-Regular.ttf # Звичайний
+        - asset: assets/fonts/Inter_18pt-Italic.ttf  # Курсив
           style: italic
-        - asset: assets/fonts/Inter_18pt-Light.ttf
+        - asset: assets/fonts/Inter_18pt-Light.ttf   # Світлий
           weight: 300
-        - asset: assets/fonts/Inter_18pt-Medium.ttf
+        - asset: assets/fonts/Inter_18pt-Medium.ttf  # Середній
           weight: 500
-        - asset: assets/fonts/Inter_18pt-SemiBold.ttf
+        - asset: assets/fonts/Inter_18pt-SemiBold.ttf # Напівжирний
           weight: 600
-        - asset: assets/fonts/Inter_18pt-Bold.ttf
+        - asset: assets/fonts/Inter_18pt-Bold.ttf    # Жирний
           weight: 700
-        - asset: assets/fonts/Inter_18pt-ExtraBold.ttf
+        - asset: assets/fonts/Inter_18pt-ExtraBold.ttf # Дуже жирний
           weight: 800
-        - asset: assets/fonts/Inter_18pt-Black.ttf
+        - asset: assets/fonts/Inter_18pt-Black.ttf   # "Чорний" (найжирніший)
           weight: 900
           
-    - family: IBMPlexMono
+    - family: IBMPlexMono # Інше сімейство шрифтів
       fonts:
         - asset: assets/fonts/IBMPlexMono-Regular.ttf
         - asset: assets/fonts/IBMPlexMono-Bold.ttf

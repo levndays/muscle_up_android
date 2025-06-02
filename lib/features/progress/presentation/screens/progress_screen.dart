@@ -1,8 +1,9 @@
 // lib/features/progress/presentation/screens/progress_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth; // Для FirebaseAuth
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
+import 'dart:ui' show lerpDouble;
 
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../../../../core/domain/repositories/league_repository.dart';
@@ -11,9 +12,7 @@ import '../../../../core/domain/repositories/predefined_exercise_repository.dart
 import '../cubit/progress_cubit.dart';
 import '../widgets/league_title_widget.dart';
 import '../widgets/xp_progress_bar_widget.dart';
-import '../widgets/muscle_map_widget.dart'; // Створимо цей віджет
-// import '../widgets/exertion_list_widget.dart'; // Пізніше
-// import '../widgets/working_weights_list_widget.dart'; // Пізніше
+import '../widgets/muscle_map_widget.dart';
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
@@ -27,7 +26,7 @@ class ProgressScreen extends StatelessWidget {
         RepositoryProvider.of<WorkoutLogRepository>(context),
         RepositoryProvider.of<PredefinedExerciseRepository>(context),
         RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
-      ), // .initialize() викликається всередині конструктора кубіта
+      ),
       child: const _ProgressView(),
     );
   }
@@ -36,53 +35,97 @@ class ProgressScreen extends StatelessWidget {
 class _ProgressView extends StatelessWidget {
   const _ProgressView();
 
+  static const Color primaryOrange = Color(0xFFED5D1A);
+
+  Color _getRpeColor(double rpeValue) {
+    final double t = (rpeValue / 10.0).clamp(0.0, 1.0);
+    if (t <= 0.35) {
+      return Color.lerp(Colors.green.shade500, Colors.yellow.shade600, t / 0.35)!;
+    } else if (t <= 0.7) {
+      return Color.lerp(Colors.yellow.shade600, Colors.orange.shade700, (t - 0.35) / 0.35)!;
+    } else {
+      return Color.lerp(Colors.orange.shade700, Colors.red.shade700, (t - 0.7) / 0.3)!;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const Color primaryOrange = Color(0xFFED5D1A); // Винесемо для доступу
 
     return Scaffold(
-      // AppBar тут не потрібен, оскільки він є в HomePage
       body: BlocBuilder<ProgressCubit, ProgressState>(
         builder: (context, state) {
-          if (state is ProgressInitial || (state is ProgressLoading && state.message?.contains('Loading progress data...') == true)) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is ProgressLoading && state.message?.contains('Refreshing data...') == true) {
-            // Можна показати поточний вміст з індикатором завантаження зверху
-            // або просто залишити як є, щоб уникнути мерехтіння
-            // Поки що, для простоти, залишимо як є, і він перейде в ProgressLoaded
-          }
-          if (state is ProgressError) {
-            return Center(child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text('Error: ${state.message}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
-            ));
-          }
-          if (state is ProgressLoaded) {
+          Widget contentToShow;
+
+          if (state is ProgressInitial) {
+            contentToShow = const Center(child: CircularProgressIndicator());
+          } else if (state is ProgressLoading) {
+            // Показуємо індикатор завантаження з повідомленням, якщо воно є
+            contentToShow = Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  if (state.message != null) ...[
+                    const SizedBox(height: 16),
+                    Text(state.message!, textAlign: TextAlign.center),
+                  ]
+                ],
+              ),
+            );
+          } else if (state is ProgressError) {
+            contentToShow = Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Error: ${state.message}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<ProgressCubit>().refreshData(),
+                      child: const Text('Try Again'),
+                    )
+                  ],
+                ),
+              )
+            );
+          } else if (state is ProgressLoaded) {
             final userProfile = state.userProfile;
             final currentLeague = state.currentLeague;
             final currentXpInLevel = (userProfile.xp - state.xpForCurrentLevelStart).clamp(0, state.xpForNextLevelTotal);
             final xpToNext = state.xpForNextLevelTotal - currentXpInLevel;
 
-            return RefreshIndicator(
-              onRefresh: () async {
-                developer.log("Pull-to-refresh initiated on ProgressScreen", name: "ProgressScreen");
-                context.read<ProgressCubit>().refreshData(); // Метод, який ми додамо в кубіт
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(), // Для роботи RefreshIndicator
+            final String gender = userProfile.gender?.toLowerCase() ?? 'male';
+            final String frontSvgPath = gender == 'female'
+                ? 'assets/images/female_front.svg'
+                : 'assets/images/male_front.svg';
+            final String backSvgPath = gender == 'female'
+                ? 'assets/images/female_back.svg'
+                : 'assets/images/male_back.svg';
+            
+            const Color baseMuscleColor = Color(0xFFF0F0F0); 
+            const Color midMuscleColor = primaryOrange; 
+            const Color maxMuscleColor = Color(0xFFD50000); 
+            const double midThresholdMuscle = 10.0;
+            const double maxThresholdMuscle = 20.0;
+
+            developer.log("ProgressScreen building with MuscleMap. Gender: $gender, Front SVG: $frontSvgPath, Back SVG: $backSvgPath", name: "ProgressScreen.BuildLoaded");
+            developer.log("MuscleData for map: ${state.volumePerMuscleGroup7Days}", name: "ProgressScreen.BuildLoaded");
+
+            contentToShow = SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Ліга та Рівень
                     LeagueTitleWidget(
                       leagueName: currentLeague.name,
                       level: userProfile.level,
                       gradientColors: currentLeague.gradientColors,
                       onLeagueTap: () {
-                        // TODO: Навігація на екран ліги (плейсхолдер)
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Tapped on ${currentLeague.name} - League screen TBD')),
                         );
@@ -106,77 +149,112 @@ class _ProgressView extends StatelessWidget {
                     ),
                     const SizedBox(height: 30),
 
-                    // VOLUME (7 DAYS)
-                    Text('VOLUME (7 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('VOLUME (LAST 7 DAYS - SETS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MuscleMapWidget(
-                            svgPath: 'assets/images/male_front.svg', // TODO: Динамічно змінювати на female
-                            muscleData: state.volumePerMuscleGroup7Days,
-                            maxThreshold: 20, // Максимальна кількість сетів для 100% червоного
-                            baseColor: Colors.grey.shade200,
-                            maxColor: Colors.red.shade700,
-                            midColor: primaryOrange, // 10 сетів = помаранчевий
-                            midThreshold: 10,
+                    if (state.volumePerMuscleGroup7Days.isEmpty) // Показуємо, якщо дані порожні (після завантаження)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(child: Text("No workout data for the last 7 days to display on muscle map.", style: TextStyle(color: Colors.grey.shade600))),
+                      )
+                    else 
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: MuscleMapWidget(
+                              key: ValueKey('front_map_${userProfile.gender}_${state.volumePerMuscleGroup7Days.hashCode}'),
+                              svgPath: frontSvgPath,
+                              muscleData: state.volumePerMuscleGroup7Days,
+                              baseColor: baseMuscleColor,
+                              midColor: midMuscleColor,
+                              maxColor: maxMuscleColor,
+                              midThreshold: midThresholdMuscle,
+                              maxThreshold: maxThresholdMuscle,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: MuscleMapWidget(
-                            svgPath: 'assets/images/male_back.svg', // TODO: Динамічно змінювати на female
-                            muscleData: state.volumePerMuscleGroup7Days,
-                            maxThreshold: 20,
-                            baseColor: Colors.grey.shade200,
-                            maxColor: Colors.red.shade700,
-                            midColor: primaryOrange,
-                            midThreshold: 10,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: MuscleMapWidget(
+                              key: ValueKey('back_map_${userProfile.gender}_${state.volumePerMuscleGroup7Days.hashCode}'),
+                              svgPath: backSvgPath,
+                              muscleData: state.volumePerMuscleGroup7Days,
+                              baseColor: baseMuscleColor,
+                              midColor: midMuscleColor,
+                              maxColor: maxMuscleColor,
+                              midThreshold: midThresholdMuscle,
+                              maxThreshold: maxThresholdMuscle,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     const SizedBox(height: 30),
 
-                    // EXERTION (30 DAYS)
-                    Text('EXERTION (30 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('EXERTION (AVG RPE - LAST 30 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
                     if (state.avgRpePerExercise30Days.isEmpty)
                       const Text('No RPE data logged in the last 30 days.', style: TextStyle(color: Colors.grey))
                     else
-                      // TODO: Замінити на ExertionListWidget
-                      Column(
-                        children: state.avgRpePerExercise30Days.entries.map((entry) {
-                           final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'Exercise ${entry.key.substring(0,5)}...';
-                           return ListTile(
-                             title: Text(exerciseName),
-                             trailing: Text('Avg RPE: ${entry.value.toStringAsFixed(1)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                             // Тут буде міні-графік (плейсхолдер)
-                           );
-                        }).toList(),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: state.avgRpePerExercise30Days.length,
+                        itemBuilder: (context, index) {
+                          final entry = state.avgRpePerExercise30Days.entries.elementAt(index);
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'Exercise ${entry.key.substring(0,5)}...';
+                          final rpeColor = _getRpeColor(entry.value);
+                          return Card(
+                            elevation: 1,
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            child: ListTile(
+                              title: Text(exerciseName, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+                              trailing: Text(
+                                entry.value.toStringAsFixed(1),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: rpeColor,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 1.0,
+                                      color: Colors.black.withOpacity(0.2),
+                                      offset: const Offset(0.5, 0.5),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     const SizedBox(height: 30),
 
-                    // WORKING WEIGHTS (90 DAYS)
-                    Text('WORKING WEIGHTS (90 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('WORKING WEIGHTS (AVG - LAST 90 DAYS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                     if (state.workingWeights90Days.isEmpty)
+                     if (state.avgWorkingWeights90Days.isEmpty)
                       const Text('No weight data logged in the last 90 days.', style: TextStyle(color: Colors.grey))
                     else
-                      // TODO: Замінити на WorkingWeightsListWidget
-                       Column(
-                        children: state.workingWeights90Days.entries.map((entry) {
-                           final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'Exercise ${entry.key.substring(0,5)}...';
-                           return ListTile(
-                             title: Text(exerciseName),
-                             subtitle: Text('${entry.value.length} data points'),
-                             // Тут буде міні-графік (плейсхолдер)
-                           );
-                        }).toList(),
+                       ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: state.avgWorkingWeights90Days.length,
+                        itemBuilder: (context, index) {
+                          final entry = state.avgWorkingWeights90Days.entries.elementAt(index);
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'Exercise ${entry.key.substring(0,5)}...';
+                          return Card(
+                            elevation: 1,
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            child: ListTile(
+                              title: Text(exerciseName, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+                              trailing: Text(
+                                'Avg: ${entry.value.toStringAsFixed(1)} KG',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: primaryOrange),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     const SizedBox(height: 30),
-                    
-                    // ADVICE SECTION (Placeholder)
+
                     Text('ADVICE', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
                     Container(
@@ -187,13 +265,24 @@ class _ProgressView extends StatelessWidget {
                       ),
                       child: const Text('Personalized advice based on your progress will appear here soon!', style: TextStyle(color: Colors.blueGrey)),
                     ),
-                    const SizedBox(height: 20), // Додатковий відступ знизу
+                    const SizedBox(height: 20),
                   ],
                 ),
-              ),
-            );
+              );
+          } else {
+             // Якщо стан не ProgressInitial, ProgressLoading, ProgressError або ProgressLoaded,
+             // то це дійсно непередбачений стан.
+            contentToShow = const Center(child: Text('An unexpected state occurred. Please try again.'));
+            developer.log("ProgressScreen: Reached unexpected state: $state", name: "ProgressScreen.Build");
           }
-          return const Center(child: Text('Something went wrong.'));
+          
+          return RefreshIndicator(
+            onRefresh: () async {
+              developer.log("Pull-to-refresh initiated on ProgressScreen", name: "ProgressScreen.Refresh");
+              context.read<ProgressCubit>().refreshData();
+            },
+            child: contentToShow,
+          );
         },
       ),
     );

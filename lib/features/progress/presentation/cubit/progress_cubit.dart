@@ -4,25 +4,29 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:flutter/material.dart'; // Для Color
+import 'package:flutter/material.dart'; // Для Color у _getDefaultLeaguesInternal
 import 'dart:developer' as developer;
-import 'dart:math' as math;
 
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/entities/league_info.dart';
 import '../../../../core/domain/entities/workout_session.dart';
-import '../../../../core/domain/entities/logged_exercise.dart';
-import '../../../../core/domain/entities/logged_set.dart';
 import '../../../../core/domain/entities/predefined_exercise.dart';
+// LoggedExercise та LoggedSet не використовуються напряму в цьому кубіті,
+// але потрібні для моделі WorkoutSession
+// import '../../../../core/domain/entities/logged_exercise.dart';
+// import '../../../../core/domain/entities/logged_set.dart';
+
 
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../../../../core/domain/repositories/league_repository.dart';
 import '../../../../core/domain/repositories/workout_log_repository.dart';
 import '../../../../core/domain/repositories/predefined_exercise_repository.dart';
 
-
 part 'progress_state.dart';
 
+/// Manages the state for the Progress screen.
+/// Fetches and processes user profile data, league information,
+/// workout history, and predefined exercises to display various progress metrics.
 class ProgressCubit extends Cubit<ProgressState> {
   final UserProfileRepository _userProfileRepository;
   final LeagueRepository _leagueRepository;
@@ -31,9 +35,8 @@ class ProgressCubit extends Cubit<ProgressState> {
   final fb_auth.FirebaseAuth _firebaseAuth;
 
   StreamSubscription<UserProfile?>? _userProfileSubscription;
-  List<LeagueInfo> _allLeagues = [];
-  List<PredefinedExercise> _allPredefinedExercises = [];
-
+  List<LeagueInfo> _allLeagues = []; // Кеш завантажених ліг
+  List<PredefinedExercise> _allPredefinedExercises = []; // Кеш завантажених вправ
 
   ProgressCubit(
     this._userProfileRepository,
@@ -42,9 +45,11 @@ class ProgressCubit extends Cubit<ProgressState> {
     this._predefinedExerciseRepository,
     this._firebaseAuth,
   ) : super(ProgressInitial()) {
-    _initialize();
+    _initialize(); // Ініціалізація при створенні кубіта
   }
 
+  /// Initializes the cubit by loading essential data like leagues, exercises,
+  /// and subscribing to user profile updates.
   Future<void> _initialize() async {
     emit(const ProgressLoading(message: 'Loading progress data...'));
     final userId = _firebaseAuth.currentUser?.uid;
@@ -54,23 +59,28 @@ class ProgressCubit extends Cubit<ProgressState> {
     }
 
     try {
+      // Завантажуємо ліги та вправи один раз при ініціалізації
       _allLeagues = await _leagueRepository.getAllLeagues();
       if (_allLeagues.isEmpty) {
-         developer.log("ProgressCubit: No leagues loaded from repository, using defaults again for safety.", name: "ProgressCubit");
-        _allLeagues = _getDefaultLeaguesInternal(); 
+        developer.log("ProgressCubit: No leagues loaded from repository, using defaults.", name: "ProgressCubit");
+        _allLeagues = _getDefaultLeaguesInternal();
       }
       _allPredefinedExercises = await _predefinedExerciseRepository.getAllExercises();
 
-      _userProfileSubscription?.cancel();
+      // Скасовуємо попередню підписку, якщо вона існувала
+      await _userProfileSubscription?.cancel();
+      // Підписуємося на потік змін профілю користувача
       _userProfileSubscription = _userProfileRepository.getUserProfileStream(userId).listen(
         (userProfile) {
           if (userProfile != null) {
-            _processUserProfileUpdate(userProfile);
+            _processUserProfileUpdate(userProfile); // Обробляємо оновлення профілю
           } else {
-            // Це може статися, якщо профіль видалено або ще не створено Firebase Function
-            // Краще повідомити користувача, що профіль не завантажено
             developer.log("ProgressCubit: User profile is null from stream for userId: $userId", name: "ProgressCubit");
-            emit(const ProgressError('User profile not found or not yet available.'));
+            if (state is ProgressLoaded) { 
+              emit(const ProgressError('User profile became unavailable.'));
+            } else { 
+              emit(const ProgressError('User profile not found or not yet available.'));
+            }
           }
         },
         onError: (error, stackTrace) {
@@ -83,9 +93,9 @@ class ProgressCubit extends Cubit<ProgressState> {
       emit(ProgressError('Failed to initialize progress screen: ${e.toString()}'));
     }
   }
-  
+
   List<LeagueInfo> _getDefaultLeaguesInternal() {
-     const Color primaryOrange = Color(0xFFED5D1A);
+    const Color primaryOrange = Color(0xFFED5D1A); 
     return [
       LeagueInfo(leagueId: 'beginner', name: 'BEGINNER LEAGUE', minLevel: 1, maxLevel: 14, minXp: 0, gradientColors: [primaryOrange, Colors.black], description: 'Start your journey!'),
       LeagueInfo(leagueId: 'intermediate', name: 'INTERMEDIATE LEAGUE', minLevel: 15, maxLevel: 49, minXp: 0, gradientColors: [Colors.blue, Colors.lightBlueAccent], description: 'Keep pushing!'),
@@ -97,59 +107,80 @@ class ProgressCubit extends Cubit<ProgressState> {
   }
 
   Future<void> refreshData() async {
-     final userId = _firebaseAuth.currentUser?.uid;
-     if (userId == null) {
-       emit(const ProgressError('User not authenticated. Cannot refresh.'));
-       return;
-     }
-     // Емітуємо стан завантаження, якщо поточний стан не є помилкою (щоб не скидати повідомлення про помилку)
-     if (state is! ProgressError) {
-        emit(const ProgressLoading(message: 'Refreshing progress data...'));
-     }
-     try {
-        final userProfile = await _userProfileRepository.getUserProfile(userId);
-        if (userProfile != null) {
-          // Оновлюємо ліги та вправи, якщо вони могли змінитися (опціонально, залежить від логіки)
-          // _allLeagues = await _leagueRepository.getAllLeagues(); 
-          // _allPredefinedExercises = await _predefinedExerciseRepository.getAllExercises();
-          await _processUserProfileUpdate(userProfile);
-        } else {
-          emit(const ProgressError('User profile not found during refresh.'));
-        }
-     } catch (e) {
-        emit(ProgressError('Failed to refresh data: ${e.toString()}'));
-     }
-  }
-  
-  String? getExerciseNameById(String exerciseId) {
+    final userId = _firebaseAuth.currentUser?.uid;
+    if (userId == null) {
+      emit(const ProgressError('User not authenticated. Cannot refresh.'));
+      return;
+    }
+    
+    if (state is! ProgressError) {
+        final message = state is ProgressLoaded ? 'Refreshing progress data...' : 'Loading progress data...';
+        emit(ProgressLoading(message: message));
+    }
+    
     try {
-      return _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId).name;
-    } catch (e) {
-      return null; // Або 'Unknown Exercise'
+      _allLeagues = await _leagueRepository.getAllLeagues();
+      if (_allLeagues.isEmpty) {
+        developer.log("ProgressCubit (refresh): No leagues loaded from repository, using defaults.", name: "ProgressCubit");
+        _allLeagues = _getDefaultLeaguesInternal();
+      }
+      _allPredefinedExercises = await _predefinedExerciseRepository.getAllExercises();
+
+      final userProfile = await _userProfileRepository.getUserProfile(userId);
+      if (userProfile != null) {
+        await _processUserProfileUpdate(userProfile); 
+      } else {
+        emit(const ProgressError('User profile not found during refresh.'));
+      }
+    } catch (e, s) {
+      developer.log('Error during ProgressCubit refreshData: $e', error: e, stackTrace: s, name: 'ProgressCubit');
+      emit(ProgressError('Failed to refresh data: ${e.toString()}'));
     }
   }
 
+  String? getExerciseNameById(String exerciseId) {
+    if (_allPredefinedExercises.isEmpty) {
+        developer.log("Attempted to get exercise name but _allPredefinedExercises is empty.", name: "ProgressCubit.getExerciseNameById");
+        return 'Loading...'; 
+    }
+    try {
+      return _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId).name;
+    } catch (e) {
+      developer.log("Exercise with ID $exerciseId not found in cached list.", name: "ProgressCubit.getExerciseNameById");
+      return null; 
+    }
+  }
 
   Future<void> _processUserProfileUpdate(UserProfile userProfile) async {
     final currentLeague = _determineCurrentLeague(userProfile);
     final xpData = _calculateXpForLevel(userProfile.level);
 
-    // Перевіряємо, чи потрібно оновлювати дані логів.
-    // Можна додати логіку, щоб не перезавантажувати логи, якщо профіль оновився,
-    // але логи тренувань, ймовірно, не змінилися (наприклад, зміна displayName).
-    // Для простоти, поки що перезавантажуємо завжди.
-    
-    // Емітуємо стан завантаження для логів, якщо основний профіль вже завантажений
-    // Це допоможе уникнути перезапису ProgressLoaded станом ProgressLoading без повідомлення
-    if (state is ProgressLoaded || state is ProgressInitial) {
-      emit(ProgressLoading(message: state is ProgressLoaded ? 'Refreshing workout stats...' : 'Loading workout stats...'));
-    }
+    // --- ПОЧАТОК ВИПРАВЛЕННЯ ---
+    bool shouldEmitLogLoading = true;
+    String loadingMessageForLogs = 'Loading workout stats...';
 
+    if (state is ProgressLoading) {
+      // Якщо вже завантажуємо, перевіряємо повідомлення
+      final currentLoadingState = state as ProgressLoading;
+      if (currentLoadingState.message != null && 
+          (currentLoadingState.message!.contains('workout stats') || currentLoadingState.message!.contains('Refreshing'))) {
+        shouldEmitLogLoading = false; // Вже завантажуємо щось подібне, не перекриваємо
+      }
+    } else if (state is ProgressLoaded) {
+      // Якщо попередній стан був ProgressLoaded, то це оновлення статистики
+      loadingMessageForLogs = 'Refreshing workout stats...';
+    }
+    // Якщо стан ProgressInitial або ProgressError, то це перше завантаження статистики
+
+    if (shouldEmitLogLoading) {
+      emit(ProgressLoading(message: loadingMessageForLogs));
+    }
+    // --- КІНЕЦЬ ВИПРАВЛЕННЯ ---
 
     try {
       final volumeData = await _calculateVolumePerMuscleGroup7Days(userProfile.uid);
       final exertionData = await _calculateAvgRpePerExercise30Days(userProfile.uid);
-      final workingWeightsData = await _calculateWorkingWeights90Days(userProfile.uid);
+      final avgWorkingWeightsData = await _calculateAvgWorkingWeights90Days(userProfile.uid);
 
       emit(ProgressLoaded(
         userProfile: userProfile,
@@ -158,118 +189,126 @@ class ProgressCubit extends Cubit<ProgressState> {
         xpForNextLevelTotal: xpData['totalForLevel']!,
         volumePerMuscleGroup7Days: volumeData,
         avgRpePerExercise30Days: exertionData,
-        workingWeights90Days: workingWeightsData,
+        avgWorkingWeights90Days: avgWorkingWeightsData,
       ));
-    } catch (e,s) {
-      developer.log('Error processing workout logs for progress: $e', error: e, stackTrace: s, name: 'ProgressCubit');
+    } catch (e, s) {
+      developer.log('Error processing workout logs for progress update: $e', error: e, stackTrace: s, name: 'ProgressCubit._processUserProfileUpdate');
       emit(ProgressError('Failed to process workout data: ${e.toString()}'));
     }
   }
 
   LeagueInfo _determineCurrentLeague(UserProfile userProfile) {
     if (_allLeagues.isEmpty) {
-      developer.log("No leagues available, returning default beginner league.", name: "ProgressCubit._determineCurrentLeague");
-      return const LeagueInfo(leagueId: 'default_beginner', name: 'BEGINNER LEAGUE', minLevel: 1, minXp: 0, gradientColors: [Color(0xFFED5D1A), Colors.black]);
+      developer.log("No leagues available for determining current league, returning default beginner league.", name: "ProgressCubit._determineCurrentLeague");
+      return _getDefaultLeaguesInternal().first;
     }
-    _allLeagues.sort((a, b) => a.minLevel.compareTo(b.minLevel));
-
     for (int i = _allLeagues.length - 1; i >= 0; i--) {
       final league = _allLeagues[i];
-      if (userProfile.level >= league.minLevel && (league.maxLevel == null || userProfile.level <= league.maxLevel!)) {
-        return league;
+      if (userProfile.level >= league.minLevel) {
+        if (league.maxLevel == null || userProfile.level <= league.maxLevel!) {
+          return league;
+        }
       }
     }
-    return _allLeagues.first;
+    developer.log("Could not determine league for level ${userProfile.level}, returning first available league.", name: "ProgressCubit._determineCurrentLeague");
+    return _allLeagues.isNotEmpty ? _allLeagues.first : _getDefaultLeaguesInternal().first;
   }
 
   Map<String, int> _calculateXpForLevel(int level) {
-    const int xpPerLevelBase = 200;
+    const int xpPerLevelBase = 200; 
     int totalXpForPrevLevels = 0;
     if (level > 1) {
       for (int i = 1; i < level; i++) {
         totalXpForPrevLevels += (xpPerLevelBase + (i - 1) * 50);
       }
     }
-    final int xpToCompleteCurrentLevel = xpPerLevelBase + (level - 1) * 50;
-    return {'start': totalXpForPrevLevels, 'totalForLevel': xpToCompleteCurrentLevel};
+    final int xpToCompleteCurrentLevelForThisLevel = xpPerLevelBase + (level - 1) * 50;
+    return {'start': totalXpForPrevLevels, 'totalForLevel': xpToCompleteCurrentLevelForThisLevel};
   }
 
   Future<Map<String, double>> _calculateVolumePerMuscleGroup7Days(String userId) async {
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
-      userId, 
-      startDate: sevenDaysAgo, 
-      limit: null 
+      userId,
+      startDate: sevenDaysAgo,
+      limit: null, 
     );
 
-    Map<String, double> volumeMap = {}; // Тут буде кількість сетів
+    Map<String, double> volumeMap = {}; 
     final muscleGroupMapping = _getMuscleGroupToSvgIdMapping();
 
+    if (_allPredefinedExercises.isEmpty) {
+      developer.log("Predefined exercises list is empty, cannot calculate volume per muscle group.", name: "ProgressCubit.VolumeCalc");
+      return volumeMap;
+    }
+
     for (var session in workoutLogs) {
+      if (session.status != WorkoutStatus.completed) continue; 
+
       for (var loggedEx in session.completedExercises) {
-        final predefinedEx = _allPredefinedExercises.firstWhere(
-          (ex) => ex.id == loggedEx.predefinedExerciseId,
-          orElse: () {
-            developer.log("Predefined exercise with id ${loggedEx.predefinedExerciseId} not found in local list.", name: "ProgressCubit");
-            return PredefinedExercise(id: loggedEx.predefinedExerciseId, name: 'Unknown Exercise', normalizedName: 'unknown exercise', primaryMuscleGroup: 'Unknown', secondaryMuscleGroups: [], equipmentNeeded: [], description: '', difficultyLevel: '', tags: []);
-          }
-        );
+        PredefinedExercise? predefinedEx;
+        try {
+          predefinedEx = _allPredefinedExercises.firstWhere(
+            (ex) => ex.id == loggedEx.predefinedExerciseId,
+          );
+        } catch (e) {
+          developer.log("Predefined exercise with id ${loggedEx.predefinedExerciseId} not found in cached list for volume calc.", name: "ProgressCubit.VolumeCalc");
+          continue; 
+        }
         
         List<String> targetSvgIds = [];
-        // Головна група
+        
         String primaryGroupKey = predefinedEx.primaryMuscleGroup.toLowerCase().replaceAll(' ', '-');
         if (muscleGroupMapping.containsKey(primaryGroupKey)) {
           targetSvgIds.addAll(muscleGroupMapping[primaryGroupKey]!);
         } else {
-          developer.log("No SVG mapping for primary group: ${predefinedEx.primaryMuscleGroup}", name: "ProgressCubit.VolumeCalc");
+          developer.log("No SVG mapping for primary group: ${predefinedEx.primaryMuscleGroup} (key: $primaryGroupKey)", name: "ProgressCubit.VolumeCalc");
         }
-        
-        // Додаткові групи
+
         for (var secGroup in predefinedEx.secondaryMuscleGroups) {
           String secGroupKey = secGroup.toLowerCase().replaceAll(' ', '-');
           if (muscleGroupMapping.containsKey(secGroupKey)) {
             targetSvgIds.addAll(muscleGroupMapping[secGroupKey]!);
           } else {
-             developer.log("No SVG mapping for secondary group: $secGroup", name: "ProgressCubit.VolumeCalc");
+            developer.log("No SVG mapping for secondary group: $secGroup (key: $secGroupKey)", name: "ProgressCubit.VolumeCalc");
           }
         }
-        targetSvgIds = targetSvgIds.toSet().toList(); 
+        targetSvgIds = targetSvgIds.toSet().toList();
 
-        int setCountForExercise = loggedEx.completedSets.where((s) => s.isCompleted && s.reps != null && s.reps! > 0).length;
+        int setCountForExercise = loggedEx.completedSets.where((s) => s.isCompleted && (s.reps ?? 0) > 0).length;
 
         for (var svgId in targetSvgIds) {
           volumeMap[svgId] = (volumeMap[svgId] ?? 0) + setCountForExercise.toDouble();
         }
       }
     }
-    developer.log("Volume (sets) per muscle group (7 days): $volumeMap", name: "ProgressCubit");
+    developer.log("ProgressCubit: Volume (sets) per muscle group (7 days): $volumeMap", name: "ProgressCubit.VolumeCalc");
     return volumeMap;
   }
 
   Future<Map<String, double>> _calculateAvgRpePerExercise30Days(String userId) async {
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
-      userId, 
+      userId,
       startDate: thirtyDaysAgo,
-      limit: null
+      limit: null,
     );
 
-    Map<String, List<int>> rpeValuesPerExercise = {}; 
+    Map<String, List<int>> rpeValuesPerExercise = {};
 
     for (var session in workoutLogs) {
+      if (session.status != WorkoutStatus.completed) continue;
       for (var loggedEx in session.completedExercises) {
-        if (!rpeValuesPerExercise.containsKey(loggedEx.predefinedExerciseId)) {
-          rpeValuesPerExercise[loggedEx.predefinedExerciseId] = [];
-        }
+        rpeValuesPerExercise.putIfAbsent(loggedEx.predefinedExerciseId, () => []);
         for (var set in loggedEx.completedSets) {
           if (set.isCompleted && set.notes != null && set.notes!.startsWith("RPE_DATA:")) {
             try {
               final rpeStrings = set.notes!.substring("RPE_DATA:".length).split(',');
               rpeValuesPerExercise[loggedEx.predefinedExerciseId]!.addAll(
-                rpeStrings.where((s) => s.isNotEmpty).map(int.parse)
+                rpeStrings.where((s) => s.isNotEmpty).map(int.parse) 
               );
             } catch (e) {
-              developer.log("Error parsing RPE data for set: ${set.notes}", error: e, name: "ProgressCubit");
+              developer.log("Error parsing RPE data for set: ${set.notes}", error: e, name: "ProgressCubit.RPECalc");
             }
           }
         }
@@ -282,81 +321,80 @@ class ProgressCubit extends Cubit<ProgressState> {
         avgRpeMap[exerciseId] = rpeList.reduce((a, b) => a + b) / rpeList.length;
       }
     });
-    developer.log("Avg RPE per exercise (30 days): $avgRpeMap", name: "ProgressCubit");
+    developer.log("Avg RPE per exercise (30 days): ${avgRpeMap.length} exercises processed.", name: "ProgressCubit.RPECalc");
     return avgRpeMap;
   }
 
-  Future<Map<String, List<WorkoutDataPoint>>> _calculateWorkingWeights90Days(String userId) async {
+  Future<Map<String, double>> _calculateAvgWorkingWeights90Days(String userId) async {
     final ninetyDaysAgo = DateTime.now().subtract(const Duration(days: 90));
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
-        userId, 
+        userId,
         startDate: ninetyDaysAgo,
-        limit: null 
+        limit: null
     );
 
-    Map<String, List<WorkoutDataPoint>> weightsMap = {};
-    Map<String, Map<DateTime, double>> maxWeightPerDayPerExercise = {};
+    Map<String, List<double>> weightsPerExercise = {}; 
 
     for (var session in workoutLogs) {
-      DateTime sessionDate = DateTime(session.startedAt.toDate().year, session.startedAt.toDate().month, session.startedAt.toDate().day);
+      if (session.status != WorkoutStatus.completed) continue;
       for (var loggedEx in session.completedExercises) {
-        double maxWeightInSession = 0;
         for (var set in loggedEx.completedSets) {
-          if (set.isCompleted && set.weightKg != null && set.weightKg! > maxWeightInSession) {
-            maxWeightInSession = set.weightKg!;
-          }
-        }
-
-        if (maxWeightInSession > 0) {
-          maxWeightPerDayPerExercise.putIfAbsent(loggedEx.predefinedExerciseId, () => {});
-          if ((maxWeightPerDayPerExercise[loggedEx.predefinedExerciseId]![sessionDate] ?? 0) < maxWeightInSession) {
-            maxWeightPerDayPerExercise[loggedEx.predefinedExerciseId]![sessionDate] = maxWeightInSession;
+          if (set.isCompleted && set.weightKg != null && set.weightKg! > 0 && set.reps != null && set.reps! > 0) {
+            weightsPerExercise.putIfAbsent(loggedEx.predefinedExerciseId, () => []).add(set.weightKg!);
           }
         }
       }
     }
-    
-    maxWeightPerDayPerExercise.forEach((exerciseId, dailyMaxWeights) {
-      weightsMap[exerciseId] = dailyMaxWeights.entries
-          .map((entry) => WorkoutDataPoint(entry.key, entry.value))
-          .toList()
-        ..sort((a, b) => a.date.compareTo(b.date)); 
+
+    Map<String, double> avgWeightsMap = {};
+    weightsPerExercise.forEach((exerciseId, weightsList) {
+      if (weightsList.isNotEmpty) {
+        avgWeightsMap[exerciseId] = weightsList.reduce((a, b) => a + b) / weightsList.length;
+      }
     });
 
-    developer.log("Working weights (90 days): ${weightsMap.keys.length} exercises processed", name: "ProgressCubit");
-    return weightsMap;
+    developer.log("Avg working weights (90 days): ${avgWeightsMap.length} exercises processed.", name: "ProgressCubit.WorkingWeights");
+    return avgWeightsMap;
   }
 
-
   Map<String, List<String>> _getMuscleGroupToSvgIdMapping() {
-    // Важливо, щоб ключі тут відповідали значенням primaryMuscleGroup та secondaryMuscleGroups 
-    // з PredefinedExercise (у нижньому регістрі, замість пробілів - дефіс)
-    // Значення - це списки ID груп з SVG
     return {
+      // Front Male / Female
       'chest': ['chest'],
-      'quadriceps': ['quads'],
-      'back': ['lats', 'traps', 'traps-middle', 'lowerback', 'rear-shoulders'], 
-      'shoulders': ['front-shoulders', 'rear-shoulders'],
+      'front-shoulders': ['front-shoulders'], 
       'biceps': ['biceps'],
-      'triceps': ['triceps'],
-      'glutes': ['glutes'],
-      'hamstrings': ['hamstrings'],
-      'calves': ['calves'],
-      'core': ['abdominals', 'obliques'],
+      'forearms': ['forearms'], 
+      'hands': ['hands'], 
       'abdominals': ['abdominals'],
       'obliques': ['obliques'],
-      'forearms': ['forearms', 'hands'], 
-      'traps': ['traps', 'traps-middle'],
+      'quadriceps': ['quads'], 
+      'calves': ['calves'], 
+      'traps': ['traps'], 
+
+      // Back Male / Female
+      'rear-shoulders': ['rear-shoulders'],
+      'traps-middle': ['traps-middle'],
       'lats': ['lats'],
-      'lower-back': ['lowerback'], // Для "Lower Back"
-      // "front-deltoids" не є стандартною групою, але "shoulders" покривають її
-      // "upper-back" - це частина "traps", "rear-shoulders", "lats"
+      'lower-back': ['lowerback'], // Замінено з lowerback на lower-back для консистентності
+      'triceps': ['triceps'], // Додано, бо його не було в списку, але є в SVG
+      'glutes': ['glutes'],
+      'hamstrings': ['hamstrings'],
+      
+      // Спільні / агреговані
+      'shoulders': ['front-shoulders', 'rear-shoulders', 'traps'],
+      'back': ['lats', 'traps', 'traps-middle', 'lowerback', 'rear-shoulders'],
+      'core': ['abdominals', 'obliques', 'lowerback'],
+      'legs': ['quads', 'hamstrings', 'glutes', 'calves'],
+      'arms': ['biceps', 'triceps', 'forearms', 'hands'],
+      'upper-back': ['lats', 'traps', 'traps-middle', 'rear-shoulders'],
+      'rhomboids': ['traps-middle', 'rear-shoulders'], 
     };
   }
 
   @override
   Future<void> close() {
     _userProfileSubscription?.cancel();
+    developer.log("ProgressCubit closed and subscriptions cancelled.", name: "ProgressCubit");
     return super.close();
   }
 }

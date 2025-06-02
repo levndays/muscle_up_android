@@ -18,17 +18,18 @@ class LeagueTitleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    const Color levelNumberColor = Color(0xFF0D47A1); // Насичений синій для числа рівня
+    const Color levelTextColor = Colors.black54; // Колір для слова "LEVEL"
 
-    // Створюємо градієнт
     final Shader textGradientShader = LinearGradient(
-      colors: gradientColors.length >= 2 ? gradientColors : [gradientColors.first, gradientColors.first], // Захист, якщо кольорів менше 2
+      colors: gradientColors.length >= 2 ? gradientColors : [gradientColors.first, gradientColors.first],
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
-    ).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)); // Rect розмір приблизний, але для ShaderMask це не так критично
+    ).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0));
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start, // Вирівнюємо по верху
+      crossAxisAlignment: CrossAxisAlignment.start, // Вирівнювання по верху для всієї Row
       children: [
         Expanded(
           child: GestureDetector(
@@ -40,30 +41,30 @@ class LeagueTitleWidget extends StatelessWidget {
                 leagueName.toUpperCase(),
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontFamily: 'Inter',
-                  fontWeight: FontWeight.w900, // Black
+                  fontWeight: FontWeight.w900,
                   fontStyle: FontStyle.italic,
-                  // Колір тут буде замінено ShaderMask, але краще вказати базовий
-                  color: Colors.white, // Базовий колір, який буде "залитий" градієнтом
-                  height: 1.1, // Трохи зменшуємо міжрядковий інтервал
+                  color: Colors.white, // Базовий колір для градієнту
+                  height: 1.1,
                 ),
-                maxLines: 2,
+                maxLines: 2, // Дозволимо два рядки, якщо назва ліги довга
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 16), // Відступ між назвою ліги та рівнем
+        const SizedBox(width: 16),
         Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end, // Вирівнювання по правому краю
+          mainAxisSize: MainAxisSize.min, // Щоб Column займав мінімальну висоту
           children: [
             Text(
               level.toString(),
-              style: theme.textTheme.headlineMedium?.copyWith(
+              style: theme.textTheme.headlineLarge?.copyWith( // Збільшимо шрифт
                 fontFamily: 'Inter',
-                fontWeight: FontWeight.w900, // Black
-                color: const Color(0xFFE91E63), // Яскравий рожевий/пурпурний
-                fontSize: 38, // Збільшимо розмір цифри рівня
-                height: 0.9,
+                fontWeight: FontWeight.w900,
+                color: levelNumberColor, // Новий колір
+                fontSize: 40, // Збільшений розмір для числа
+                height: 0.9, // Зменшуємо висоту рядка, щоб наблизити до "LEVEL"
               ),
             ),
             Text(
@@ -71,9 +72,10 @@ class LeagueTitleWidget extends StatelessWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.bold,
-                color: Colors.black54,
-                letterSpacing: 0.5,
-                height: 0.9,
+                color: levelTextColor, // Колір для тексту "LEVEL"
+                letterSpacing: 1.5, // Трохи розріджуємо букви
+                fontSize: 10, // Менший розмір для "LEVEL"
+                height: 0.9, // Зменшуємо висоту рядка
               ),
             ),
           ],
