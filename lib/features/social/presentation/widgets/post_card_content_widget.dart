@@ -1,18 +1,27 @@
 // lib/features/social/presentation/widgets/post_card_content_widget.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Потрібен для RepositoryProvider
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth; // Для перевірки userId
+import 'package:flutter_bloc/flutter_bloc.dart'; 
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth; 
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
-import '../cubit/post_interaction_cubit.dart'; // Для голосування
+import '../cubit/post_interaction_cubit.dart'; 
 import 'vote_progress_bar_widget.dart';
 import 'dart:developer' as developer;
 
+// NEW COLORS FOR RECORD CLAIM
+const Color recordClaimBaseBlue = Color(0xFF067BC2); // #067BC2
+const Color recordClaimLighterBlue = Color(0xFF4FA8D8); // Трохи світліший варіант для градієнту
+const Color recordClaimDarkerBlue = Color(0xFF045C9B); // Трохи темніший варіант для градієнту
+
+const Color recordVerifyColor = Color(0xFF0A8754); // #0A8754
+const Color recordDisputeColor = Color(0xFFEF2917); // #EF2917
+
+
 class PostCardContentWidget extends StatelessWidget {
   final Post post;
-  final VoteType? currentUserVote; // Передаємо поточний голос для кнопок
-  final bool isDetailedView; // Прапорець для розрізнення детального перегляду від списку
+  final VoteType? currentUserVote; 
+  final bool isDetailedView; 
 
   const PostCardContentWidget({
     super.key,
@@ -61,23 +70,23 @@ class PostCardContentWidget extends StatelessWidget {
         if (status == RecordVerificationStatus.expired) return "EXPIRED";
     }
     if (status == RecordVerificationStatus.pending || status == null) return "AWAITS VOTING";
-    if (status == RecordVerificationStatus.contested) return "CONTESTED";
+    if (status == RecordVerificationStatus.contested) return "CONTESTED"; // Хоча ми його не використовуємо активно
     return "UNKNOWN";
   }
 
   Color _getRecordStatusColor(RecordVerificationStatus? status, bool? isVerified, BuildContext context) {
-    if (isVerified == true) return Colors.green.shade300;
+    if (isVerified == true) return recordVerifyColor; // NEW COLOR
     if (isVerified == false) {
-        if (status == RecordVerificationStatus.rejected) return Colors.red.shade300;
-        if (status == RecordVerificationStatus.expired) return Colors.red.shade400;
+        if (status == RecordVerificationStatus.rejected) return recordDisputeColor; // NEW COLOR
+        if (status == RecordVerificationStatus.expired) return recordDisputeColor.withOpacity(0.8); // NEW COLOR (трохи світліший)
     }
     switch (status) {
-      case RecordVerificationStatus.pending: return Colors.yellow.shade300;
-      case RecordVerificationStatus.verified: return Colors.green.shade300;
-      case RecordVerificationStatus.rejected: return Colors.red.shade300;
-      case RecordVerificationStatus.expired: return Colors.red.shade400;
-      case RecordVerificationStatus.contested: return Colors.orange.shade300;
-      default: return Colors.yellow.shade300;
+      case RecordVerificationStatus.pending: return Colors.yellow.shade700; // Залишаємо жовтим для "pending"
+      case RecordVerificationStatus.verified: return recordVerifyColor;
+      case RecordVerificationStatus.rejected: return recordDisputeColor;
+      case RecordVerificationStatus.expired: return recordDisputeColor.withOpacity(0.8);
+      case RecordVerificationStatus.contested: return Colors.orange.shade600; // Якщо буде використовуватися
+      default: return Colors.yellow.shade700; // Default to pending color
     }
   }
 
@@ -86,8 +95,7 @@ class PostCardContentWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     final bool isAuthorOfPost = currentAuthUserId == post.userId;
-    const Color verifyButtonColor = Color(0xFF4CAF50);
-
+    
     int verifyCount = 0;
     int disputeCount = 0;
     post.verificationVotes.forEach((_, voteStr) {
@@ -101,7 +109,7 @@ class PostCardContentWidget extends StatelessWidget {
 
 
     if (post.type == PostType.routineShare && post.routineSnapshot != null) {
-      return Padding( // Додано відступ для консистентності з іншими типами постів
+      return Padding( 
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
           padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
@@ -147,14 +155,20 @@ class PostCardContentWidget extends StatelessWidget {
         ),
       );
     } else if (post.type == PostType.recordClaim && post.recordDetails != null) {
-      return Padding( // Додано відступ
+      return Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF00BFFF), Color(0xFF87CEFA)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            // NEW GRADIENT FOR RECORD CLAIM
+            gradient: const LinearGradient(
+                colors: [recordClaimLighterBlue, recordClaimBaseBlue, recordClaimDarkerBlue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                stops: [0.0, 0.5, 1.0],
+            ),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.25), blurRadius: 8, offset: const Offset(0,4))],
+            boxShadow: [BoxShadow(color: recordClaimBaseBlue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0,5))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,22 +180,40 @@ class PostCardContentWidget extends StatelessWidget {
                 ])),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('by @${post.authorUsername}', style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
-                  Text('STATUS: ${_getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified)}', style: theme.textTheme.bodySmall?.copyWith(color: _getRecordStatusColor(post.recordVerificationStatus, post.isRecordVerified, context), fontWeight: FontWeight.bold, fontSize: 11)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _getRecordStatusColor(post.recordVerificationStatus, post.isRecordVerified, context).withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified),
+                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 0.5),
+                    ),
+                  ),
                 ]),
               ]),
               const SizedBox(height: 12),
               Text('${post.recordDetails!['reps'] ?? 'N/A'} REPS / ${post.recordDetails!['weightKg']?.toStringAsFixed(1) ?? 'N/A'} KG', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
               const SizedBox(height: 10),
-              VoteProgressBarWidget(verifyCount: verifyCount, disputeCount: disputeCount, height: 22, verifyColor: verifyButtonColor, disputeColor: Colors.red.shade600, backgroundColor: Colors.black.withOpacity(0.3), centerTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, shadows: [Shadow(color: Colors.black87, blurRadius: 2, offset: Offset(0,1))])),
+              VoteProgressBarWidget(
+                verifyCount: verifyCount, 
+                disputeCount: disputeCount, 
+                height: 22, 
+                verifyColor: recordVerifyColor, // NEW COLOR
+                disputeColor: recordDisputeColor, // NEW COLOR
+                backgroundColor: Colors.black.withOpacity(0.3), 
+                centerTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, shadows: [Shadow(color: Colors.black87, blurRadius: 2, offset: Offset(0,1))])
+              ),
               if (post.recordDetails!['videoUrl'] != null && post.recordDetails!['videoUrl'].isNotEmpty)
-                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: const Text('Watch Proof', style: TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
+                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO: Launch URL */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: const Text('Watch Proof', style: TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
               if (canVote)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: Row(children: [
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? verifyButtonColor.withOpacity(0.7) : verifyButtonColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('VALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? recordVerifyColor.withOpacity(0.7) : recordVerifyColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('VALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
                     const SizedBox(width: 12),
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? Colors.red.shade700.withOpacity(0.7) : Colors.red.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('UNVALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? recordDisputeColor.withOpacity(0.7) : recordDisputeColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('DISPUTE', style: TextStyle(fontWeight: FontWeight.bold)))), // "UNVALIDATE" замінено на "DISPUTE"
                   ]),
                 )
             ],
@@ -189,8 +221,6 @@ class PostCardContentWidget extends StatelessWidget {
         ),
       );
     }
-    // Для standard постів або якщо немає даних для routine/record, нічого не відображаємо тут.
-    // Основний текст та медіа обробляються поза цим віджетом.
     return const SizedBox.shrink();
   }
 }

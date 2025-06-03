@@ -10,6 +10,10 @@ import '../../../../core/domain/entities/achievement.dart';
 import '../cubit/user_profile_cubit.dart';
 import '../../../profile_setup/presentation/screens/profile_setup_screen.dart';
 import '../../../../auth_gate.dart';
+// NEW IMPORTS
+import '../../../social/presentation/screens/follow_list_screen.dart';
+import '../../../social/presentation/cubit/follow_list_cubit.dart' show FollowListType;
+
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
 const Color profilePurple = Color(0xFFB700FF);
@@ -218,6 +222,24 @@ class _ProfileScreenContent extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 25),
+                _buildSocialStatRow(
+                  context,
+                  'FOLLOWERS',
+                  _formatNumberWithSpaces(userProfile.followersCount),
+                  () {
+                    Navigator.of(context).push(FollowListScreen.route(userId: userProfile.uid, type: FollowListType.followers));
+                  } 
+                ),
+                const SizedBox(height: 12),
+                _buildSocialStatRow(
+                  context,
+                  'FOLLOWING',
+                  _formatNumberWithSpaces(userProfile.followingCount),
+                   () {
+                     Navigator.of(context).push(FollowListScreen.route(userId: userProfile.uid, type: FollowListType.following));
+                   }
+                ),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -229,10 +251,10 @@ class _ProfileScreenContent extends StatelessWidget {
                           children: [
                             const Icon(Icons.local_fire_department, color: profilePrimaryOrange, size: 28),
                             const SizedBox(width: 5),
-                            Text('${userProfile.longestStreak}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18, color: profileTextBlack)), // <--- ВИПРАВЛЕНО НА longestStreak
+                            Text('${userProfile.longestStreak}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18, color: profileTextBlack)),
                           ],
                         ),
-                        Text('BEST STREAK', style: theme.textTheme.bodyMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 11)), // <--- ВИПРАВЛЕНО НАПИС
+                        Text('BEST STREAK', style: theme.textTheme.bodyMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 11)),
                       ],
                     ),
                     Row(
@@ -256,10 +278,6 @@ class _ProfileScreenContent extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 25),
-                _buildSocialStatRow(context, 'FOLLOWERS', _formatNumberWithSpaces(userProfile.followersCount)),
-                const SizedBox(height: 8),
-                _buildSocialStatRow(context, 'FOLLOWING', _formatNumberWithSpaces(userProfile.followingCount)),
-                const SizedBox(height: 20),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -349,6 +367,12 @@ class _ProfileScreenContent extends StatelessWidget {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (_) => ProfileSetupScreen(userProfileToEdit: userProfile),
                         )).then((updated) {
+                           if (updated == true && context.mounted) {
+                              final currentAuthUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
+                              if (currentAuthUserId != null) {
+                                context.read<UserProfileCubit>().fetchUserProfile(currentAuthUserId, forceRemote: true);
+                              }
+                            }
                         });
                       },
                       style: TextButton.styleFrom(padding: EdgeInsets.zero),
@@ -378,15 +402,31 @@ class _ProfileScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialStatRow(BuildContext context, String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: profileTextBlack, fontSize: 16)),
-        Text(value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: profileBlue, fontWeight: FontWeight.w900, fontSize: 18)),
-      ],
+ Widget _buildSocialStatRow(BuildContext context, String label, String value, [VoidCallback? onTap]) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: profileTextBlack, fontSize: 16)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(value, style: theme.textTheme.headlineSmall?.copyWith(color: profileBlue, fontWeight: FontWeight.w900, fontSize: 18)),
+                if (onTap != null)
+                  Icon(Icons.chevron_right, color: profileBlue.withOpacity(0.7), size: 22),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
+
 
   Widget _buildRewardItem(BuildContext context, Achievement achievement, bool isAchieved, String? conditionMessage) {
     return Padding(

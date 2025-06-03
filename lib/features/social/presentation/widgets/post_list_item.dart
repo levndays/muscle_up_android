@@ -11,12 +11,10 @@ import '../cubit/post_interaction_cubit.dart';
 import '../screens/post_detail_screen.dart';
 import 'dart:developer' as developer;
 
-// НЕ ПОТРІБНІ ТУТ, бо логіка в PostCardContentWidget
-// import '../../../../core/domain/entities/routine.dart';
-// import '../../../../core/domain/repositories/routine_repository.dart';
-// import '../../../social/presentation/screens/create_post_screen.dart';
-// import 'vote_progress_bar_widget.dart';
-import 'post_card_content_widget.dart'; // <-- НОВИЙ ІМПОРТ
+import 'post_card_content_widget.dart'; 
+// NEW IMPORT for navigating to other user's profile
+import '../screens/view_user_profile_screen.dart';
+
 
 class PostListItem extends StatelessWidget {
   final Post post;
@@ -40,9 +38,6 @@ class PostListItem extends StatelessWidget {
 }
 
 class _PostListItemContent extends StatelessWidget {
-  // _addRoutineToMyRoutines тепер знаходиться в PostCardContentWidget
-  // Якщо він потрібен лише там, його можна видалити звідси.
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -86,7 +81,7 @@ class _PostListItemContent extends StatelessWidget {
         final timeAgo = DateFormat.yMMMd('en_US').add_jm().format(currentPost.timestamp.toDate());
         final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
         final bool isLikedByCurrentUser = currentAuthUserId != null && currentPost.likedBy.contains(currentAuthUserId);
-        final bool isDetailedView = false; // В PostListItem це завжди не детальний перегляд
+        final bool isDetailedView = false;
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -108,24 +103,38 @@ class _PostListItemContent extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                        backgroundImage: currentPost.authorProfilePicUrl != null && currentPost.authorProfilePicUrl!.isNotEmpty
-                            ? NetworkImage(currentPost.authorProfilePicUrl!)
-                            : null,
-                        child: currentPost.authorProfilePicUrl == null || currentPost.authorProfilePicUrl!.isEmpty
-                            ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
-                            : null,
+                      GestureDetector( // Make avatar tappable
+                        onTap: () {
+                           if (currentPost.userId != currentAuthUserId) { // Prevent navigating to own profile this way
+                            Navigator.of(context).push(ViewUserProfileScreen.route(currentPost.userId));
+                          }
+                        },
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                          backgroundImage: currentPost.authorProfilePicUrl != null && currentPost.authorProfilePicUrl!.isNotEmpty
+                              ? NetworkImage(currentPost.authorProfilePicUrl!)
+                              : null,
+                          child: currentPost.authorProfilePicUrl == null || currentPost.authorProfilePicUrl!.isEmpty
+                              ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
+                              : null,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              currentPost.authorUsername,
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                             GestureDetector( // Make username tappable
+                              onTap: () {
+                                if (currentPost.userId != currentAuthUserId) {
+                                  Navigator.of(context).push(ViewUserProfileScreen.route(currentPost.userId));
+                                }
+                              },
+                              child: Text(
+                                currentPost.authorUsername,
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ),
                             Text(
                               timeAgo,
@@ -150,11 +159,11 @@ class _PostListItemContent extends StatelessWidget {
                        child: Text(
                          currentPost.textContent,
                          style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
-                         maxLines: 3, // Менше рядків для прев'ю у стрічці
+                         maxLines: 3,
                          overflow: TextOverflow.ellipsis,
                        ),
                      ),
-                  if (currentPost.mediaUrl != null && currentPost.type == PostType.standard) ...[ // Медіа тільки для стандартного поста у списку
+                  if (currentPost.mediaUrl != null && currentPost.type == PostType.standard) ...[
                     const SizedBox(height: 10),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),

@@ -3,13 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 enum NotificationType {
-  achievementUnlocked, // Досягнення
-  workoutReminder,     // Нагадування про тренування
-  newFollower,         // Новий підписник (на майбутнє)
-  routineShared,       // Хтось поділився рутиною (на майбутнє)
-  systemMessage,       // Системне повідомлення
-  advice,              // Новий тип для порад
-  custom,              // Інший тип
+  achievementUnlocked,
+  workoutReminder,
+  newFollower,         // NEW: Added new follower notification type
+  routineShared,
+  systemMessage,
+  advice,
+  custom,
 }
 
 class AppNotification extends Equatable {
@@ -19,9 +19,12 @@ class AppNotification extends Equatable {
   final String message;
   final Timestamp timestamp;
   final bool isRead;
-  final String? relatedEntityId;   // Наприклад, ID досягнення, рутини
-  final String? relatedEntityType; // Наприклад, 'achievement', 'routine'
-  final String? iconName;          // Назва іконки з Material Icons або кастомної
+  final String? relatedEntityId;
+  final String? relatedEntityType;
+  final String? iconName;
+  final String? senderProfilePicUrl; // NEW: Optional, for follower notifications
+  final String? senderUsername;      // NEW: Optional, for follower notifications
+
 
   const AppNotification({
     required this.id,
@@ -33,6 +36,8 @@ class AppNotification extends Equatable {
     this.relatedEntityId,
     this.relatedEntityType,
     this.iconName,
+    this.senderProfilePicUrl, // NEW
+    this.senderUsername,      // NEW
   });
 
   factory AppNotification.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
@@ -49,20 +54,23 @@ class AppNotification extends Equatable {
       relatedEntityId: data['relatedEntityId'] as String?,
       relatedEntityType: data['relatedEntityType'] as String?,
       iconName: data['iconName'] as String?,
+      senderProfilePicUrl: data['senderProfilePicUrl'] as String?, // NEW
+      senderUsername: data['senderUsername'] as String?,           // NEW
     );
   }
 
-  Map<String, dynamic> toMap() { // Для створення/оновлення
+  Map<String, dynamic> toMap() {
     return {
-      // 'id' не потрібен тут, бо це ID документа
-      'type': type.name, // Зберігаємо як рядок
+      'type': type.name,
       'title': title,
       'message': message,
-      'timestamp': timestamp, // Або FieldValue.serverTimestamp() при створенні
+      'timestamp': timestamp,
       'isRead': isRead,
       if (relatedEntityId != null) 'relatedEntityId': relatedEntityId,
       if (relatedEntityType != null) 'relatedEntityType': relatedEntityType,
       if (iconName != null) 'iconName': iconName,
+      if (senderProfilePicUrl != null) 'senderProfilePicUrl': senderProfilePicUrl, // NEW
+      if (senderUsername != null) 'senderUsername': senderUsername,               // NEW
     };
   }
 
@@ -76,6 +84,10 @@ class AppNotification extends Equatable {
     String? relatedEntityId,
     String? relatedEntityType,
     String? iconName,
+    String? senderProfilePicUrl, // NEW
+    bool allowNullSenderProfilePicUrl = false, // NEW
+    String? senderUsername,      // NEW
+    bool allowNullSenderUsername = false, // NEW
   }) {
     return AppNotification(
       id: id ?? this.id,
@@ -87,6 +99,8 @@ class AppNotification extends Equatable {
       relatedEntityId: relatedEntityId ?? this.relatedEntityId,
       relatedEntityType: relatedEntityType ?? this.relatedEntityType,
       iconName: iconName ?? this.iconName,
+      senderProfilePicUrl: allowNullSenderProfilePicUrl ? senderProfilePicUrl : (senderProfilePicUrl ?? this.senderProfilePicUrl), // NEW
+      senderUsername: allowNullSenderUsername ? senderUsername : (senderUsername ?? this.senderUsername),                         // NEW
     );
   }
 
@@ -101,6 +115,8 @@ class AppNotification extends Equatable {
         relatedEntityId,
         relatedEntityType,
         iconName,
+        senderProfilePicUrl, // NEW
+        senderUsername,      // NEW
       ];
 
   static NotificationType _parseNotificationType(String? typeString) {
@@ -108,7 +124,7 @@ class AppNotification extends Equatable {
     try {
       return NotificationType.values.byName(typeString);
     } catch (e) {
-      return NotificationType.custom; // Тип за замовчуванням, якщо розпарсити не вдалося
+      return NotificationType.custom;
     }
   }
 }

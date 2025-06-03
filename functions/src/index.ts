@@ -1,6 +1,6 @@
 // FILE: functions/src/index.ts
 import * as functionsV1 from "firebase-functions/v1";
-import * as functionsV2 from "firebase-functions/v2"; // For scheduled functions
+import * as functionsV2 from "firebase-functions/v2";
 import { logger } from "firebase-functions";
 import {
   onDocumentWritten,
@@ -24,6 +24,16 @@ enum AchievementId {
   EARLY_BIRD = "earlyBird",
   FIRST_WORKOUT = "firstWorkout",
   PERSONAL_RECORD_SET = "personalRecordSet",
+}
+
+enum NotificationType { // Re-define for function context or import if shared
+  ACHIEVEMENT_UNLOCKED = "achievementUnlocked",
+  WORKOUT_REMINDER = "workoutReminder",
+  NEW_FOLLOWER = "newFollower", // NEW
+  ROUTINE_SHARED = "routineShared",
+  SYSTEM_MESSAGE = "systemMessage",
+  ADVICE = "advice",
+  CUSTOM = "custom",
 }
 
 enum RecordVerificationStatus {
@@ -70,8 +80,12 @@ export const createUserProfile = functionsV1.region(defaultRegion).auth.user().o
       dateOfBirth: null, heightCm: null, weightKg: null, fitnessGoal: null,
       activityLevel: null, xp: 0, level: 1, currentStreak: 0, longestStreak: 0,
       lastWorkoutTimestamp: null, lastScheduledWorkoutCompletionTimestamp: null,
-      lastScheduledWorkoutDayKey: null, followersCount: 0, followingCount: 0,
-      achievedRewardIds: [], profileSetupComplete: false,
+      lastScheduledWorkoutDayKey: null,
+      followersCount: 0,
+      followingCount: 0,
+      achievedRewardIds: [],
+      following: [],
+      profileSetupComplete: false,
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
     logger.info("V1 User profile successfully created.", { uid: user.uid });
@@ -402,7 +416,7 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
       notificationsToAdd.push({
         ref: authorProfileRef.collection("notifications").doc(),
         data: {
-          type: newStatus === RecordVerificationStatus.VERIFIED ? "achievementUnlocked" : "systemMessage",
+          type: newStatus === RecordVerificationStatus.VERIFIED ? NotificationType.ACHIEVEMENT_UNLOCKED.toString() : NotificationType.SYSTEM_MESSAGE.toString(),
           title: authorNotificationTitle, message: authorNotificationMessage,
           timestamp: FieldValue.serverTimestamp(), isRead: false,
           iconName: newStatus === RecordVerificationStatus.VERIFIED ? "military_tech" : "gavel",
@@ -419,13 +433,13 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
         recordXp = Math.min(recordXp, 1500);
         writeBatch.update(authorProfileRef, {
           xp: FieldValue.increment(recordXp),
-          achievedRewardIds: FieldValue.arrayUnion([AchievementId.PERSONAL_RECORD_SET]),
+          achievedRewardIds: FieldValue.arrayUnion(AchievementId.PERSONAL_RECORD_SET),
           updatedAt: FieldValue.serverTimestamp(),
         });
         notificationsToAdd.push({
           ref: authorProfileRef.collection("notifications").doc(),
           data: {
-            type: "achievementUnlocked",
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
             title: `New Record: ${recordDetails?.exerciseName ?? "Exercise"} Verified!`,
             message: `You earned ${recordXp} XP for your verified record of ${recordDetails?.weightKg}kg x ${recordDetails?.reps} reps!`,
             timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
@@ -439,13 +453,99 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
       await writeBatch.commit();
       logger.info(`Batch committed for ${snapshot.docs.length} record claim updates.`);
       
-      const notificationCreationPromises = notificationsToAdd.map(notif => notif.ref.set(notif.data));
+      const notificationCreationPromises = notificationsToAdd.map((notif) => notif.ref.set(notif.data));
       await Promise.all(notificationCreationPromises);
       logger.info(`Created ${notificationsToAdd.length} notifications for processed claims.`);
-
     } catch (error) {
       logger.error("Error committing batch or creating notifications for record claim processing:", error);
     }
     return;
+  }
+);
+
+export const handleUserFollowListUpdate = onDocumentWritten(
+  { document: "users/{userId}", region: defaultRegion, memory: "256MiB" },
+  async (event: FirestoreEvent<Change<DocumentSnapshot> | undefined, { userId: string }>) => {
+    const currentUserId = event.params.userId;
+    const change = event.data;
+    if (!change) {
+      logger.info(`No data change for user ${currentUserId}, exiting handleUserFollowListUpdate.`);
+      return;
+    }
+
+    const beforeData = change.before.exists ? change.before.data() : null;
+    const afterData = change.after.exists ? change.after.data() : null;
+
+    if (!afterData && beforeData) {
+      logger.info(`User document ${currentUserId} deleted. No follow/unfollow action to process based on 'following' list.`);
+      return;
+    }
+    if (!afterData) {
+      logger.info(`User document ${currentUserId} does not exist after event. Cannot process follow list update.`);
+      return;
+    }
+
+    const followingBefore: string[] = Array.isArray(beforeData?.following) ? beforeData?.following : [];
+    const followingAfter: string[] = Array.isArray(afterData.following) ? afterData.following : [];
+
+    const db = admin.firestore();
+    const batch = db.batch();
+    let operationsInBatch = 0;
+    const MAX_BATCH_OPERATIONS = 480; // Leave more room for notifications
+
+    const followedUserIds = followingAfter.filter((id) => !followingBefore.includes(id));
+    for (const targetUserId of followedUserIds) {
+      if (operationsInBatch >= MAX_BATCH_OPERATIONS - 3) { await batch.commit(); operationsInBatch = 0; }
+      const targetUserRef = db.collection("users").doc(targetUserId);
+      batch.update(targetUserRef, { followersCount: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() });
+      operationsInBatch++;
+      logger.info(`User ${currentUserId} followed ${targetUserId}. Incremented ${targetUserId}'s followersCount.`);
+
+      // Create notification for the target user
+      const notificationRef = targetUserRef.collection("notifications").doc();
+      batch.set(notificationRef, {
+        type: NotificationType.NEW_FOLLOWER.toString(), // Use enum string value
+        title: "New Follower!",
+        message: `${afterData.username ?? afterData.displayName ?? "Someone"} started following you.`,
+        senderUserId: currentUserId, // Include sender ID for potential navigation
+        senderUsername: afterData.username ?? afterData.displayName ?? "A user",
+        senderProfilePicUrl: afterData.profilePictureUrl ?? null,
+        timestamp: FieldValue.serverTimestamp(),
+        isRead: false,
+        iconName: "person_add_alt_1",
+        relatedEntityId: currentUserId,
+        relatedEntityType: "userProfile",
+      });
+      operationsInBatch++;
+      logger.info(`Created newFollower notification for ${targetUserId} from ${currentUserId}.`);
+    }
+
+    const unfollowedUserIds = followingBefore.filter((id) => !followingAfter.includes(id));
+    for (const targetUserId of unfollowedUserIds) {
+      if (operationsInBatch >= MAX_BATCH_OPERATIONS - 1) { await batch.commit(); operationsInBatch = 0; }
+      const targetUserRef = db.collection("users").doc(targetUserId);
+      batch.update(targetUserRef, { followersCount: FieldValue.increment(-1), updatedAt: FieldValue.serverTimestamp() });
+      operationsInBatch++;
+      logger.info(`User ${currentUserId} unfollowed ${targetUserId}. Decremented ${targetUserId}'s followersCount.`);
+    }
+
+    if (followingAfter.length !== followingBefore.length) {
+      if (operationsInBatch >= MAX_BATCH_OPERATIONS - 1) { await batch.commit(); operationsInBatch = 0; }
+      const currentUserRef = db.collection("users").doc(currentUserId);
+      batch.update(currentUserRef, { followingCount: followingAfter.length, updatedAt: FieldValue.serverTimestamp() });
+      operationsInBatch++;
+      logger.info(`Updated ${currentUserId}'s followingCount to ${followingAfter.length}.`);
+    }
+
+    if (operationsInBatch > 0) {
+      try {
+        await batch.commit();
+        logger.info(`Batch committed for follow/unfollow and notification operations related to ${currentUserId}.`);
+      } catch (error) {
+        logger.error(`Error committing follow/unfollow/notification batch for ${currentUserId}:`, error);
+      }
+    } else {
+      logger.info(`No direct follow/unfollow operations detected for ${currentUserId} in handleUserFollowListUpdate that require db writes.`);
+    }
   }
 );

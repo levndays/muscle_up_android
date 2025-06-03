@@ -6,8 +6,8 @@ class VoteProgressBarWidget extends StatelessWidget {
   final int verifyCount;
   final int disputeCount;
   final double height;
-  final Color verifyColor;
-  final Color disputeColor;
+  final Color verifyColor; // Колір передається ззовні
+  final Color disputeColor; // Колір передається ззовні
   final Color backgroundColor;
   final TextStyle? centerTextStyle;
 
@@ -16,8 +16,8 @@ class VoteProgressBarWidget extends StatelessWidget {
     required this.verifyCount,
     required this.disputeCount,
     this.height = 20.0,
-    this.verifyColor = const Color(0xFF4CAF50), 
-    this.disputeColor = Colors.redAccent,
+    this.verifyColor = const Color(0xFF0A8754), // Оновлений дефолтний (хоча він буде перезаписаний)
+    this.disputeColor = const Color(0xFFEF2917), // Оновлений дефолтний (хоча він буде перезаписаний)
     this.backgroundColor = Colors.black26, 
     this.centerTextStyle,
   });
@@ -32,7 +32,6 @@ class VoteProgressBarWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(height / 2),
-        // border: Border.all(color: Colors.black54, width: 1.5) // ВИДАЛЕНО ОБВОДКУ
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(height / 2),
@@ -46,7 +45,7 @@ class VoteProgressBarWidget extends StatelessWidget {
                     Container(
                       width: maxWidth * verifyRatio,
                       decoration: BoxDecoration(
-                        color: verifyColor,
+                        color: verifyColor, // Використовуємо переданий колір
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(height / 2),
                           bottomLeft: Radius.circular(height / 2),
@@ -59,7 +58,7 @@ class VoteProgressBarWidget extends StatelessWidget {
                       Expanded(
                         child: Container(
                            decoration: BoxDecoration(
-                            color: disputeColor,
+                            color: disputeColor, // Використовуємо переданий колір
                             borderRadius: BorderRadius.only(
                               topRight: Radius.circular(height / 2),
                               bottomRight: Radius.circular(height / 2),
@@ -80,7 +79,6 @@ class VoteProgressBarWidget extends StatelessWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 13,
-                  // shadows: [Shadow(color: Colors.black54, blurRadius: 1, offset: Offset(0,1))] // ВИДАЛЕНО ТІНІ
                 ),
               ),
             ),

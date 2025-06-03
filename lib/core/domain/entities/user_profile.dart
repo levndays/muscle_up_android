@@ -18,15 +18,17 @@ class UserProfile extends Equatable {
   final String? activityLevel;
   final int xp;
   final int level;
-  final int currentStreak; // Тепер це "scheduled workout streak"
-  final int longestStreak; // Тепер це "longest scheduled workout streak"
-  final Timestamp? lastWorkoutTimestamp; // Загальний час останнього тренування (для інших цілей, не для цього стріку)
-  final Timestamp? lastScheduledWorkoutCompletionTimestamp; // Час останнього ВЧАСНОГО ЗАПЛАНОВАНОГО тренування
-  final String? lastScheduledWorkoutDayKey; // Ключ дня тижня останнього ВЧАСНОГО ЗАПЛАНОВАНОГО тренування (напр. "MON")
+  final int currentStreak; 
+  final int longestStreak; 
+  final Timestamp? lastWorkoutTimestamp; 
+  final Timestamp? lastScheduledWorkoutCompletionTimestamp; 
+  final String? lastScheduledWorkoutDayKey; 
 
   final int followersCount;
   final int followingCount;
   final List<String> achievedRewardIds;
+  final List<String> following; // NEW: List of user IDs this user is following
+  // final List<String> followers; // This will be managed by functions, not directly in client model for modification
   final bool profileSetupComplete;
   final Timestamp createdAt;
   final Timestamp updatedAt;
@@ -48,11 +50,12 @@ class UserProfile extends Equatable {
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.lastWorkoutTimestamp,
-    this.lastScheduledWorkoutCompletionTimestamp, // Нове поле
-    this.lastScheduledWorkoutDayKey,          // Нове поле
+    this.lastScheduledWorkoutCompletionTimestamp, 
+    this.lastScheduledWorkoutDayKey,         
     this.followersCount = 0,
     this.followingCount = 0,
     this.achievedRewardIds = const [],
+    this.following = const [], // NEW: Initialize
     required this.profileSetupComplete,
     required this.createdAt,
     required this.updatedAt,
@@ -83,6 +86,7 @@ class UserProfile extends Equatable {
       followersCount: data['followersCount'] as int? ?? 0,
       followingCount: data['followingCount'] as int? ?? 0,
       achievedRewardIds: List<String>.from(data['achievedRewardIds'] ?? []),
+      following: List<String>.from(data['following'] ?? []), // NEW: Parse
       profileSetupComplete: data['profileSetupComplete'] as bool? ?? false,
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp? ?? Timestamp.now(),
@@ -90,7 +94,26 @@ class UserProfile extends Equatable {
   }
 
   Map<String, dynamic> toMap() {
-    final Map<String, dynamic> data = {};
+    final Map<String, dynamic> data = {
+      'profileSetupComplete': profileSetupComplete,
+      'following': following, // NEW: Include in map for updates by current user
+      // These fields are generally managed by server/functions or set on creation
+      // 'uid': uid,
+      // 'email': email,
+      // 'xp': xp,
+      // 'level': level,
+      // 'currentStreak': currentStreak,
+      // 'longestStreak': longestStreak,
+      // 'lastWorkoutTimestamp': lastWorkoutTimestamp,
+      // 'lastScheduledWorkoutCompletionTimestamp': lastScheduledWorkoutCompletionTimestamp,
+      // 'lastScheduledWorkoutDayKey': lastScheduledWorkoutDayKey,
+      // 'followersCount': followersCount,
+      // 'followingCount': followingCount,
+      // 'achievedRewardIds': achievedRewardIds,
+      // 'createdAt': createdAt,
+      // 'updatedAt': updatedAt, // This will be set by FieldValue.serverTimestamp() in repository
+    };
+    // Add optional fields only if they are not null to avoid overwriting with null
     if (displayName != null) data['displayName'] = displayName;
     if (profilePictureUrl != null) data['profilePictureUrl'] = profilePictureUrl;
     if (username != null) data['username'] = username;
@@ -100,8 +123,7 @@ class UserProfile extends Equatable {
     if (weightKg != null) data['weightKg'] = weightKg;
     if (fitnessGoal != null) data['fitnessGoal'] = fitnessGoal;
     if (activityLevel != null) data['activityLevel'] = activityLevel;
-    data['profileSetupComplete'] = profileSetupComplete;
-    // Нові поля не додаються клієнтом, вони керуються функцією
+    
     return data;
   }
 
@@ -122,11 +144,12 @@ class UserProfile extends Equatable {
     int? currentStreak,
     int? longestStreak,
     ValueGetter<Timestamp?>? lastWorkoutTimestamp,
-    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp, // Нове
-    ValueGetter<String?>? lastScheduledWorkoutDayKey,             // Нове
+    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp, 
+    ValueGetter<String?>? lastScheduledWorkoutDayKey,             
     int? followersCount,
     int? followingCount,
     List<String>? achievedRewardIds,
+    List<String>? following, // NEW
     bool? profileSetupComplete,
     Timestamp? createdAt,
     Timestamp? updatedAt,
@@ -153,6 +176,7 @@ class UserProfile extends Equatable {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       achievedRewardIds: achievedRewardIds ?? this.achievedRewardIds,
+      following: following ?? this.following, // NEW
       profileSetupComplete: profileSetupComplete ?? this.profileSetupComplete,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -164,9 +188,10 @@ class UserProfile extends Equatable {
         uid, email, displayName, profilePictureUrl, username, gender, dateOfBirth,
         heightCm, weightKg, fitnessGoal, activityLevel, xp, level,
         currentStreak, longestStreak, lastWorkoutTimestamp,
-        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey, // Нові
+        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey, 
         followersCount, followingCount,
         achievedRewardIds, 
+        following, // NEW
         profileSetupComplete, createdAt, updatedAt
       ];
 }
