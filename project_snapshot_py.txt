@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-06-03T00:46:45.972717
+Snapshot created on: 2025-06-03T03:13:08.705483
 ================================================================================
 
 === FILE: .firebaserc ===
@@ -126,6 +126,16 @@ include: package:flutter_lints/flutter.yaml
 
 --------------------------------------------------
 === END OF FILE: create_snapshot.py ===
+
+
+=== FILE: devtools_options.yaml ===
+--------------------------------------------------
+description: This file stores settings for Dart & Flutter DevTools.
+documentation: https://docs.flutter.dev/tools/devtools/extensions#configure-extension-enablement-states
+extensions:
+
+--------------------------------------------------
+=== END OF FILE: devtools_options.yaml ===
 
 
 === FILE: firebase.json ===
@@ -321,542 +331,289 @@ flutter:
 
 Motto: Level Up Your Lifts, Connect Your Crew, Achieve Your Goals. Build Your Strength, Together.
 
-1. Introduction
+1.  [Introduction](#1-introduction)
+2.  [Current Project Status (Version 0.4.x - Social Features Phase 1 & 2 Started)](#2-current-project-status-version-04x---social-features-phase-1--2-started)
+3.  [Core Architectural Principles](#3-core-architectural-principles)
+4.  [Technology Stack](#4-technology-stack)
+5.  [Project Structure](#5-project-structure)
+6.  [Deep Dive into Key Components & UX](#6-deep-dive-into-key-components--ux)
+    *   [6.1. Authentication & Profile Setup](#61-authentication--profile-setup)
+    *   [6.2. Main Navigation: `HomePage` & `DashboardScreen`](#62-main-navigation-homepage--dashboardscreen)
+    *   [6.3. Notification System](#63-notification-system)
+    *   [6.4. Exercise Library](#64-exercise-library)
+    *   [6.5. Workout Routine Management](#65-workout-routine-management)
+    *   [6.6. Workout Tracking](#66-workout-tracking)
+    *   [6.7. Progress Tracking (`ProgressScreen` & `ProgressCubit`)](#67-progress-tracking-progressscreen--progresscubit)
+    *   [6.8. Achievements System](#68-achievements-system)
+    *   [6.9. NEW: Social Features (Explore Tab)](#69-new-social-features-explore-tab)
+    *   [6.10. Quality of Life & UX Details](#610-quality-of-life--ux-details)
+7.  [Backend: Firebase Cloud Firestore Structure](#7-backend-firebase-cloud-firestore-structure)
+8.  [Firebase Cloud Functions Logic (`functions/src/index.ts`)](#8-firebase-cloud-functions-logic-functionssrcindexts)
+9.  [Setup and Running the Project](#9-setup-and-running-the-project)
+10. [Roadmap & Future Development](#10-roadmap--future-development)
 
-MuscleUP is an innovative mobile fitness application designed to revolutionize your approach to training. Our mission is to create a highly motivating, socially interactive, and gamified environment that not only helps users achieve their fitness goals but also makes the process enjoyable, fostering long-term engagement. MuscleUP enables detailed workout tracking, personalized goal setting, progress analysis through unique metrics (like RPE for each repetition), and community support by sharing achievements.
+---
+
+## 1. Introduction
+
+MuscleUP is an innovative mobile fitness application designed to revolutionize your approach to training. Our mission is to create a highly motivating, socially interactive, and gamified environment that not only helps users achieve their fitness goals but also makes the process enjoyable, fostering long-term engagement. MuscleUP enables detailed workout tracking, personalized goal setting, progress analysis through unique metrics (like RPE for each repetition), community support by sharing achievements, and now, social interaction through posts.
 
 This document provides a comprehensive overview of the MuscleUP project, including its current features, core business logic, software architecture, backend design with Firebase, and detailed functionality of its components. It emphasizes modularity, scalability, and maintainability.
 
-2. Current Project Status (Version 0.3.x - Progress Tracking Update)
-
-MuscleUP has evolved significantly, incorporating a robust set of core features and recently introducing a comprehensive Progress Tracking module.
-
-Key Implemented Features:
-
-Authentication & User Profile:
-
-Secure Email/Password and Google Sign-In.
-
-Automated initial profile creation in Cloud Firestore (`profileSetupComplete: false`) via `createUserProfile` Firebase Function.
-
-Dedicated `ProfileSetupScreen` for detailed user information (username, gender, DOB, height, weight, goals, activity level).
-
-Real-time user profile updates via `UserProfileCubit`.
-
-Automatic "Early Bird" achievement award upon profile setup completion, managed by `checkProfileSetupCompletionAchievements` Firebase Function.
-
-Main Navigation & Dashboard (`HomePage` & `DashboardScreen`):
-
-Central AppBar with dynamic titles ("MuscleUP | Screen Name").
-
-BottomNavigationBar for navigation: Routines, Explore, Progress, Profile.
-
-"START WORKOUT" FloatingActionButton on the `DashboardScreen`:
-    *   Checks for an active (in-progress) `WorkoutSession`. If found, navigates to `ActiveWorkoutScreen` to resume it.
-    *   If no active session:
-        *   If user has existing routines, navigates to the "ROUTINES" tab (`UserRoutinesScreen`).
-        *   If no routines exist, navigates directly to `CreateEditRoutineScreen`.
-        *   If a new routine is created from `CreateEditRoutineScreen` (when prompted by FAB), navigates to the "ROUTINES" tab.
-
-Dashboard: Personalized greeting, workout streak icon (clickable to go to Progress screen), basic stats cards, and an interactive Notifications Section with unread count, swipe-to-delete, detail view (`NotificationDetailScreen`), and "Read All" functionality.
-
-Exercise Library (`ExerciseExplorerScreen`):
-
-Browse standardized exercises from Firestore (populated by `seedPredefinedExercises` Firebase Function).
-
-Selection mode for adding exercises to routines.
-
-Powered by `ExerciseExplorerCubit`.
-
-Workout Routine Management (`features/routines`):
-
-`UserRoutinesScreen`: View, create, edit, and delete custom routines.
-
-`CreateEditRoutineScreen`: Define routine name, description, schedule (days of the week), and add exercises.
-
-Exercises are added via `AddExerciseToRoutineDialog`, allowing configuration of sets and notes per exercise.
-
-State managed by `UserRoutinesCubit` (for list display) and `ManageRoutineCubit` (for creation/editing).
-
-Workout Tracking (`ActiveWorkoutScreen`):
-
-Start workouts from routines (via `UserRoutinesScreen`) or as empty sessions (implicitly when no active session and no routines, leading to `CreateEditRoutineScreen` first).
-
-Auto-resume incomplete sessions by fetching active session data.
-
-`CurrentSetDisplay`:
-    *   Log weight (kg) and number of repetitions for each set.
-    *   Unique RPE (Rate of Perceived Exertion) Sliders: After setting reps, a corresponding number of vertical sliders (0-10 scale) appear, allowing users to rate the perceived difficulty of each individual repetition. RPE data is stored in `LoggedSet.notes` as "RPE_DATA:val1,val2,...".
-
-Navigate between sets/exercises, confirm finish/cancel actions.
-
-Managed by `ActiveWorkoutCubit`.
-
-Workout Completion (`WorkoutCompleteScreen`):
-
-Celebratory screen featuring a Lottie trophy animation (`assets/animations/trophy_animation.json`) and a `ConfettiWidget` effect.
-
-Displays workout summary: routine name (if applicable), duration, and total volume (from the completed `WorkoutSession`).
-
-XP & Level Up System:
-    *   Shows XP gained for the workout (estimated by `ActiveWorkoutCubit`).
-    *   Animates XP progression towards the next level on a progress bar.
-    *   Displays level-up information if the user advanced a level, based on the updated `UserProfile` data (fetched after the `calculateAndAwardXpAndStreak` Firebase Function processes the workout).
-
-Automatic "First Workout" achievement award, managed by the `calculateAndAwardXpAndStreak` Firebase Function.
-
-NEW: Progress Tracking Screen (`ProgressScreen`):
-
-Purpose: Provides users with a visual and statistical overview of their fitness journey, highlighting achievements, training focus, and strength progression to enhance motivation and inform training decisions.
-
-`ProgressCubit`: Orchestrates data fetching from `UserProfileRepository`, `LeagueRepository`, `WorkoutLogRepository`, and `PredefinedExerciseRepository`. It processes raw workout data to calculate derived statistics and subscribes to `UserProfile` updates for real-time XP/level changes.
-
-League System:
-    *   `LeagueInfo` entities (from `leagues` Firestore collection) define fitness leagues (e.g., "BEGINNER LEAGUE", "BRONZE LEAGUE") with `minLevel`, `maxLevel`, `minXp`, `maxXp`, name, and `gradientColors`.
-    *   `LeagueTitleWidget` displays the user's current league name with its custom gradient and their current level number.
-
-XP & Level Progress:
-    *   `XPProgressBarWidget` provides an animated visualization of XP progress within the current level, showing XP earned and XP remaining for the next level. Values (`xpForCurrentLevelStart`, `xpForNextLevelTotal`) are calculated by `ProgressCubit` consistent with Firebase Function logic.
-
-Muscle Map Visualization (`MuscleMapWidget`):
-    *   Uses `flutter_svg` to render gender-specific front and back body SVGs (e.g., `assets/images/female_front.svg`). SVGs contain `<g>` elements tagged with muscle ID attributes (e.g., `id="chest"`).
-    *   `ProgressCubit` calculates `volumePerMuscleGroup7Days` (map of SVG muscle ID to total number of *completed sets* for that muscle group over the last 7 days).
-    *   `MuscleMapWidget` dynamically colors SVG paths: color intensity (interpolated between `baseColor`, `midColor`, and `maxColor` based on `midThreshold` and `maxThreshold`) reflects training volume.
-
-Training Statistics:
-    *   Average RPE per Exercise (Last 30 Days): Calculated by `ProgressCubit` from "RPE_DATA:..." strings in `LoggedSet.notes`.
-    *   Working Weight Trend per Exercise (Last N Workouts): `ProgressCubit` calculates and `ValueSparkline` widget displays the trend of average working weight for each distinct exercise over the last ~15 workouts where it was performed.
-    *   RPE Trend per Exercise (Last N Workouts): `ProgressCubit` calculates and `ValueSparkline` widget displays the trend of average RPE for each distinct exercise over the last ~15 workouts.
-    *   Exercise names for statistics are retrieved using `PredefinedExerciseRepository`.
-
-Data Refresh: Includes a `RefreshIndicator` for users to manually pull and refresh all progress data.
-
-Notification System (`features/notifications`):
-
-`AppNotification` model (with `id`, `type`, `title`, `message`, `timestamp`, `isRead`, `relatedEntityId`, `relatedEntityType`, `iconName`) and `NotificationType` enum (including `achievementUnlocked`, `workoutReminder`, `systemMessage`, `advice`).
-
-`NotificationRepository` for Firestore interaction with `users/{userId}/notifications` subcollection.
-
-`NotificationsCubit` manages notification state, real-time updates, unread count, and includes an `achievementAlertController` (for immediate SnackBar alerts for new achievements) and an `adviceAlertController` (for new advice alerts).
-
-Firebase Cloud Functions (TypeScript, Node.js v20):
-
-`createUserProfile` (Auth v1 Trigger): Creates Firestore user profile document on new Firebase Auth user.
-
-`calculateAndAwardXpAndStreak` (Firestore v2 Trigger): Processes completed workouts. Awards XP (base 50 + (totalVolume / 100) + (durationSeconds / 300), capped at 200 XP). Updates user's level (iterative calculation based on XP needed for each level), streak, and awards "First Workout" achievement.
-
-`checkProfileSetupCompletionAchievements` (Firestore v2 Trigger): Awards "Early Bird" achievement on profile setup completion.
-
-`seedPredefinedExercises` (HTTPS v2 Trigger): Populates the `predefinedExercises` collection (optionally key-protected).
-
-Achievements System:
-
-`AchievementId` enum and `Achievement` entity (see `lib/core/domain/entities/achievement.dart`).
-Achievements like "Early Bird" and "First Workout" are awarded by Firebase Functions. Awarded IDs are stored in `achievedRewardIds` list in `UserProfile`.
-Displayed on `ProfileScreen`.
-
-3. Core Architectural Principles
-
-The project adheres to modern software development best practices:
-
-Modularity (Feature-First): Functionality is organized into self-contained feature modules within `lib/features/`, promoting separation of concerns and easier maintenance.
-
-Clean Architecture (Layered Approach): Each feature, and the app globally, attempts to follow a layered structure (Presentation, Domain, Data) to decouple business logic from UI and data sources.
-
-State Management (BLoC/Cubit): `flutter_bloc` is extensively used for managing UI state and business logic, ensuring predictability, testability, and a clear flow of data.
-
-Dependency Injection: `RepositoryProvider` and `BlocProvider` from `flutter_bloc` are used to provide dependencies (repositories, cubits) down the widget tree.
-
-Data Abstraction (Repositories): Repository pattern abstracts data sources (primarily Firebase Firestore), providing a clean API to the domain and presentation layers.
-
-Scalability: The architecture is designed for future expansion, allowing new features to be added with minimal impact on existing code.
-
-Testability: Separation of logic facilitates unit testing for business logic (Cubits, repositories) and widget testing for UI components.
-
-4. Technology Stack
-
-Frontend:
-
-Framework: Flutter (Dart SDK `^3.8.0`)
-
-Programming Language: Dart
-
-State Management: `flutter_bloc: ^9.1.1`, `bloc: ^9.0.0`
-
-Object Equality: `equatable: ^2.0.5` (for BLoC states/events and entities)
-
-Date/Time Formatting: `intl: ^0.19.0`
-
-SVG Rendering: `flutter_svg: ^2.0.10+1` (for muscle maps in Progress screen)
-
-Animations & UI Effects:
-
-`animated_background: ^2.0.0` (for `LavaLampBackground` on `LoginPage`)
-
-`confetti: ^0.7.0` (for celebratory effect on `WorkoutCompleteScreen`)
-
-`lottie: ^3.1.2` (for trophy animation on `WorkoutCompleteScreen`)
-
-Navigation: Standard Flutter Navigation (MaterialPageRoute, Navigator.push/pop/pushAndRemoveUntil).
-
-Backend (Firebase):
-
-Core: `firebase_core: ^3.13.1`
-
-Authentication: `firebase_auth: ^5.5.4` (Email/Password, Google Sign-In)
-
-Google Sign-In Helper: `google_sign_in: ^6.2.1`
-
-Database: `cloud_firestore: ^5.6.8` (NoSQL database for user profiles, routines, exercises, notifications, workout logs, leagues)
-
-Serverless Logic: Firebase Cloud Functions (TypeScript, Node.js v20, `firebase-functions: ^6.0.1`, `firebase-admin: ^12.6.0` in `functions/package.json`)
-
-Development Tools:
-
-Linting: `flutter_lints: ^5.0.0`
-
-App Icon Generation: `flutter_launcher_icons: ^0.13.1`
-
-Project Snapshots: Custom Python script (`create_snapshot.py`)
-
-5. Project Structure
-
-The project follows a "feature-first" directory structure, promoting modularity and separation of concerns.
+## 2. Current Project Status (Version 0.4.x - Social Features Phase 1 & 2 Started)
+
+MuscleUP has incorporated a robust set of core features and has recently begun implementing social functionalities.
+
+**Key Implemented Features:**
+
+*   **Authentication & User Profile:**
+    *   Secure Email/Password and Google Sign-In.
+    *   Automated initial profile creation in Cloud Firestore (`profileSetupComplete: false`) via `createUserProfile` Firebase Function.
+    *   Dedicated `ProfileSetupScreen` for detailed user information (username, gender, DOB, height, weight, goals, activity level) with edit capabilities.
+    *   Real-time user profile updates via `UserProfileCubit`.
+    *   Automatic "Early Bird" achievement award upon profile setup completion, managed by `checkProfileSetupCompletionAchievements` Firebase Function.
+
+*   **Main Navigation & Dashboard (`HomePage` & `DashboardScreen`):**
+    *   Central AppBar with dynamic titles ("MuscleUP | Screen Name").
+    *   BottomNavigationBar for navigation: Routines, **Explore (Posts)**, Progress, Profile.
+    *   "START WORKOUT" FloatingActionButton on the `DashboardScreen` with intelligent navigation based on active sessions or existing routines.
+    *   Dashboard: Personalized greeting, workout streak icon, basic stats cards, interactive Notifications Section, and Upcoming Schedule.
+
+*   **NEW: Social Features (`features/social` & `ExploreScreen`):**
+    *   **Post System:**
+        *   `Post` entity (author, timestamp, type, content, media (future), likes, comments). `PostType` enum (`standard`, `recordClaim`, `routineShare`).
+        *   Firestore collection `posts` for storing all user-generated posts.
+        *   `PostRepository` for CRUD operations on posts.
+    *   **Create Standard Posts:**
+        *   `CreatePostScreen` allows users to write and publish text-based posts.
+        *   `CreatePostCubit` manages state for post creation.
+        *   Authors can enable/disable comments for their posts during creation.
+    *   **Explore Feed (`ExploreScreen`):**
+        *   Replaces the previous `ExerciseExplorerScreen` on the "Explore" tab.
+        *   Displays a feed of posts from all users, sorted by timestamp (newest first).
+        *   `ExploreFeedCubit` manages loading and displaying posts.
+        *   `PostListItem` widget for rendering individual posts, showing author info, content, and interaction buttons.
+    *   **Post Interaction (Likes & Comments):**
+        *   **Likes:** Users can like/unlike posts. The like count is updated on the `PostListItem`. Implemented via `PostInteractionCubit` and `PostRepository` (updating `likedBy` array in Firestore).
+        *   **Comments:**
+            *   `Comment` entity (author, text, timestamp). Stored in a subcollection `comments` under each post document.
+            *   `PostDetailScreen` displays the full post and its comments. Users can add new comments if enabled.
+            *   `PostInteractionCubit` manages loading comments and submitting new ones for a specific post.
+            *   Authors of comments can edit and delete their own comments.
+            *   Authors of posts can enable/disable comments for their posts (via `CreatePostScreen` and `PostDetailScreen`).
+            *   Cloud Functions (`onCommentCreated`, `onCommentDeleted`) automatically update `commentsCount` on the parent post document.
+
+*   **Exercise Library (`ExerciseExplorerScreen` - Now accessible contextually, e.g., for adding to routines):**
+    *   Browse standardized exercises from Firestore.
+    *   Selection mode for adding exercises to routines.
+    *   Powered by `ExerciseExplorerCubit`.
+
+*   **Workout Routine Management (`features/routines`):**
+    *   `UserRoutinesScreen`: View, create, edit, and delete custom routines.
+    *   `CreateEditRoutineScreen`: Define routine name, description, schedule, and add exercises.
+    *   Exercises added via `AddExerciseToRoutineDialog`.
+
+*   **Workout Tracking (`ActiveWorkoutScreen`):**
+    *   Start workouts from routines or as empty sessions. Auto-resume incomplete sessions.
+    *   `CurrentSetDisplay`: Log weight, reps, and unique RPE-per-rep sliders.
+
+*   **Workout Completion (`WorkoutCompleteScreen`):**
+    *   Celebratory screen with Lottie animation and Confetti. Displays summary, XP gained, and level-up info.
+    *   Automatic "First Workout" achievement award via `calculateAndAwardXpAndStreak` Firebase Function.
+
+*   **Progress Tracking Screen (`ProgressScreen`):**
+    *   `ProgressCubit` orchestrates data for leagues, XP/level, muscle map, and training stats.
+    *   `LeagueTitleWidget` & `XPProgressBarWidget`.
+    *   `MuscleMapWidget` for gender-specific SVG muscle volume visualization.
+    *   Statistics: Avg RPE, Working Weight Trend, RPE Trend per exercise.
+
+*   **Notification System (`features/notifications`):**
+    *   `AppNotification` model and `NotificationType` enum.
+    *   `NotificationsCubit` manages real-time updates, unread count, and alerts (achievements, advice).
+
+*   **Firebase Cloud Functions (TypeScript, Node.js v20):**
+    *   `createUserProfile` (Auth trigger).
+    *   `calculateAndAwardXpAndStreak` (Firestore trigger for completed workouts).
+    *   `checkProfileSetupCompletionAchievements` (Firestore trigger for profile setup).
+    *   `seedPredefinedExercises` (HTTPS trigger).
+    *   **NEW:** `onCommentCreated` (Firestore trigger to increment `commentsCount` on post).
+    *   **NEW:** `onCommentDeleted` (Firestore trigger to decrement `commentsCount` on post).
+
+*   **Achievements System:**
+    *   "Early Bird" and "First Workout" implemented.
+
+## 3. Core Architectural Principles
+
+(Content mostly unchanged, still relevant)
+The project adheres to modern software development best practices: Modularity (Feature-First), Clean Architecture (Layered Approach), State Management (BLoC/Cubit), Dependency Injection, Data Abstraction (Repositories), Scalability, Testability.
+
+## 4. Technology Stack
+
+(Content mostly unchanged, list of packages is up-to-date in `pubspec.yaml`)
+Frontend: Flutter, Dart, `flutter_bloc`, `equatable`, `intl`, `flutter_svg`, `animated_background`, `confetti`, `lottie`.
+Backend (Firebase): Core, Auth, Google Sign-In, Firestore, Cloud Functions (TypeScript, Node.js v20).
+Development Tools: `flutter_lints`, `flutter_launcher_icons`.
+
+## 5. Project Structure
+
+(Updated to reflect new `social` feature module)
 
 
 muscle_up/
-├── android/ # Android-specific platform code
-├── assets/ # Application assets
+├── android/
+├── assets/
 │ ├── animations/
-│ │ └── trophy_animation.json # Lottie animation for WorkoutCompleteScreen
-│ ├── fonts/ # Custom fonts (Inter, IBMPlexMono)
-│ └── images/ # Image assets (logos, icons, muscle maps)
-│ ├── app_icon.png
-│ ├── google_logo.png
-│ ├── male_front.svg # SVG for male front muscle map
-│ ├── male_back.svg # SVG for male back muscle map
-│ ├── female_front.svg # SVG for female front muscle map
-│ └── female_back.svg # SVG for female back muscle map
-├── functions/ # Firebase Cloud Functions (TypeScript)
+│ ├── fonts/
+│ └── images/
+├── functions/
 │ ├── src/
-│ │ └── index.ts # Main Cloud Functions logic (Auth, Firestore triggers, HTTP)
-│ ├── package.json # NPM dependencies for Cloud Functions
-│ ├── tsconfig.json # TypeScript configuration for Functions
-│ └── .eslintrc.js # ESLint configuration for Functions code quality
-├── ios/ # iOS-specific platform code
-├── lib/ # Main Dart application code
-│ ├── auth_gate.dart # Handles auth state changes and profile setup redirection
-│ ├── firebase_options.dart # Firebase configuration (generated by FlutterFire CLI)
-│ ├── home_page.dart # Main screen with BottomNavigationBar, AppBar, FAB
-│ ├── login_page.dart # Login/Registration screen with animated background
-│ ├── main.dart # App entry point, MaterialApp, RepositoryProviders, Theme setup
+│ │ └── index.ts # Cloud Functions (createUserProfile, streaks, achievements, comment counts)
+│ ├── package.json
+│ └── tsconfig.json
+├── ios/
+├── lib/
+│ ├── auth_gate.dart
+│ ├── firebase_options.dart
+│ ├── home_page.dart
+│ ├── login_page.dart
+│ ├── main.dart
 │ │
-│ ├── core/ # Shared core logic, domain entities, and repository interfaces
+│ ├── core/
 │ │ └── domain/
-│ │ ├── entities/ # Plain Dart Objects representing business models
-│ │ │ ├── achievement.dart # Model for achievements
-│ │ │ ├── app_notification.dart # Model for in-app notifications
-│ │ │ ├── league_info.dart # Model for fitness leagues
-│ │ │ ├── logged_exercise.dart # Model for an exercise logged in a workout
-│ │ │ ├── logged_set.dart # Model for a set logged in an exercise
-│ │ │ ├── predefined_exercise.dart# Model for standardized exercises
-│ │ │ ├── routine.dart # Models for UserRoutine and RoutineExercise
-│ │ │ ├── user_profile.dart # Model for user profile data
-│ │ │ └── workout_session.dart # Model for a workout session
-│ │ └── repositories/ # Abstract interfaces for data repositories
-│ │ ├── league_repository.dart # Interface for league data
-│ │ ├── notification_repository.dart # Interface for notification data
-│ │ ├── predefined_exercise_repository.dart # Interface for exercise library data
-│ │ ├── routine_repository.dart # Interface for user routine data
-│ │ ├── user_profile_repository.dart # Interface for user profile data
-│ │ └── workout_log_repository.dart # Interface for workout log data
+│ │ ├── entities/ # (achievement, app_notification, comment, league_info, logged_exercise, logged_set, post, predefined_exercise, routine, user_profile, workout_session)
+│ │ └── repositories/ # (league, notification, post, predefined_exercise, routine, user_profile, workout_log)
 │ │
-│ ├── features/ # Feature-specific modules
+│ ├── features/
 │ │ ├── dashboard/
-│ │ │ └── presentation/screens/dashboard_screen.dart # UI for the main dashboard tab
-│ │ ├── exercise_explorer/ # Feature for browsing and selecting exercises
-│ │ │ ├── data/repositories/predefined_exercise_repository_impl.dart
-│ │ │ └── presentation/ # Cubit, screens, and widgets
-│ │ ├── notifications/ # Feature for managing and displaying notifications
-│ │ │ ├── data/repositories/notification_repository_impl.dart
-│ │ │ └── presentation/ # Cubit, screens, and widgets
-│ │ ├── profile/ # Feature for displaying user profile
-│ │ │ └── presentation/ # Cubit and screen
-│ │ ├── profile_setup/ # Feature for initial user profile configuration
-│ │ │ ├── data/repositories/user_profile_repository_impl.dart
-│ │ │ └── presentation/ # Cubit and screen
-│ │ ├── progress/ # Feature for tracking and visualizing user progress
-│ │ │ ├── data/repositories/league_repository_impl.dart
+│ │ ├── exercise_explorer/ # Now used contextually
+│ │ ├── notifications/
+│ │ ├── profile/
+│ │ ├── profile_setup/
+│ │ ├── progress/
+│ │ ├── routines/
+│ │ ├── social/ # NEW: Social features module
+│ │ │ ├── data/repositories/post_repository_impl.dart
 │ │ │ └── presentation/
-│ │ │ ├── cubit/ # Cubit and state for progress screen logic
-│ │ │ │ ├── progress_cubit.dart
-│ │ │ │ └── progress_state.dart
-│ │ │ ├── screens/progress_screen.dart # Main UI for the progress screen
-│ │ │ └── widgets/ # Reusable widgets for the progress screen
-│ │ │ ├── league_title_widget.dart # Displays current league and level
-│ │ │ ├── muscle_map_widget.dart # Renders and colors SVG muscle map
-│ │ │ └── xp_progress_bar_widget.dart # Animated XP progress bar
-│ │ ├── routines/ # Feature for managing user workout routines
-│ │ │ ├── data/repositories/routine_repository_impl.dart
-│ │ │ └── presentation/ # Cubits, screens, and widgets
-│ │ └── workout_tracking/ # Feature for active workout tracking and completion
-│ │ ├── data/repositories/workout_log_repository_impl.dart
-│ │ └── presentation/ # Cubit, screens (ActiveWorkoutScreen, WorkoutCompleteScreen), widgets
+│ │ │ ├── cubit/ # (create_post_cubit, explore_feed_cubit, post_interaction_cubit)
+│ │ │ ├── screens/ # (create_post_screen, explore_screen, post_detail_screen)
+│ │ │ └── widgets/ # (comment_list_item, post_list_item)
+│ │ └── workout_tracking/
 │ │
-│ ├── utils/ # General utility functions
-│ │ └── duration_formatter.dart # Formats Duration objects
-│ │
-│ └── widgets/ # Common reusable widgets
-│ └── lava_lamp_background.dart # Animated background for LoginPage
+│ ├── utils/
+│ └── widgets/
 │
-├── pubspec.yaml # Project configuration, dependencies, assets
-├── README.md # This file
-└── ... # Other config files (.firebaserc, firebase.json, .gitignore)
+├── pubspec.yaml
+├── README.md
+└── ...
 
-6. Deep Dive into Key Components & UX
-6.1. Authentication & Profile Setup
+## 6. Deep Dive into Key Components & UX
 
-`LoginPage`: The initial screen for unauthenticated users, featuring an attractive `LavaLampBackground`. It provides forms for Email/Password sign-in/sign-up and a "Sign in with Google" button.
+### 6.1. Authentication & Profile Setup
+(Content mostly unchanged)
+`LoginPage` with `LavaLampBackground`, `AuthGate` for auth state and profile setup redirection, `createUserProfile` Firebase Function, `ProfileSetupScreen`, `checkProfileSetupCompletionAchievements` Firebase Function, `UserProfileCubit`.
 
-`AuthGate`: This central widget listens to Firebase Auth state changes.
-    *   Upon successful authentication, it streams the user's profile from Firestore via `UserProfileRepository`.
-    *   It gracefully handles potential delays between Firebase Auth user creation and the Firestore document creation by the `createUserProfile` Firebase Function by displaying a loading indicator ("Finalizing account setup...").
-    *   If the fetched `UserProfile` has `profileSetupComplete == false`, the user is navigated to `ProfileSetupScreen`.
-    *   If `profileSetupComplete == true`, the user is navigated to `HomePage`.
-    *   `AuthGate` also provides the `UserProfileCubit` to `HomePage` and its descendants.
+### 6.2. Main Navigation: `HomePage` & `DashboardScreen`
+(Content mostly unchanged regarding Dashboard, FAB, and other tabs)
+`HomePage` with AppBar, BottomNavigationBar (Routines, **Explore (Posts)**, Progress, Profile), and "START WORKOUT" FAB. `DashboardScreen` with greeting, streak, stats, notifications, and upcoming schedule.
 
-Firebase Function `createUserProfile` (Auth v1 Trigger): Automatically triggers when a new user is created in Firebase Authentication. It creates a corresponding document in the `users` collection in Firestore, initializing default fields like `email`, `displayName` (if available from Auth provider), `xp: 0`, `level: 1`, and critically, `profileSetupComplete: false`.
+### 6.3. Notification System
+(Content mostly unchanged)
+`AppNotification` model, `NotificationRepositoryImpl`, `NotificationsCubit`, `NotificationListItem` & `NotificationDetailScreen`.
 
-`ProfileSetupScreen`: A guided form allowing users to input essential profile details: a unique `username` (mandatory), `displayName`, `gender`, `dateOfBirth`, `heightCm`, `weightKg`, `fitnessGoal`, and `activityLevel`. This screen uses `ProfileSetupCubit` to manage form state and save data. Upon successful submission, `profileSetupComplete` is set to `true` in the user's profile.
+### 6.4. Exercise Library
+(Content mostly unchanged, `ExerciseExplorerScreen` now used contextually)
+`PredefinedExercise` model, `PredefinedExerciseRepositoryImpl`, `seedPredefinedExercises` Firebase Function, `ExerciseExplorerCubit`.
 
-Firebase Function `checkProfileSetupCompletionAchievements` (Firestore v2 Trigger): This function monitors writes to user documents. If the `profileSetupComplete` field changes from `false` (or non-existent) to `true`, and the "Early Bird" achievement (`AchievementId.EARLY_BIRD`) hasn't been awarded yet, it adds the achievement ID to the user's `achievedRewardIds` array and creates a corresponding notification.
+### 6.5. Workout Routine Management
+(Content mostly unchanged)
+`UserRoutine` & `RoutineExercise` models, `RoutineRepositoryImpl`, `UserRoutinesCubit`, `ManageRoutineCubit`, UI screens.
 
-`UserProfileCubit`: A globally accessible Cubit (provided via `AuthGate` to `HomePage`) responsible for loading and providing `UserProfile` data from Firestore. It listens to real-time changes in the user's profile to update the UI dynamically.
+### 6.6. Workout Tracking
+(Content mostly unchanged)
+`WorkoutSession`, `LoggedExercise`, `LoggedSet` entities. `WorkoutLogRepositoryImpl`, `ActiveWorkoutCubit` (start, update, complete, cancel workouts), `calculateAndAwardXpAndStreak` Firebase Function, `ActiveWorkoutScreen` with RPE sliders, `WorkoutCompleteScreen`.
 
-6.2. Main Navigation: `HomePage` & `DashboardScreen`
+### 6.7. Progress Tracking (`ProgressScreen` & `ProgressCubit`)
+(Content mostly unchanged)
+League System (`LeagueInfo`, `LeagueTitleWidget`), XP & Leveling (`XPProgressBarWidget`), Muscle Map (`MuscleMapWidget`), Training Statistics (Avg RPE, Weight Trend, RPE Trend).
 
-`HomePage`: The central hub of the application after successful authentication and profile setup.
-    *   AppBar: Displays "MuscleUP" (clickable to return to the Dashboard) alongside the title of the currently active tab (e.g., "MuscleUP | My Routines").
-    *   BottomNavigationBar: Allows easy switching between:
-        *   "ROUTINES": `UserRoutinesScreen`
-        *   "EXPLORE": `ExerciseExplorerScreen`
-        *   "PROGRESS": `ProgressScreen`
-        *   "PROFILE": `ProfileScreen`
-    *   FloatingActionButton ("START WORKOUT"): Located on the `DashboardScreen` tab (when `_selectedIndex = -1`). Tapping it:
-        *   Checks for an active (in-progress) `WorkoutSession` via `WorkoutLogRepository`. If one exists, navigates to `ActiveWorkoutScreen` to resume it.
-        *   If no active session:
-            *   Checks if the user has any existing routines. If yes, it navigates to the "ROUTINES" tab (`UserRoutinesScreen`).
-            *   If no routines exist, it navigates to `CreateEditRoutineScreen` to prompt routine creation. If a routine is successfully created and the user returns, they are navigated to the "ROUTINES" tab.
-    *   Provides `NotificationsCubit` to its children, enabling the Dashboard to display notifications.
+### 6.8. Achievements System
+(Content mostly unchanged)
+`AchievementId` Enum, `Achievement` Entity, awarding logic via Firebase Functions, display on `ProfileScreen`.
 
-`DashboardScreen`: The content for the primary "MuscleUP" tab.
-    *   Displays a personalized greeting and a workout streak icon. Tapping the greeting navigates to `ProfileScreen`; tapping the streak icon navigates to `ProgressScreen`.
-    *   "STATS" Section: Placeholder for a "Total Volume" graph. Displays cards for "WEIGHT", "STREAK", and "ADHERENCE".
-    *   "NOTIFICATIONS" Section: Dynamically lists recent notifications using `NotificationListItem`, shows an unread notifications count, and includes a "READ ALL" button. Powered by `NotificationsCubit`.
+### 6.9. NEW: Social Features (Explore Tab)
 
-6.3. Notification System
+*   **`ExploreScreen`:**
+    *   This screen now serves as the main feed for viewing posts from other users.
+    *   It uses `ExploreFeedCubit` to load a stream of `Post` objects from Firestore.
+    *   Posts are displayed using `PostListItem` widgets.
+    *   A FloatingActionButton allows users to navigate to `CreatePostScreen`.
+*   **`CreatePostScreen`:**
+    *   Allows users to compose and publish standard text-based posts.
+    *   Includes a switch to enable/disable comments for the new post.
+    *   Uses `CreatePostCubit` to handle post submission logic, fetching author's current `UserProfile` (username, profile picture) to embed in the `Post` document.
+*   **`PostListItem` Widget:**
+    *   Displays individual post content: author's avatar and username, post timestamp, text content.
+    *   **Likes:** Shows like count and an interactive like button (thumb icon). State of the like button (liked/not liked by current user) and like count are managed by an instance of `PostInteractionCubit` specific to this post. Tapping the like button calls `toggleLike()` on the cubit.
+    *   **Comments:** Shows comment count and an icon. Tapping this area navigates to `PostDetailScreen`.
+*   **`PostDetailScreen`:**
+    *   Displays the full content of a selected post.
+    *   Fetches and displays a list of comments for the post using `PostInteractionCubit` and `CommentListItem` widgets.
+    *   If comments are enabled for the post (and the user is authenticated), a text field and send button are available for adding new comments.
+    *   **Comment Moderation:** Authors of comments can edit or delete their own comments.
+    *   **Post Settings (Author only):** The author of the post can toggle the `isCommentsEnabled` setting for their post via an icon button in the AppBar.
+*   **`PostInteractionCubit`:**
+    *   Manages the state for a single post, including its like status, comments, and settings like `isCommentsEnabled`.
+    *   Handles `toggleLike()`, `addComment()`, `fetchComments()`, `updateComment()`, `deleteComment()`, and `toggleCommentsEnabled()` actions by interacting with `PostRepository`.
+    *   Subscribes to real-time updates for the specific post and its comments.
+*   **Firestore Structure for Social:**
+    *   `posts/{postId}`: Collection for posts. Each document contains post data including `userId`, `authorUsername`, `authorProfilePicUrl`, `textContent`, `likedBy` (array of user IDs), `commentsCount`, `isCommentsEnabled`.
+    *   `posts/{postId}/comments/{commentId}`: Subcollection for comments related to a post. Each comment document includes `userId`, `authorUsername`, `authorProfilePicUrl`, `text`, `timestamp`.
+*   **Cloud Functions for Social:**
+    *   `onCommentCreated`: Increments `commentsCount` on the parent post.
+    *   `onCommentDeleted`: Decrements `commentsCount` on the parent post.
 
-`AppNotification` Model: Defines notification structure (ID, type, title, message, timestamp, read status, related entity, icon). `NotificationType` enum includes `achievementUnlocked`, `workoutReminder`, `systemMessage`, `advice`.
+### 6.10. Quality of Life & UX Details
+(Content mostly unchanged)
+Animated Background, Custom Theming, Intuitive Navigation, Confirmation Dialogs, Visual Feedback, RPE Sliders, Celebratory Animations, Automatic UI Updates.
 
-`NotificationRepositoryImpl`: Handles CRUD operations for notifications in `users/{userId}/notifications` subcollection.
-
-`NotificationsCubit`: Manages the list of notifications, listens to Firestore changes, and updates the UI. Includes `achievementAlertController` for immediate SnackBar alerts for new achievements and `adviceAlertController` for new advice.
-
-`NotificationListItem` & `NotificationDetailScreen`: Widgets for displaying individual notifications and their details. Supports swipe-to-delete on list items.
-
-6.4. Exercise Library
-
-`PredefinedExercise` Model: Standardized exercise data (name, muscle groups, equipment, description, video URL, difficulty).
-
-`PredefinedExerciseRepositoryImpl`: Fetches exercises from the `predefinedExercises` Firestore collection.
-
-Firebase Function `seedPredefinedExercises` (HTTPS v2 Trigger): An admin function to populate the `predefinedExercises` collection.
-
-`ExerciseExplorerCubit` & `ExerciseExplorerScreen`: Load and display the list of exercises. Supports a selection mode for adding exercises to routines.
-
-6.5. Workout Routine Management
-
-`UserRoutine` & `RoutineExercise` Models: Define user-created routines and the exercises within them (sets, notes, exercise snapshot).
-
-`RoutineRepositoryImpl`: CRUD operations for routines in `userRoutines` collection (user-specific).
-
-`UserRoutinesCubit`: Fetches and displays the list of a user's routines.
-
-`ManageRoutineCubit`: Manages state for creating or editing a routine.
-
-`UserRoutinesScreen` & `CreateEditRoutineScreen`: UI for listing, creating, and editing routines. `AddExerciseToRoutineDialog` facilitates adding exercises from the library.
-
-6.6. Workout Tracking
-
-Entities: `WorkoutSession`, `LoggedExercise`, `LoggedSet`.
-    *   `WorkoutSession`: Core entity for a training session (ID, user ID, routine ID/name, start/end times, duration, completed exercises, notes, status, total volume).
-    *   `LoggedExercise`: An exercise performed within a session.
-    *   `LoggedSet`: A single set performed (weight, reps, RPE data in `notes`, completion status).
-
-`WorkoutLogRepositoryImpl`: Manages workout sessions in `users/{userId}/workoutLogs`.
-
-`ActiveWorkoutCubit`:
-    *   Manages the state of an active workout. On initialization, it subscribes to `getActiveWorkoutSessionStream` to automatically load an in-progress session if one exists.
-    *   `startNewWorkout({UserRoutine? fromRoutine})`: Creates a new `WorkoutSession` in Firestore (`status: inProgress`). If a `UserRoutine` is provided, its exercise structure is copied.
-    *   `updateLoggedSet(...)`: Updates `LoggedSet` details (weight, reps, RPE data) locally and syncs to Firestore.
-    *   `completeWorkout()`: Sets `WorkoutSession.status` to `completed`, calculates `durationSeconds` and `totalVolume`. This Firestore update triggers the `calculateAndAwardXpAndStreak` Firebase Function. The Cubit then fetches the updated `UserProfile` to pass to `WorkoutCompleteScreen`.
-    *   `cancelWorkout()`: Sets `WorkoutSession.status` to `cancelled`.
-    *   Maintains an in-app timer for workout duration.
-
-Firebase Function `calculateAndAwardXpAndStreak` (Firestore v2 Trigger):
-    *   Triggers when a `WorkoutSession` document's `status` becomes `completed`.
-    *   Calculates XP: base XP (50) + (totalVolume / 100) + (durationSeconds / 300), capped at 200 XP per workout.
-    *   Updates the user's `UserProfile`: increments `xp`, recalculates `level` (based on an iterative formula where XP to complete level `N` is `200 + (N-1)*50`), updates `currentStreak` (resets or increments), `longestStreak`, and `lastWorkoutTimestamp`.
-    *   Awards the "First Workout" achievement (`AchievementId.FIRST_WORKOUT`) if not already achieved and creates a notification.
-
-`ActiveWorkoutScreen`:
-    *   Main UI for an ongoing workout.
-    *   Displays routine name/ "Active Workout", and an elapsed time timer.
-    *   `CurrentSetDisplay` Widget:
-        *   Displays current exercise name, set number, target sets.
-        *   Input field for `weightKg` (editable via dialog) and `reps` (+/- buttons).
-        *   Unique RPE Sliders: After setting reps, corresponding vertical RPE sliders (0-10 scale) appear for each rep. RPE data is compiled into "RPE_DATA:val1,val2,..." string and stored in `LoggedSet.notes`.
-    *   Navigation buttons ("PREV. SET", "NEXT SET", "NEXT EXERCISE", "FINISH WORKOUT").
-
-`WorkoutCompleteScreen`:
-    *   Navigated to after successful workout completion.
-    *   Features a Lottie animation (`assets/animations/trophy_animation.json`) and `ConfettiWidget` effect.
-    *   Displays workout summary (routine name, duration, total volume).
-    *   Shows XP gained (estimated by `ActiveWorkoutCubit`) and animates XP progression.
-    *   Displays level-up information if applicable, using the `updatedUserProfile` passed from `ActiveWorkoutCubit`.
-
-6.7. Progress Tracking (`ProgressScreen` & `ProgressCubit`)
-
-The `ProgressScreen` offers users a multifaceted view of their fitness journey, emphasizing visual feedback and statistical insights.
-
-Purpose: To provide users with a clear understanding of their training achievements, how their efforts are distributed across different muscle groups, and their strength progression over time. This aims to enhance motivation and inform future training decisions.
-
-`ProgressCubit`: The core logic unit for the Progress screen.
-    *   Fetches data from `UserProfileRepository` (current XP, level), `LeagueRepository` (league definitions), `WorkoutLogRepository` (historical workout data), and `PredefinedExerciseRepository` (to map exercise IDs to names and muscle groups).
-    *   Subscribes to real-time updates of the `UserProfile`.
-    *   Processes raw workout data to calculate derived statistics.
-    *   Caches `_allLeagues` and `_allPredefinedExercises` on initialization.
-
-League System:
-    *   `LeagueInfo` entities (stored in `leagues` Firestore collection) define fitness leagues (e.g., "BEGINNER LEAGUE", "BRONZE LEAGUE", "GOLDEN LEAGUE") with `minLevel`, `maxLevel` (optional), `minXp`, `maxXp` (optional), name, `description`, and `gradientColors`.
-    *   `ProgressCubit` determines the user's `currentLeague` based on `UserProfile.level`.
-    *   `LeagueTitleWidget` displays the current league name with its gradient and the user's level.
-
-XP & Leveling Progress:
-    *   `XPProgressBarWidget` displays an animated progress bar showing XP accumulation within the current level and XP needed for the next level. Values (`xpForCurrentLevelStart`, `xpForNextLevelTotal`) are calculated by `ProgressCubit`.
-
-Muscle Map Visualization (`MuscleMapWidget`):
-    *   Uses `flutter_svg` to render gender-specific front and back body SVGs (e.g., `assets/images/female_front.svg`), which contain `<g>` elements with muscle `id` attributes (e.g., `id="chest"`).
-    *   `ProgressCubit` calculates `volumePerMuscleGroup7Days`: a map of SVG muscle ID to the total number of *completed sets* for that muscle group from workout logs over the last 7 days.
-    *   `MuscleMapWidget` dynamically colors SVG paths. Color intensity transitions from a `baseColor` through a `midColor` to a `maxColor` based on `midThreshold` and `maxThreshold` values, reflecting training volume.
-
-Training Statistics:
-    *   Average RPE per Exercise (Last 30 Days): `ProgressCubit` parses RPE data (from "RPE_DATA:..." in `LoggedSet.notes`) from workout logs and calculates the average RPE for each distinct exercise.
-    *   Working Weight Trend per Exercise: `ProgressCubit` aggregates `weightKg` data for each exercise from completed sets in recent workouts (approx. last 15) and `ValueSparkline` widget displays this trend.
-    *   RPE Trend per Exercise: Similarly, `ProgressCubit` calculates and `ValueSparkline` displays the trend of average RPE per exercise over recent workouts.
-
-Data Refresh: The `ProgressScreen` uses a `RefreshIndicator` to allow users to manually trigger `ProgressCubit.refreshData()`.
-
-6.8. Achievements System
-
-`AchievementId` Enum & `Achievement` Entity: `AchievementId` (e.g., `EARLY_BIRD`, `FIRST_WORKOUT`) provides unique identifiers. The `Achievement` class (in `lib/core/domain/entities/achievement.dart`) stores details like name, description, `IconData`, and an optional `conditionCheckerMessage` function. A global map `allAchievements` centralizes these definitions.
-
-Awarding Logic: Achievements are primarily awarded by Firebase Cloud Functions (`checkProfileSetupCompletionAchievements`, `calculateAndAwardXpAndStreak`).
-
-Storage & Notifications: Awarded `AchievementId.name` (e.g., "earlyBird") is added to `achievedRewardIds` in `UserProfile`. An `AppNotification` of type `achievementUnlocked` is also created.
-
-Display: Achieved rewards are visualized on `ProfileScreen`. `NotificationsCubit`'s `achievementAlertController` can trigger immediate SnackBars.
-
-6.9. Quality of Life & UX Details
-
-Animated Background: `LavaLampBackground` on `LoginPage` for a captivating first impression.
-
-Custom Theming: Detailed Material 3 theme in `main.dart` using custom fonts (Inter, IBMPlexMono).
-
-Intuitive Navigation: Clear set/exercise navigation in `ActiveWorkoutScreen`.
-
-Confirmation Dialogs: For critical actions (deleting routines, canceling workouts, logout).
-
-Visual Feedback: SnackBars for operations, loading indicators.
-
-RPE Sliders: Unique RPE-per-repetition sliders in `CurrentSetDisplay`.
-
-Celebratory Animations: Confetti and Lottie animations on `WorkoutCompleteScreen`.
-
-Automatic UI Updates: Leveraging Flutter BLoC/Cubit and Firestore streams.
-
-7. Backend: Firebase Cloud Firestore Structure
+## 7. Backend: Firebase Cloud Firestore Structure
 
 The Firestore database is organized as follows:
 
-`users/{userId}`: User-specific data.
-    *   Fields: `uid`, `email`, `displayName`, `profilePictureUrl`, `username`, `gender`, `dateOfBirth`, `heightCm`, `weightKg`, `fitnessGoal`, `activityLevel`, `xp`, `level`, `currentStreak`, `longestStreak`, `lastWorkoutTimestamp`, `followersCount`, `followingCount`, `achievedRewardIds` (List<String>), `profileSetupComplete`, `createdAt`, `updatedAt`.
+*   `users/{userId}`: User-specific data.
+    *   Fields: `uid`, `email`, `displayName`, `profilePictureUrl`, `username`, `gender`, `dateOfBirth`, `heightCm`, `weightKg`, `fitnessGoal`, `activityLevel`, `xp`, `level`, `currentStreak`, `longestStreak`, `lastWorkoutTimestamp`, `lastScheduledWorkoutCompletionTimestamp`, `lastScheduledWorkoutDayKey`, `followersCount`, `followingCount`, `achievedRewardIds` (List<String>), `profileSetupComplete`, `createdAt`, `updatedAt`.
     *   Subcollection `notifications/{notificationId}`: User notifications (`AppNotification` model).
     *   Subcollection `workoutLogs/{sessionId}`: Workout session data (`WorkoutSession` model).
-        *   `completedExercises` (List of `LoggedExercise` objects).
-        *   Each `LoggedExercise` contains `completedSets` (List of `LoggedSet` objects with RPE data in `notes`).
 
-`predefinedExercises/{exerciseId}`: Standardized exercise library (`PredefinedExercise` model).
+*   `predefinedExercises/{exerciseId}`: Standardized exercise library (`PredefinedExercise` model).
 
-`userRoutines/{routineId}`: User-created workout routines (`UserRoutine` model).
-    *   `exercises` (List of `RoutineExercise` objects).
+*   `userRoutines/{routineId}`: User-created workout routines (`UserRoutine` model).
+    *   Fields include `userId` to link to the user.
 
-`leagues/{leagueId}`: Information about fitness leagues (`LeagueInfo` model).
-    *   Fields: `name`, `minLevel`, `maxLevel` (optional), `minXp`, `maxXp` (optional), `gradientColors` (List<String> hex), `description` (optional).
+*   `leagues/{leagueId}`: Information about fitness leagues (`LeagueInfo` model).
 
-8. Firebase Cloud Functions Logic (`functions/src/index.ts`)
+*   **NEW:** `posts/{postId}`: User-generated posts.
+    *   Fields: `userId`, `authorUsername`, `authorProfilePicUrl`, `timestamp`, `type` (String, e.g., "standard"), `textContent`, `mediaUrl` (String, optional), `likedBy` (List<String>), `commentsCount` (int), `isCommentsEnabled` (bool), `relatedRoutineId` (String, optional), `routineSnapshot` (Map, optional), `recordDetails` (Map, optional), `isRecordVerified` (bool, optional), `updatedAt` (Timestamp).
+    *   Subcollection `comments/{commentId}`: Comments related to a post.
+        *   Fields: `postId`, `userId`, `authorUsername`, `authorProfilePicUrl`, `text`, `timestamp`.
 
-Server-side logic is handled by Firebase Cloud Functions written in TypeScript (Node.js v20 environment, default region `us-central1`):
+## 8. Firebase Cloud Functions Logic (`functions/src/index.ts`)
 
-`createUserProfile` (Auth v1 Trigger - `onCreate`):
-    *   Triggered when a new user signs up via Firebase Authentication.
-    *   Creates a corresponding user document in `users/{userId}` with initial profile data (`xp: 0`, `level: 1`, `profileSetupComplete: false`, etc.).
+Server-side logic is handled by Firebase Cloud Functions:
 
-`calculateAndAwardXpAndStreak` (Firestore v2 Trigger - `onDocumentUpdated` on `users/{userId}/workoutLogs/{sessionId}`):
-    *   Triggers when a `workoutLogs` document's `status` changes to `completed`.
-    *   Calculates XP: base (50) + (totalVolume / 100) + (durationSeconds / 300), capped at 200 XP.
-    *   Updates user's `xp`, `level` (based on an iterative formula: XP to complete level `N` is `200 + (N-1)*50`), `currentStreak`, `longestStreak`, and `lastWorkoutTimestamp`.
-    *   Awards `AchievementId.FIRST_WORKOUT` if not already achieved and creates a notification.
+*   `createUserProfile`: Creates Firestore user profile on new Firebase Auth user.
+*   `calculateAndAwardXpAndStreak`: Processes completed workouts, awards XP/level, updates streak, awards "First Workout" achievement.
+*   `checkProfileSetupCompletionAchievements`: Awards "Early Bird" achievement on profile setup completion.
+*   `seedPredefinedExercises`: Populates `predefinedExercises` collection.
+*   **NEW:** `onCommentCreated`: (Firestore v2 Trigger - `onDocumentCreated` on `posts/{postId}/comments/{commentId}`) Increments `commentsCount` and updates `updatedAt` on the parent post document.
+*   **NEW:** `onCommentDeleted`: (Firestore v2 Trigger - `onDocumentDeleted` on `posts/{postId}/comments/{commentId}`) Decrements `commentsCount` and updates `updatedAt` on the parent post document.
 
-`checkProfileSetupCompletionAchievements` (Firestore v2 Trigger - `onDocumentWritten` on `users/{userId}`):
-    *   Triggers on user document creation or update.
-    *   If `profileSetupComplete` changes from `false` (or non-existent) to `true`, awards `AchievementId.EARLY_BIRD` and creates a notification.
+## 9. Setup and Running the Project
 
-`seedPredefinedExercises` (HTTPS v2 Trigger - `onRequest`):
-    *   An HTTP-callable function to populate the `predefinedExercises` collection.
-    *   Optionally protected by an admin key (`APP_ADMIN_KEY` or `ADMIN_KEY` environment variable).
-    *   Avoids duplicates by checking `normalizedName`.
+(Content mostly unchanged regarding Flutter SDK, Firebase Project Setup, Dependencies, App Icons, Running App, Seeding Exercises)
 
-9. Setup and Running the Project
+**Updated Firestore Security Rules Example:**
 
-Flutter SDK: Ensure Flutter SDK (`^3.8.0` or compatible) is installed.
-
-Clone Repository: Clone this project to your local machine.
-
-Firebase Project Setup:
-    *   Create a new project in the Firebase Console (Project ID used in snapshot: `muscle-up-8c275`).
-    *   Add Android and/or iOS apps.
-        *   Android: Package Name `com.example.muscle_up`. Download `google-services.json` to `android/app/`.
-        *   iOS: Bundle ID `com.example.muscleUp`. Download `GoogleService-Info.plist` to `ios/Runner/`.
-    *   Authentication: Enable Email/Password and Google Sign-In methods.
-    *   Cloud Firestore: Enable. Start with test rules, then secure for production (see below).
-    *   Firebase Functions:
-        *   Install Firebase CLI: `npm install -g firebase-tools`.
-        *   Login: `firebase login`. Select project: `firebase use YOUR_PROJECT_ID`.
-        *   Install dependencies: `cd functions && npm install && cd ..`
-        *   (Optional) For `seedPredefinedExercises` key protection: `firebase functions:config:set app.admin_key="YOUR_SECRET_KEY"` and redeploy.
-        *   Deploy functions: `firebase deploy --only functions`.
-
-Flutter Dependencies: Run `flutter pub get` in the project root.
-
-App Icons: (Optional) If `assets/images/app_icon.png` is changed, regenerate: `flutter pub run flutter_launcher_icons`.
-
-Run App: `flutter run` on an emulator or device.
-
-Seed Exercises: Call `seedPredefinedExercises` HTTPS URL (e.g., `https://us-central1-YOUR_PROJECT_ID.cloudfunctions.net/seedPredefinedExercises?key=YOUR_SECRET_KEY` if key configured).
-
-Example Firestore Security Rules (Update for production):
-```firestore
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -876,41 +633,148 @@ service cloud.firestore {
     match /userRoutines/{routineId} {
       allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
     }
-    match /leagues/{leagueId} { // New rule for leagues
-      allow read: if true; // Publicly readable or `if request.auth != null;`
-      allow write: if false; // Admin/functions only
+    match /leagues/{leagueId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+
+      allow update: if request.auth != null &&
+                      (
+                        (resource.data.userId == request.auth.uid &&
+                           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['likedBy', 'commentsCount', 'userId', 'authorUsername', 'authorProfilePicUrl', 'timestamp']) &&
+                           (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['textContent', 'mediaUrl', 'isCommentsEnabled', 'type', 'relatedRoutineId', 'routineSnapshot', 'recordDetails', 'isRecordVerified', 'updatedAt']) ||
+                            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt'])
+                           )
+                        ) ||
+                        (
+                           request.resource.data.diff(resource.data).affectedKeys().hasAll(['likedBy', 'updatedAt']) &&
+                           request.resource.data.diff(resource.data).affectedKeys().size() == 2 &&
+                           (
+                             (request.resource.data.likedBy.toSet().difference(resource.data.likedBy.toSet()).hasOnly([request.auth.uid])) ||
+                             (resource.data.likedBy.toSet().difference(request.resource.data.likedBy.toSet()).hasOnly([request.auth.uid]))
+                           ) &&
+                           request.resource.data.userId == resource.data.userId &&
+                           request.resource.data.type == resource.data.type &&
+                           request.resource.data.textContent == resource.data.textContent &&
+                           request.resource.data.mediaUrl == resource.data.mediaUrl &&
+                           request.resource.data.isCommentsEnabled == resource.data.isCommentsEnabled &&
+                           request.resource.data.commentsCount == resource.data.commentsCount
+                        )
+                      );
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.postId == postId;
+        allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      }
     }
   }
 }
 
+## 10. Roadmap & Future Development
 
-Future Development
+MuscleUP aims to become a comprehensive social fitness platform.
 
-MuscleUP aims to become a comprehensive social fitness platform. Future enhancements include:
+Phase 2: Social Interaction (Finalizing)
 
-Full Implementation of Screens: Complete "Posts", "Profile" details (advanced stats, activity feed).
+[✔️] Basic Post System (Standard Posts)
 
-Enhanced Social Features: User following/followers, activity feeds, comments, likes, direct messaging.
+[✔️] Explore Feed to view posts
 
-Public Records & Leaderboards: System for submitting and validating personal records, community-validated leaderboards.
+[✔️] Likes on Posts
 
-Advanced Gamification: More diverse achievements, challenges, seasonal leagues, virtual rewards.
+[✔️] Comments on Posts (view, add, edit, delete own)
 
-Personalized Goal Setting: More granular goal types (e.g., weight goals for specific lifts, rep max goals).
+[✔️] Cloud Functions for commentsCount
 
-Push Notifications: Via Firebase Cloud Messaging for reminders, achievements, social interactions.
+[✔️] Enable/Disable comments by post author
 
-Comprehensive Testing: Unit, widget, and integration tests.
+Phase 3: Advanced Post Types & Interactions
 
-UI/UX Refinements: Based on user feedback and A/B testing.
+Post "Share Routine" (routineShare):
 
-Admin Panel: For content management (exercises, moderation).
+UI for creating routineShare posts.
 
-Wearable Device Integration: Syncing data from fitness trackers.
+UI for displaying routineShare posts in the feed.
 
-Offline Support: Basic offline capabilities for workout logging.
+Logic to "Add to my routines".
 
-Advanced Analytics: Deeper insights into training patterns, recovery, and performance trends.
+Post "Record Claim" (recordClaim):
+
+UI for creating recordClaim posts (link to video evidence).
+
+UI for displaying recordClaim posts with voting options.
+
+Logic for vote casting and storage.
+
+(Optional) Cloud Function for vote tallying and verification status.
+
+Phase 4: Core Social Graph
+
+User Following/Followers:
+
+Update UserProfile for following list and followersCount.
+
+UI for Follow/Unfollow buttons (on profiles, in post headers).
+
+Cloud Functions to manage follow/unfollow relationships and update counts.
+
+Personalized Feed (Future for "Explore" or new "Feed" tab):
+
+Logic to show posts from followed users.
+
+Phase 5: Enhancements & Polish
+
+Media in Posts:
+
+Image/Video upload (Firebase Storage).
+
+Display media in PostListItem and PostDetailScreen.
+
+Notifications for Social Interactions:
+
+New Like on your post.
+
+New Comment on your post.
+
+New Follower.
+
+UI/UX Refinements for Social Features:
+
+Post options menu (edit/delete own post, report post).
+
+Filtering/Sorting options in Explore feed.
+
+User profile pages (viewable by others).
+
+Full Implementation of Other Screens: Complete "Profile" details (advanced stats, activity feed related to social).
+
+Long-Term Vision (Beyond current scope):
+
+Direct Messaging.
+
+Public Records & Leaderboards (community-validated).
+
+Advanced Gamification (more achievements, challenges, seasonal leagues, virtual rewards).
+
+Personalized Goal Setting (more granular).
+
+Push Notifications via FCM.
+
+Comprehensive Testing (Unit, Widget, Integration).
+
+Admin Panel.
+
+Wearable Device Integration.
+
+Offline Support.
+
 
 --------------------------------------------------
 === END OF FILE: README.md ===
@@ -10560,6 +10424,8 @@ import { logger } from "firebase-functions";
 import {
   onDocumentWritten,
   onDocumentUpdated,
+  onDocumentCreated, // <-- Новий імпорт
+  onDocumentDeleted, // <-- Новий імпорт
   Change,
   FirestoreEvent,
 } from "firebase-functions/v2/firestore";
@@ -10579,7 +10445,6 @@ enum AchievementId {
 
 const defaultRegion = "us-central1";
 
-// Функція для отримання дня тижня (0 - НД, 1 - ПН, ..., 6 - СБ) з JS Date в UTC
 const getUTCDayOfWeek = (date: Date): number => {
     return date.getUTCDay();
 };
@@ -10588,7 +10453,6 @@ const getDayKeyFromJsDate = (date: Date): string => {
     return days[getUTCDayOfWeek(date)];
 };
 
-// Функція для отримання дати на початок дня в UTC
 const getUTCDayStart = (jsDate: Date): Date => {
     return new Date(Date.UTC(jsDate.getUTCFullYear(), jsDate.getUTCMonth(), jsDate.getUTCDate()));
 };
@@ -10604,27 +10468,27 @@ export const createUserProfile = functionsV1.region(defaultRegion).auth.user().o
     }
 
     await userDocRef.set({
-      uid: user.uid, 
-      email: user.email?.toLowerCase() ?? null, 
-      displayName: null, 
-      profilePictureUrl: user.photoURL ?? null, 
+      uid: user.uid,
+      email: user.email?.toLowerCase() ?? null,
+      displayName: null,
+      profilePictureUrl: user.photoURL ?? null,
       username: null,
-      gender: null, 
+      gender: null,
       dateOfBirth: null,
-      heightCm: null, 
-      weightKg: null, 
-      fitnessGoal: null, 
-      activityLevel: null, 
-      xp: 0, 
+      heightCm: null,
+      weightKg: null,
+      fitnessGoal: null,
+      activityLevel: null,
+      xp: 0,
       level: 1,
-      currentStreak: 0, 
-      longestStreak: 0, 
+      currentStreak: 0,
+      longestStreak: 0,
       lastWorkoutTimestamp: null,
-      lastScheduledWorkoutCompletionTimestamp: null, // Нове поле
-      lastScheduledWorkoutDayKey: null, // Нове поле
+      lastScheduledWorkoutCompletionTimestamp: null,
+      lastScheduledWorkoutDayKey: null,
       followersCount: 0,
-      followingCount: 0, 
-      achievedRewardIds: [], 
+      followingCount: 0,
+      achievedRewardIds: [],
       profileSetupComplete: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -10658,11 +10522,11 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
     const totalVolume = newWorkoutData.totalVolume || 0;
     const completedAt = (newWorkoutData.endedAt instanceof Timestamp) ? newWorkoutData.endedAt : Timestamp.now();
     const startedAtTimestamp = (newWorkoutData.startedAt instanceof Timestamp) ? newWorkoutData.startedAt : Timestamp.now();
-    
+
     let xpGained = 50;
     if (totalVolume > 0) xpGained += Math.round(totalVolume / 100);
-    if (durationSeconds > 0) xpGained += Math.round(durationSeconds / (5 * 60)); 
-    xpGained = Math.min(xpGained, 200); 
+    if (durationSeconds > 0) xpGained += Math.round(durationSeconds / (5 * 60));
+    xpGained = Math.min(xpGained, 200);
 
     const userProfileRef = admin.firestore().collection("users").doc(userId);
     const userRoutinesRef = admin.firestore().collection("userRoutines").where("userId", "==", userId);
@@ -10677,10 +10541,10 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             throw new Error(`User profile ${userId} not found.`);
         }
         const currentProfile = profileDoc.data()!;
-        
+
         const newXp = (currentProfile.xp || 0) + xpGained;
-        let calculatedNewLevel = currentProfile.level || 1; 
-        
+        let calculatedNewLevel = currentProfile.level || 1;
+
         let currentStreak = currentProfile.currentStreak || 0;
         let longestStreak = currentProfile.longestStreak || 0;
         let newLastScheduledWorkoutCompletionTimestamp = currentProfile.lastScheduledWorkoutCompletionTimestamp as Timestamp | undefined;
@@ -10700,7 +10564,6 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             const scheduledDays = (routineData?.scheduledDays as string[] | undefined)?.map((d) => d.toUpperCase()) ?? [];
 
             if (scheduledDays.length > 0 && scheduledDays.includes(currentWorkoutDayKey)) {
-                // Це тренування за розкладом
                 logger.info("Streak V3: Workout is on a scheduled day.", {userId, currentWorkoutDayKey, routineId: routineIdOfCompletedWorkout});
 
                 if (currentProfile.lastScheduledWorkoutCompletionTimestamp && currentProfile.lastScheduledWorkoutDayKey) {
@@ -10709,12 +10572,10 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
 
                     if (currentWorkoutDayStartUTC.getTime() === lastScheduledCompletionDayStartUTC.getTime() && currentProfile.lastScheduledWorkoutDayKey === currentWorkoutDayKey) {
                        logger.info("Streak V3: Workout on the same scheduled day as last. Streak not incremented.", {userId});
-                       // Не збільшуємо стрік, бо це вже зараховане тренування за цей день
                     } else {
-                        // Перевіряємо, чи не було пропущено попереднього запланованого дня
                         let wasPreviousScheduledDayMissed = false;
                         let tempDate = new Date(lastScheduledCompletionDayStartUTC);
-                        tempDate.setUTCDate(tempDate.getUTCDate() + 1); // Починаємо з наступного дня після останнього запланованого
+                        tempDate.setUTCDate(tempDate.getUTCDate() + 1);
 
                         while(tempDate.getTime() < currentWorkoutDayStartUTC.getTime()) {
                             const dayKeyToTest = getDayKeyFromJsDate(tempDate);
@@ -10727,17 +10588,16 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
                         }
 
                         if (wasPreviousScheduledDayMissed) {
-                            currentStreak = 1; // Пропуск, скидаємо стрік
+                            currentStreak = 1;
                             logger.info("Streak V3: Previous scheduled day was missed. Streak reset to 1.", {userId});
                         } else {
-                            currentStreak++; // Не було пропусків, збільшуємо стрік
+                            currentStreak++;
                             logger.info("Streak V3: No missed scheduled days. Streak incremented.", {userId, newStreak: currentStreak});
                         }
                         newLastScheduledWorkoutCompletionTimestamp = completedAt;
                         newLastScheduledWorkoutDayKey = currentWorkoutDayKey;
                     }
                 } else {
-                    // Перше заплановане тренування
                     currentStreak = 1;
                     newLastScheduledWorkoutCompletionTimestamp = completedAt;
                     newLastScheduledWorkoutDayKey = currentWorkoutDayKey;
@@ -10745,30 +10605,27 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
                 }
             } else {
               logger.info("Streak V3: Workout was from a routine, but not on a scheduled day of that routine (or routine has no schedule). Streak not affected by this logic.", {userId, currentWorkoutDayKey, routineScheduledDays: scheduledDays });
-              // Ad-hoc тренування або тренування за рутиною, але не в запланований день. Не впливає на "scheduled streak".
-              // Можна додати окрему логіку для "calendar day streak" тут, якщо потрібно.
             }
         } else {
           logger.info("Streak V3: Workout was not from a routine with schedule. Streak not affected by this logic.", {userId});
-          // Тренування не за рутиною з розкладом. Не впливає на "scheduled streak".
         }
-        
+
         longestStreak = Math.max(longestStreak, currentStreak);
 
         const xpPerLevelBase = 200;
         const calculateXpForNextLevelUp = (currentLevel: number): number => {
             return xpPerLevelBase + (currentLevel - 1) * 50;
         };
-        
+
         let xpNeededForCurrentLevelToComplete = calculateXpForNextLevelUp(calculatedNewLevel);
         let totalXpAtStartOfCurrentLevel = 0;
         for (let i = 1; i < calculatedNewLevel; i++) {
             totalXpAtStartOfCurrentLevel += calculateXpForNextLevelUp(i);
         }
-        
+
         while (newXp >= totalXpAtStartOfCurrentLevel + xpNeededForCurrentLevelToComplete) {
-            totalXpAtStartOfCurrentLevel += xpNeededForCurrentLevelToComplete; 
-            calculatedNewLevel++; 
+            totalXpAtStartOfCurrentLevel += xpNeededForCurrentLevelToComplete;
+            calculatedNewLevel++;
             xpNeededForCurrentLevelToComplete = calculateXpForNextLevelUp(calculatedNewLevel);
         }
 
@@ -10784,13 +10641,13 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             relatedEntityId: AchievementId.FIRST_WORKOUT, relatedEntityType: "achievement",
           });
         }
-        
+
         const profileUpdateData: {[key: string]: any} = {
           xp: newXp,
-          level: calculatedNewLevel, 
+          level: calculatedNewLevel,
           currentStreak,
           longestStreak,
-          lastWorkoutTimestamp: completedAt, // Завжди оновлюємо загальний час останнього тренування
+          lastWorkoutTimestamp: completedAt,
           achievedRewardIds,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
@@ -10801,7 +10658,7 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
         if (newLastScheduledWorkoutDayKey) {
             profileUpdateData.lastScheduledWorkoutDayKey = newLastScheduledWorkoutDayKey;
         }
-        
+
         logger.info("Preparing to update profile in transaction", { userId, updatesToApply: profileUpdateData });
         transaction.update(userProfileRef, profileUpdateData);
         logger.info("User profile updated.", { userId, updatedXp: newXp, updatedLevel: calculatedNewLevel, updatedCurrentStreak: currentStreak });
@@ -10847,6 +10704,53 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
           });
         }
       }
+    }
+  }
+);
+
+// --- Нові Cloud Functions для лічильника коментарів ---
+
+export const onCommentCreated = onDocumentCreated(
+  { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
+  async (event: FirestoreEvent<DocumentSnapshot | undefined, { postId: string; commentId: string }>) => {
+    const { postId, commentId } = event.params;
+    const commentData = event.data?.data();
+
+    if (!commentData) {
+      logger.warn("Comment data missing in onCommentCreated.", {postId, commentId});
+      return;
+    }
+    logger.info(`New comment ${commentId} created for post ${postId}. Incrementing count.`);
+
+    const postRef = admin.firestore().collection("posts").doc(postId);
+    try {
+      await postRef.update({
+        commentsCount: admin.firestore.FieldValue.increment(1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Також оновлюємо updatedAt поста
+      });
+      logger.info(`Successfully incremented commentsCount for post ${postId}.`);
+    } catch (error: any) {
+      logger.error(`Error incrementing commentsCount for post ${postId}: ${error.message || error}`, {postId, commentId});
+    }
+  }
+);
+
+export const onCommentDeleted = onDocumentDeleted(
+  { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
+  async (event: FirestoreEvent<DocumentSnapshot | undefined, { postId: string; commentId: string }>) => {
+    const { postId, commentId } = event.params;
+
+    logger.info(`Comment ${commentId} deleted for post ${postId}. Decrementing count.`);
+
+    const postRef = admin.firestore().collection("posts").doc(postId);
+    try {
+      await postRef.update({
+        commentsCount: admin.firestore.FieldValue.increment(-1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Також оновлюємо updatedAt поста
+      });
+      logger.info(`Successfully decremented commentsCount for post ${postId}.`);
+    } catch (error: any) {
+      logger.error(`Error decrementing commentsCount for post ${postId}: ${error.message || error}`, {postId, commentId});
     }
   }
 );
@@ -12139,7 +12043,8 @@ import 'features/routines/presentation/screens/create_edit_routine_screen.dart';
 import 'features/workout_tracking/presentation/screens/active_workout_screen.dart';
 import 'core/domain/entities/workout_session.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
-import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
+// import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart'; // Замінено на ExploreScreen
+import 'features/social/presentation/screens/explore_screen.dart'; // <-- Новий імпорт для постів
 import 'features/progress/presentation/screens/progress_screen.dart';
 
 class HomePage extends StatelessWidget {
@@ -12170,14 +12075,14 @@ class _HomePageContentState extends State<_HomePageContent> {
 
   static final List<Widget> _bottomNavScreens = <Widget>[
     const UserRoutinesScreen(),
-    const ExerciseExplorerScreen(),
+    const ExploreScreen(), // <-- ЗМІНЕНО: тепер це стрічка постів
     const ProgressScreen(),
     const ProfileScreen(),
   ];
 
   static final List<String> _bottomNavScreenTitles = <String>[
     'My Routines',
-    'Explore Exercises',
+    'Explore Posts', // <-- ЗМІНЕНО: назва вкладки
     'My Progress',
     'Profile',
   ];
@@ -12294,13 +12199,13 @@ class _HomePageContentState extends State<_HomePageContent> {
   @override
   Widget build(BuildContext context) {
     developer.log("HomePageContent building, _selectedIndex: $_selectedIndex", name: "HomePage");
-    
+
     Widget currentBody;
     bool showFab = false;
-    Widget appBarTitle; 
+    Widget appBarTitle;
 
     final TextStyle? baseMuscleUpStyle = Theme.of(context).appBarTheme.titleTextStyle;
-    final Color muscleUpOrangeColor = Theme.of(context).colorScheme.primary; 
+    final Color muscleUpOrangeColor = Theme.of(context).colorScheme.primary;
     final Color defaultAppBarTextColor = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.black87;
 
 
@@ -12311,7 +12216,7 @@ class _HomePageContentState extends State<_HomePageContent> {
       );
       showFab = true;
       appBarTitle = GestureDetector(
-        onTap: _navigateToDashboard, 
+        onTap: _navigateToDashboard,
         child: RichText(
           text: TextSpan(
             style: baseMuscleUpStyle,
@@ -12324,10 +12229,10 @@ class _HomePageContentState extends State<_HomePageContent> {
       );
     } else if (_selectedIndex >= 0 && _selectedIndex < _bottomNavScreens.length) {
       currentBody = _bottomNavScreens[_selectedIndex];
-      showFab = false; 
-      
+      showFab = false;
+
       final screenTitleText = _bottomNavScreenTitles[_selectedIndex];
-      
+
       appBarTitle = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -12335,7 +12240,7 @@ class _HomePageContentState extends State<_HomePageContent> {
             onTap: _navigateToDashboard,
             child: RichText(
               text: TextSpan(
-                style: baseMuscleUpStyle?.copyWith(fontSize: 20), 
+                style: baseMuscleUpStyle?.copyWith(fontSize: 20),
                 children: <TextSpan>[
                   TextSpan(text: 'Muscle', style: TextStyle(color: muscleUpOrangeColor)),
                   const TextSpan(text: 'UP'),
@@ -12346,9 +12251,9 @@ class _HomePageContentState extends State<_HomePageContent> {
           Text(
             '  |  $screenTitleText',
             style: baseMuscleUpStyle?.copyWith(
-              fontSize: 18, 
-              fontWeight: baseMuscleUpStyle.fontWeight, 
-              color: defaultAppBarTextColor, 
+              fontSize: 18,
+              fontWeight: baseMuscleUpStyle.fontWeight,
+              color: defaultAppBarTextColor,
             ),
           ),
         ],
@@ -12382,7 +12287,7 @@ class _HomePageContentState extends State<_HomePageContent> {
       ),
       body: currentBody,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: showFab 
+      floatingActionButton: showFab
           ? Container(
              margin: const EdgeInsets.only(bottom: 12.0),
               child: FloatingActionButton.extended(
@@ -12391,7 +12296,7 @@ class _HomePageContentState extends State<_HomePageContent> {
                   'START WORKOUT',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w900, 
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),
                 ),
@@ -12410,9 +12315,9 @@ class _HomePageContentState extends State<_HomePageContent> {
             label: 'ROUTINES',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined), 
-            activeIcon: Icon(Icons.explore),
-            label: 'EXPLORE',
+            icon: Icon(Icons.travel_explore_outlined), // <-- ЗМІНЕНО ІКОНКУ
+            activeIcon: Icon(Icons.travel_explore), // <-- ЗМІНЕНО ІКОНКУ
+            label: 'EXPLORE', // Назва може залишитися, якщо хочете, або змінити на 'FEED'
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events_outlined),
@@ -12807,6 +12712,8 @@ import 'core/domain/repositories/workout_log_repository.dart';
 import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart';
 import 'core/domain/repositories/league_repository.dart';
 import 'features/progress/data/repositories/league_repository_impl.dart';
+import 'core/domain/repositories/post_repository.dart'; // <-- Новий імпорт
+import 'features/social/data/repositories/post_repository_impl.dart'; // <-- Новий імпорт
 
 
 void main() async {
@@ -12848,6 +12755,9 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<LeagueRepository>(
           create: (context) => LeagueRepositoryImpl(),
         ),
+        RepositoryProvider<PostRepository>( // <-- Додано PostRepository
+          create: (context) => PostRepositoryImpl(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -12856,12 +12766,12 @@ class MainApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amberAccent, 
+            accentColor: Colors.amberAccent,
             brightness: Brightness.light,
           ).copyWith(
             primary: primaryOrange,
             onPrimary: Colors.white,
-            secondary: Colors.amberAccent, 
+            secondary: Colors.amberAccent,
             surface: Colors.white,
             onSurface: textBlackColor,
             background: const Color(0xFFF5F5F5),
@@ -12871,7 +12781,7 @@ class MainApp extends StatelessWidget {
           ),
           useMaterial3: true,
           fontFamily: 'Inter',
-          
+
           textTheme: const TextTheme(
             displayLarge: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w900, color: textBlackColor),
             displayMedium: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w900, color: textBlackColor),
@@ -12961,7 +12871,7 @@ class MainApp extends StatelessWidget {
             showUnselectedLabels: true,
             elevation: 8.0,
           ),
-          cardTheme: CardThemeData( // <--- ВИПРАВЛЕНО: CardTheme -> CardThemeData
+          cardTheme: CardThemeData(
             elevation: 1.5,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
@@ -12977,7 +12887,7 @@ class MainApp extends StatelessWidget {
             titleTextStyle: const TextStyle(fontFamily: 'Inter', color: textBlackColor, fontSize: 16, fontWeight: FontWeight.w500),
             subtitleTextStyle: TextStyle(fontFamily: 'Inter', color: Colors.grey[600], fontSize: 14),
           ),
-          dialogTheme: DialogThemeData( // <--- ВИПРАВЛЕНО: DialogTheme -> DialogThemeData
+          dialogTheme: DialogThemeData(
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
             titleTextStyle: const TextStyle(fontFamily: 'Inter', color: textBlackColor, fontSize: 20, fontWeight: FontWeight.w600),
@@ -13220,6 +13130,73 @@ class AppNotification extends Equatable {
 }
 --------------------------------------------------
 === END OF FILE: lib/core/domain/entities/app_notification.dart ===
+
+
+=== FILE: lib/core/domain/entities/comment.dart ===
+--------------------------------------------------
+// lib/core/domain/entities/comment.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+
+class Comment extends Equatable {
+  final String id;
+  final String postId;
+  final String userId;
+  final String authorUsername;
+  final String? authorProfilePicUrl;
+  final String text;
+  final Timestamp timestamp;
+  // Можна додати поле `likedBy` для лайків коментарів у майбутньому
+
+  const Comment({
+    required this.id,
+    required this.postId,
+    required this.userId,
+    required this.authorUsername,
+    this.authorProfilePicUrl,
+    required this.text,
+    required this.timestamp,
+  });
+
+  factory Comment.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    final data = snapshot.data();
+    if (data == null) throw Exception("Comment data is null!");
+
+    return Comment(
+      id: snapshot.id,
+      postId: data['postId'] ?? '',
+      userId: data['userId'] ?? '',
+      authorUsername: data['authorUsername'] ?? 'Unknown User',
+      authorProfilePicUrl: data['authorProfilePicUrl'] as String?,
+      text: data['text'] ?? '',
+      timestamp: data['timestamp'] ?? Timestamp.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'postId': postId,
+      'userId': userId,
+      'authorUsername': authorUsername,
+      'authorProfilePicUrl': authorProfilePicUrl,
+      'text': text,
+      'timestamp': timestamp, // Або FieldValue.serverTimestamp() при створенні
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        postId,
+        userId,
+        authorUsername,
+        authorProfilePicUrl,
+        text,
+        timestamp,
+      ];
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/entities/comment.dart ===
 
 
 === FILE: lib/core/domain/entities/league_info.dart ===
@@ -13465,6 +13442,170 @@ class LoggedSet extends Equatable {
 }
 --------------------------------------------------
 === END OF FILE: lib/core/domain/entities/logged_set.dart ===
+
+
+=== FILE: lib/core/domain/entities/post.dart ===
+--------------------------------------------------
+// lib/core/domain/entities/post.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+
+enum PostType {
+  standard,
+  recordClaim,
+  routineShare,
+}
+
+class Post extends Equatable {
+  final String id;
+  final String userId;
+  final String authorUsername;
+  final String? authorProfilePicUrl;
+  final Timestamp timestamp;
+  final PostType type;
+  final String textContent;
+  final String? mediaUrl;
+  final List<String> likedBy; // Зберігаємо ID користувачів, які лайкнули
+  final int commentsCount; // Лічильник коментарів (буде оновлюватися функцією або на клієнті)
+  final bool isCommentsEnabled;
+  final String? relatedRoutineId;
+  final Map<String, dynamic>? routineSnapshot;
+  final Map<String, dynamic>? recordDetails;
+  final bool? isRecordVerified;
+
+  const Post({
+    required this.id,
+    required this.userId,
+    required this.authorUsername,
+    this.authorProfilePicUrl,
+    required this.timestamp,
+    required this.type,
+    required this.textContent,
+    this.mediaUrl,
+    this.likedBy = const [],
+    this.commentsCount = 0,
+    this.isCommentsEnabled = true,
+    this.relatedRoutineId,
+    this.routineSnapshot,
+    this.recordDetails,
+    this.isRecordVerified,
+  });
+
+  // Getter для кількості лайків
+  int get likesCount => likedBy.length;
+
+  factory Post.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    final data = snapshot.data();
+    if (data == null) throw Exception("Post data is null!");
+
+    PostType postType;
+    try {
+      postType = PostType.values.byName(data['type'] ?? 'standard');
+    } catch (_) {
+      postType = PostType.standard;
+    }
+
+    return Post(
+      id: snapshot.id,
+      userId: data['userId'] ?? '',
+      authorUsername: data['authorUsername'] ?? 'Unknown User',
+      authorProfilePicUrl: data['authorProfilePicUrl'] as String?,
+      timestamp: data['timestamp'] ?? Timestamp.now(),
+      type: postType,
+      textContent: data['textContent'] ?? '',
+      mediaUrl: data['mediaUrl'] as String?,
+      likedBy: List<String>.from(data['likedBy'] ?? []),
+      commentsCount: data['commentsCount'] ?? 0,
+      isCommentsEnabled: data['isCommentsEnabled'] ?? true,
+      relatedRoutineId: data['relatedRoutineId'] as String?,
+      routineSnapshot: data['routineSnapshot'] as Map<String, dynamic>?,
+      recordDetails: data['recordDetails'] as Map<String, dynamic>?,
+      isRecordVerified: data['isRecordVerified'] as bool?,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'authorUsername': authorUsername,
+      'authorProfilePicUrl': authorProfilePicUrl,
+      'timestamp': timestamp,
+      'type': type.name,
+      'textContent': textContent,
+      'mediaUrl': mediaUrl,
+      'likedBy': likedBy,
+      'commentsCount': commentsCount,
+      'isCommentsEnabled': isCommentsEnabled,
+      'relatedRoutineId': relatedRoutineId,
+      'routineSnapshot': routineSnapshot,
+      'recordDetails': recordDetails,
+      'isRecordVerified': isRecordVerified,
+    };
+  }
+
+  Post copyWith({
+    String? id,
+    String? userId,
+    String? authorUsername,
+    String? authorProfilePicUrl,
+    bool allowNullAuthorProfilePicUrl = false,
+    Timestamp? timestamp,
+    PostType? type,
+    String? textContent,
+    String? mediaUrl,
+    bool allowNullMediaUrl = false,
+    List<String>? likedBy,
+    int? commentsCount,
+    bool? isCommentsEnabled,
+    String? relatedRoutineId,
+    bool allowNullRelatedRoutineId = false,
+    Map<String, dynamic>? routineSnapshot,
+    bool allowNullRoutineSnapshot = false,
+    Map<String, dynamic>? recordDetails,
+    bool allowNullRecordDetails = false,
+    bool? isRecordVerified,
+    bool allowNullIsRecordVerified = false,
+  }) {
+    return Post(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      authorUsername: authorUsername ?? this.authorUsername,
+      authorProfilePicUrl: allowNullAuthorProfilePicUrl ? authorProfilePicUrl : (authorProfilePicUrl ?? this.authorProfilePicUrl),
+      timestamp: timestamp ?? this.timestamp,
+      type: type ?? this.type,
+      textContent: textContent ?? this.textContent,
+      mediaUrl: allowNullMediaUrl ? mediaUrl : (mediaUrl ?? this.mediaUrl),
+      likedBy: likedBy ?? this.likedBy,
+      commentsCount: commentsCount ?? this.commentsCount,
+      isCommentsEnabled: isCommentsEnabled ?? this.isCommentsEnabled,
+      relatedRoutineId: allowNullRelatedRoutineId ? relatedRoutineId : (relatedRoutineId ?? this.relatedRoutineId),
+      routineSnapshot: allowNullRoutineSnapshot ? routineSnapshot : (routineSnapshot ?? this.routineSnapshot),
+      recordDetails: allowNullRecordDetails ? recordDetails : (recordDetails ?? this.recordDetails),
+      isRecordVerified: allowNullIsRecordVerified ? isRecordVerified : (isRecordVerified ?? this.isRecordVerified),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        userId,
+        authorUsername,
+        authorProfilePicUrl,
+        timestamp,
+        type,
+        textContent,
+        mediaUrl,
+        likedBy,
+        commentsCount,
+        isCommentsEnabled,
+        relatedRoutineId,
+        routineSnapshot,
+        recordDetails,
+        isRecordVerified,
+      ];
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/entities/post.dart ===
 
 
 === FILE: lib/core/domain/entities/predefined_exercise.dart ===
@@ -14038,6 +14179,34 @@ abstract class NotificationRepository {
 }
 --------------------------------------------------
 === END OF FILE: lib/core/domain/repositories/notification_repository.dart ===
+
+
+=== FILE: lib/core/domain/repositories/post_repository.dart ===
+--------------------------------------------------
+// lib/core/domain/repositories/post_repository.dart
+import '../entities/post.dart';
+import '../entities/comment.dart';
+
+abstract class PostRepository {
+  Future<void> createPost(Post post);
+  Stream<List<Post>> getAllPostsStream({int limit = 20});
+  Future<Post?> getPostById(String postId);
+  Stream<Post?> getPostStreamById(String postId);
+  Future<void> updatePostSettings(String postId, {required bool isCommentsEnabled}); // <-- Новий/оновлений метод
+  // Future<void> deletePost(String postId);
+
+  // Лайки
+  Future<void> addLike(String postId, String userId);
+  Future<void> removeLike(String postId, String userId);
+
+  // Коментарі
+  Future<void> addComment(Comment comment);
+  Stream<List<Comment>> getCommentsStream(String postId, {int limit = 20});
+  Future<void> updateComment(Comment comment);
+  Future<void> deleteComment(String postId, String commentId);
+}
+--------------------------------------------------
+=== END OF FILE: lib/core/domain/repositories/post_repository.dart ===
 
 
 === FILE: lib/core/domain/repositories/predefined_exercise_repository.dart ===
@@ -19797,9 +19966,9 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
 
   void _saveRoutine() {
     if (_formKey.currentState!.validate()) {
-      _manageRoutineCubit.updateRoutineName(_nameController.text); // Ensure latest value is in cubit
-      _manageRoutineCubit.updateRoutineDescription(_descriptionController.text); // Ensure latest value is in cubit
-      _manageRoutineCubit.updateScheduledDays(_selectedDays); // Ensure latest value is in cubit
+      _manageRoutineCubit.updateRoutineName(_nameController.text);
+      _manageRoutineCubit.updateRoutineDescription(_descriptionController.text);
+      _manageRoutineCubit.updateScheduledDays(_selectedDays);
       _manageRoutineCubit.saveRoutine();
     } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -19844,7 +20013,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
         onTap: () async {
           final TextEditingController setsCtrl = TextEditingController(text: exercise.numberOfSets.toString());
           final TextEditingController notesCtrl = TextEditingController(text: exercise.notes ?? '');
-          final formKeyDialog = GlobalKey<FormState>(); // Use a different key for the dialog form
+          final formKeyDialog = GlobalKey<FormState>();
 
           final RoutineExercise? updatedExerciseDetails = await showDialog<RoutineExercise>(
             context: context,
@@ -19903,7 +20072,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           actions: [
             if (_manageRoutineCubit.isEditingMode)
               IconButton(icon: const Icon(Icons.delete_forever, color: Colors.red), onPressed: _deleteRoutine, tooltip: 'Delete Routine'),
-            IconButton(icon: const Icon(Icons.save), onPressed: _saveRoutine, tooltip: 'Save Routine'),
+            // Кнопка "Зберегти" видалена з AppBar
           ],
         ),
         body: BlocConsumer<ManageRoutineCubit, ManageRoutineState>(
@@ -19912,7 +20081,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message), backgroundColor: Colors.green, duration: const Duration(seconds: 2)),
               );
-              Navigator.of(context).pop(true); // Return true on success
+              Navigator.of(context).pop(true);
             } else if (state is ManageRoutineFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red,  duration: const Duration(seconds: 3)),
@@ -19921,14 +20090,16 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           },
           builder: (context, state) {
             UserRoutine currentDisplayRoutine = _manageRoutineCubit.currentRoutineSnapshot;
-            if (state is ManageRoutineExercisesUpdated) { // Handles UI update when exercises list changes
+            if (state is ManageRoutineExercisesUpdated) {
               currentDisplayRoutine = state.updatedRoutine;
-            } else if (state is ManageRoutineInitial) { // Handles initial load
+            } else if (state is ManageRoutineInitial) {
               currentDisplayRoutine = state.routine;
-            } else if (state is ManageRoutineSuccess) { // Handles UI after successful save
+            } else if (state is ManageRoutineSuccess) {
               currentDisplayRoutine = state.savedRoutine;
             }
-            // ManageRoutineLoading will show a loading indicator
+            
+            bool canSave = currentDisplayRoutine.name.trim().isNotEmpty && currentDisplayRoutine.exercises.isNotEmpty;
+
             if (state is ManageRoutineLoading) {
               return Center(child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -19943,7 +20114,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0), // Додано відступ знизу для кнопки
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -19953,6 +20124,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                       controller: _nameController,
                       decoration: const InputDecoration(labelText: 'Routine Name*'),
                       validator: (value) => value == null || value.trim().isEmpty ? 'Name cannot be empty' : null,
+                      onChanged: (_) => setState((){}), // Для оновлення стану кнопки
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -19979,7 +20151,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                               _manageRoutineCubit.updateScheduledDays(List.from(_selectedDays));
                             });
                           },
-                          selectedColor: Theme.of(context).primaryColorLight, // Theme color for selection
+                          selectedColor: Theme.of(context).primaryColorLight,
                         );
                       }).toList(),
                     ),
@@ -19995,6 +20167,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                             final RoutineExercise? newExercise = await showAddExerciseToRoutineDialog(context);
                             if (newExercise != null) {
                               _manageRoutineCubit.addExerciseToRoutine(newExercise);
+                               setState((){}); // Для оновлення стану кнопки
                             }
                           },
                         ),
@@ -20021,6 +20194,45 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
             );
           },
         ),
+        persistentFooterButtons: [
+          BlocBuilder<ManageRoutineCubit, ManageRoutineState>( // Обертаємо кнопку в BlocBuilder
+            builder: (context, state) {
+              bool canSave = _manageRoutineCubit.currentRoutineSnapshot.name.trim().isNotEmpty &&
+                             _manageRoutineCubit.currentRoutineSnapshot.exercises.isNotEmpty;
+              
+              if(state is ManageRoutineExercisesUpdated){ // Додатково перевіряємо зі стану, якщо він оновився
+                  canSave = state.updatedRoutine.name.trim().isNotEmpty && state.updatedRoutine.exercises.isNotEmpty;
+              } else if (state is ManageRoutineInitial) {
+                  canSave = state.routine.name.trim().isNotEmpty && state.routine.exercises.isNotEmpty;
+              }
+
+
+              if (canSave) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: ElevatedButton(
+                    onPressed: (state is ManageRoutineLoading) ? null : _saveRoutine,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    ),
+                    child: (state is ManageRoutineLoading)
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                          )
+                        : Text(
+                            _manageRoutineCubit.isEditingMode ? 'Save Changes' : 'Create Routine',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink(); // Порожній віджет, якщо кнопка невидима
+            },
+          ),
+        ],
       ),
     );
   }
@@ -20405,6 +20617,1709 @@ class RoutineListItem extends StatelessWidget {
 }
 --------------------------------------------------
 === END OF FILE: lib/features/routines/presentation/widgets/routine_list_item.dart ===
+
+
+=== FILE: lib/features/social/data/repositories/post_repository_impl.dart ===
+--------------------------------------------------
+// lib/features/social/data/repositories/post_repository_impl.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/entities/comment.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import 'dart:developer' as developer;
+
+class PostRepositoryImpl implements PostRepository {
+  final FirebaseFirestore _firestore;
+
+  PostRepositoryImpl({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference<Map<String, dynamic>> get _postsCollection =>
+      _firestore.collection('posts');
+
+  CollectionReference<Map<String, dynamic>> _commentsCollection(String postId) =>
+      _postsCollection.doc(postId).collection('comments');
+
+  @override
+  Future<void> createPost(Post post) async {
+    try {
+      final docRef = _postsCollection.doc();
+      final postWithId = post.copyWith(
+        id: docRef.id,
+        // timestamp: Timestamp.now(), // Firestore оновить це значення на серверний час
+      );
+      Map<String, dynamic> postData = postWithId.toMap();
+      postData['timestamp'] = FieldValue.serverTimestamp(); // Гарантуємо серверний час
+
+      await docRef.set(postData);
+      developer.log('Post created with ID: ${docRef.id}', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error creating post: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to create post: ${e.toString()}');
+    }
+  }
+
+  @override
+  Stream<List<Post>> getAllPostsStream({int limit = 20}) {
+    developer.log('Subscribing to all posts stream (limit: $limit)', name: 'PostRepositoryImpl');
+    return _postsCollection
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) {
+      developer.log('Received ${snapshot.docs.length} posts from stream', name: 'PostRepositoryImpl');
+      return snapshot.docs
+          .map((doc) => Post.fromFirestore(doc))
+          .toList();
+    }).handleError((error, stackTrace) {
+      developer.log('Error in all posts stream: $error', name: 'PostRepositoryImpl', error: error, stackTrace: stackTrace);
+      return <Post>[];
+    });
+  }
+
+  @override
+  Future<Post?> getPostById(String postId) async {
+    try {
+      final docSnapshot = await _postsCollection.doc(postId).get();
+      if (docSnapshot.exists) {
+        return Post.fromFirestore(docSnapshot);
+      }
+      return null;
+    } catch (e, s) {
+      developer.log('Error fetching post by ID $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to fetch post: ${e.toString()}');
+    }
+  }
+
+  @override
+  Stream<Post?> getPostStreamById(String postId) {
+    return _postsCollection.doc(postId).snapshots().map((snapshot) {
+      if (snapshot.exists) {
+        return Post.fromFirestore(snapshot);
+      }
+      return null;
+    }).handleError((error, stackTrace) {
+       developer.log('Error in post stream for ID $postId: $error', name: 'PostRepositoryImpl', error: error, stackTrace: stackTrace);
+       return null;
+    });
+  }
+
+  @override
+  Future<void> updatePostSettings(String postId, {required bool isCommentsEnabled}) async {
+    try {
+      await _postsCollection.doc(postId).update({
+        'isCommentsEnabled': isCommentsEnabled,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      developer.log('Post $postId settings updated: isCommentsEnabled -> $isCommentsEnabled', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error updating post settings for $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to update post settings: ${e.toString()}');
+    }
+  }
+
+
+  @override
+  Future<void> addLike(String postId, String userId) async {
+    try {
+      await _postsCollection.doc(postId).update({
+        'likedBy': FieldValue.arrayUnion([userId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      developer.log('User $userId liked post $postId', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error adding like to post $postId by user $userId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to like post: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> removeLike(String postId, String userId) async {
+    try {
+      await _postsCollection.doc(postId).update({
+        'likedBy': FieldValue.arrayRemove([userId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      developer.log('User $userId unliked post $postId', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error removing like from post $postId by user $userId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to unlike post: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> addComment(Comment comment) async {
+    try {
+      final commentDocRef = _commentsCollection(comment.postId).doc();
+      final commentWithIdMap = comment.toMap()
+        ..['id'] = commentDocRef.id
+        ..['timestamp'] = FieldValue.serverTimestamp();
+
+      await commentDocRef.set(commentWithIdMap);
+      // Оновлення updatedAt для поста, оскільки додано коментар
+      await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
+      developer.log('Comment added to post ${comment.postId} by user ${comment.userId}. commentsCount will be updated by Cloud Function.', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error adding comment to post ${comment.postId}: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to add comment: ${e.toString()}');
+    }
+  }
+
+  @override
+  Stream<List<Comment>> getCommentsStream(String postId, {int limit = 20}) {
+    return _commentsCollection(postId)
+        .orderBy('timestamp', descending: false)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Comment.fromFirestore(doc)).toList();
+    }).handleError((error, stackTrace) {
+      developer.log('Error in comments stream for post $postId: $error', name: 'PostRepositoryImpl', error: error, stackTrace: stackTrace);
+      return <Comment>[];
+    });
+  }
+
+  @override
+  Future<void> updateComment(Comment comment) async {
+    if (comment.id.isEmpty || comment.postId.isEmpty) {
+      throw ArgumentError("Comment ID and Post ID cannot be empty for update.");
+    }
+    try {
+      final Map<String, dynamic> updateData = {
+        'text': comment.text,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+      await _commentsCollection(comment.postId).doc(comment.id).update(updateData);
+      // Оновлення updatedAt для поста, оскільки коментар оновлено
+      await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
+      developer.log('Comment ${comment.id} on post ${comment.postId} updated.', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error updating comment ${comment.id} on post ${comment.postId}: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to update comment: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deleteComment(String postId, String commentId) async {
+    if (postId.isEmpty || commentId.isEmpty) {
+      throw ArgumentError("Post ID and Comment ID cannot be empty for deletion.");
+    }
+    try {
+      await _commentsCollection(postId).doc(commentId).delete();
+      // Оновлення updatedAt для поста, оскільки коментар видалено
+      await _postsCollection.doc(postId).update({'updatedAt': FieldValue.serverTimestamp()});
+      developer.log('Comment $commentId on post $postId deleted.', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error deleting comment $commentId on post $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to delete comment: ${e.toString()}');
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/data/repositories/post_repository_impl.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/create_post_cubit.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/create_post_cubit.dart
+import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import '../../../../core/domain/entities/user_profile.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import 'dart:developer' as developer;
+
+part 'create_post_state.dart';
+
+class CreatePostCubit extends Cubit<CreatePostState> {
+  final PostRepository _postRepository;
+  final UserProfileRepository _userProfileRepository;
+  final fb_auth.FirebaseAuth _firebaseAuth;
+
+  CreatePostCubit(
+    this._postRepository,
+    this._userProfileRepository,
+    this._firebaseAuth,
+  ) : super(CreatePostInitial());
+
+  Future<void> submitPost({
+    required String textContent,
+    String? mediaUrl,
+    PostType type = PostType.standard,
+    bool isCommentsEnabled = true, // <-- Додано параметр
+    Map<String, dynamic>? routineSnapshot,
+    String? relatedRoutineId,
+    Map<String, dynamic>? recordDetails,
+  }) async {
+    final userId = _firebaseAuth.currentUser?.uid;
+    if (userId == null) {
+      emit(const CreatePostFailure("User not logged in."));
+      return;
+    }
+
+    if (textContent.trim().isEmpty && mediaUrl == null && routineSnapshot == null && recordDetails == null) {
+      emit(const CreatePostFailure("Post content cannot be empty."));
+      return;
+    }
+
+    emit(CreatePostLoading());
+
+    try {
+      final UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
+      if (userProfile == null) {
+        emit(const CreatePostFailure("Could not fetch user profile to create post."));
+        return;
+      }
+
+      final newPost = Post(
+        id: '',
+        userId: userId,
+        authorUsername: userProfile.username ?? userProfile.displayName ?? 'Anonymous',
+        authorProfilePicUrl: userProfile.profilePictureUrl,
+        timestamp: Timestamp.now(),
+        type: type,
+        textContent: textContent.trim(),
+        mediaUrl: mediaUrl,
+        likedBy: [],
+        commentsCount: 0,
+        isCommentsEnabled: isCommentsEnabled, // <-- Використовуємо передане значення
+        routineSnapshot: routineSnapshot,
+        relatedRoutineId: relatedRoutineId,
+        recordDetails: recordDetails,
+      );
+
+      await _postRepository.createPost(newPost);
+      emit(CreatePostSuccess(newPost.copyWith(id: "temp_id_client_generated")));
+      developer.log('Post submitted successfully by user: $userId, comments enabled: $isCommentsEnabled', name: 'CreatePostCubit');
+    } catch (e, s) {
+      developer.log('Error submitting post: $e', name: 'CreatePostCubit', error: e, stackTrace: s);
+      emit(CreatePostFailure(e.toString().replaceFirst("Exception: ", "")));
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/create_post_cubit.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/create_post_state.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/create_post_state.dart
+part of 'create_post_cubit.dart';
+
+abstract class CreatePostState extends Equatable {
+  const CreatePostState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class CreatePostInitial extends CreatePostState {}
+
+class CreatePostLoading extends CreatePostState {}
+
+class CreatePostSuccess extends CreatePostState {
+  final Post createdPost;
+  const CreatePostSuccess(this.createdPost);
+
+  @override
+  List<Object> get props => [createdPost];
+}
+
+class CreatePostFailure extends CreatePostState {
+  final String error;
+  const CreatePostFailure(this.error);
+
+  @override
+  List<Object> get props => [error];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/create_post_state.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/explore_feed_cubit.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/explore_feed_cubit.dart
+import 'dart:async';
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import 'dart:developer' as developer;
+
+part 'explore_feed_state.dart';
+
+class ExploreFeedCubit extends Cubit<ExploreFeedState> {
+  final PostRepository _postRepository;
+  StreamSubscription<List<Post>>? _postsSubscription;
+
+  ExploreFeedCubit(this._postRepository) : super(ExploreFeedInitial()) {
+    fetchPosts();
+  }
+
+  void fetchPosts() {
+    emit(ExploreFeedLoading());
+    _postsSubscription?.cancel();
+    _postsSubscription = _postRepository.getAllPostsStream().listen(
+      (posts) {
+        emit(ExploreFeedLoaded(posts));
+        developer.log('ExploreFeedCubit: Loaded ${posts.length} posts.', name: 'ExploreFeedCubit');
+      },
+      onError: (error, stackTrace) {
+        developer.log('ExploreFeedCubit: Error fetching posts: $error', name: 'ExploreFeedCubit', error: error, stackTrace: stackTrace);
+        emit(ExploreFeedError(error.toString().replaceFirst("Exception: ", "")));
+      },
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _postsSubscription?.cancel();
+    developer.log('ExploreFeedCubit closed.', name: 'ExploreFeedCubit');
+    return super.close();
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/explore_feed_cubit.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/explore_feed_state.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/explore_feed_state.dart
+part of 'explore_feed_cubit.dart';
+
+abstract class ExploreFeedState extends Equatable {
+  const ExploreFeedState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class ExploreFeedInitial extends ExploreFeedState {}
+
+class ExploreFeedLoading extends ExploreFeedState {}
+
+class ExploreFeedLoaded extends ExploreFeedState {
+  final List<Post> posts;
+  const ExploreFeedLoaded(this.posts);
+
+  @override
+  List<Object> get props => [posts];
+}
+
+class ExploreFeedError extends ExploreFeedState {
+  final String message;
+  const ExploreFeedError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/explore_feed_state.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/post_interaction_cubit.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/post_interaction_cubit.dart
+import 'dart:async';
+import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/entities/comment.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import '../../../../core/domain/entities/user_profile.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import 'dart:developer' as developer;
+
+part 'post_interaction_state.dart';
+
+class PostInteractionCubit extends Cubit<PostInteractionState> {
+  final PostRepository _postRepository;
+  final UserProfileRepository _userProfileRepository;
+  final fb_auth.FirebaseAuth _firebaseAuth;
+  final String postId;
+
+  StreamSubscription<Post?>? _postSubscription;
+  StreamSubscription<List<Comment>>? _commentsSubscription;
+
+  PostInteractionCubit(
+    this._postRepository,
+    this._userProfileRepository,
+    this._firebaseAuth,
+    this.postId,
+    Post initialPost,
+  ) : super(PostInteractionInitial(initialPost)) {
+    _subscribeToPostUpdates();
+  }
+
+  String? get _currentUserId => _firebaseAuth.currentUser?.uid;
+
+  void _subscribeToPostUpdates() {
+    Post? postForLoadingState = _getCurrentPostFromState();
+    if (postForLoadingState == null && state is PostInteractionInitial) {
+      postForLoadingState = (state as PostInteractionInitial).post;
+    }
+    if (postForLoadingState == null) {
+       developer.log('PostInteractionCubit: ERROR - postForLoadingState is null in _subscribeToPostUpdates for $postId', name: 'PostInteractionCubit');
+       emit(const PostInteractionFailure("Internal error: Post data unavailable for subscription."));
+       return;
+    }
+
+    if (state is PostInteractionInitial || (state is PostInteractionLoading && (state as PostInteractionLoading).post.id != postId)) {
+        emit(PostInteractionLoading(postForLoadingState));
+    }
+    
+    _postSubscription?.cancel();
+    _postSubscription = _postRepository.getPostStreamById(postId).listen(
+      (updatedPost) {
+        if (updatedPost != null) {
+          List<Comment> currentComments = [];
+          if (state is PostCommentsLoaded) {
+            currentComments = (state as PostCommentsLoaded).comments;
+            emit(PostCommentsLoaded(updatedPost, currentComments));
+          } else {
+             emit(PostUpdated(updatedPost));
+          }
+          developer.log('PostInteractionCubit: Post $postId updated by stream.', name: 'PostInteractionCubit');
+        } else {
+          developer.log('PostInteractionCubit: Post $postId not found or deleted by stream.', name: 'PostInteractionCubit');
+          emit(const PostInteractionFailure("Post not found. It might have been deleted."));
+        }
+      },
+      onError: (error, stackTrace) {
+        developer.log('PostInteractionCubit: Error in post stream for $postId: $error', name: 'PostInteractionCubit', error: error, stackTrace: stackTrace);
+        emit(PostInteractionFailure("Error loading post: ${error.toString()}", post: _getCurrentPostFromState()));
+      },
+    );
+  }
+
+  Future<void> toggleLike() async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      emit(PostInteractionFailure("User not logged in.", post: _getCurrentPostFromState()));
+      return;
+    }
+
+    Post? currentPost = _getCurrentPostFromState();
+    if (currentPost == null) {
+      emit(const PostInteractionFailure("Post data not available for like action."));
+      return;
+    }
+
+    final bool isLiked = currentPost.likedBy.contains(userId);
+    List<String> newLikedBy = List.from(currentPost.likedBy);
+    if (isLiked) {
+      newLikedBy.remove(userId);
+    } else {
+      newLikedBy.add(userId);
+    }
+    final optimisticPost = currentPost.copyWith(likedBy: newLikedBy);
+    
+    List<Comment> currentComments = [];
+    if (state is PostCommentsLoaded) {
+        currentComments = (state as PostCommentsLoaded).comments;
+        emit(PostCommentsLoaded(optimisticPost, currentComments));
+    } else {
+        emit(PostUpdated(optimisticPost));
+    }
+
+    try {
+      if (isLiked) {
+        await _postRepository.removeLike(postId, userId);
+      } else {
+        await _postRepository.addLike(postId, userId);
+      }
+      developer.log('PostInteractionCubit: Like toggled for post $postId by user $userId', name: 'PostInteractionCubit');
+    } catch (e, s) {
+      developer.log('PostInteractionCubit: Error toggling like: $e', name: 'PostInteractionCubit', error: e, stackTrace: s);
+      emit(PostInteractionFailure("Failed to update like: ${e.toString()}", post: currentPost));
+    }
+  }
+
+  Future<void> addComment(String text) async {
+      final userId = _currentUserId;
+      if (userId == null) {
+        emit(PostInteractionFailure("User not logged in.", post: _getCurrentPostFromState()));
+        return;
+      }
+      Post? currentPost = _getCurrentPostFromState();
+       if (currentPost == null) {
+        emit(const PostInteractionFailure("Post data not available for comment action."));
+        return;
+      }
+
+      final UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
+      if (userProfile == null) {
+        emit(PostInteractionFailure("Could not fetch user profile to add comment.", post: currentPost));
+        return;
+      }
+
+      final comment = Comment(
+        id: '',
+        postId: postId,
+        userId: userId,
+        authorUsername: userProfile.username ?? userProfile.displayName ?? 'User',
+        authorProfilePicUrl: userProfile.profilePictureUrl,
+        text: text,
+        timestamp: Timestamp.now(),
+      );
+
+      try {
+        await _postRepository.addComment(comment);
+        developer.log('PostInteractionCubit: Comment added to post $postId. Firestore listener should update comments list and count.', name: 'PostInteractionCubit');
+      } catch (e, s) {
+         developer.log('PostInteractionCubit: Error adding comment: $e', name: 'PostInteractionCubit', error: e, stackTrace: s);
+         emit(PostInteractionFailure("Failed to add comment: ${e.toString()}", post: currentPost));
+      }
+  }
+
+  void fetchComments() {
+    Post? currentPost = _getCurrentPostFromState();
+    if (currentPost == null) {
+      developer.log('PostInteractionCubit: Cannot fetch comments, currentPost is null for $postId', name: 'PostInteractionCubit');
+      emit(const PostInteractionFailure("Post data not available to fetch comments."));
+      return;
+    }
+    
+    if (state is! PostCommentsLoaded && state is! PostUpdated) {
+        emit(PostInteractionLoading(currentPost));
+    }
+
+    _commentsSubscription?.cancel();
+    _commentsSubscription = _postRepository.getCommentsStream(postId).listen(
+      (comments) {
+        Post? latestPost = _getCurrentPostFromState() ?? currentPost;
+        emit(PostCommentsLoaded(latestPost!, comments));
+        developer.log('PostInteractionCubit: Loaded ${comments.length} comments for post $postId', name: 'PostInteractionCubit');
+      },
+      onError: (error, stackTrace) {
+        developer.log('PostInteractionCubit: Error fetching comments for $postId: $error', name: 'PostInteractionCubit', error: error, stackTrace: stackTrace);
+        emit(PostInteractionFailure("Error loading comments: ${error.toString()}", post: currentPost));
+      },
+    );
+  }
+
+  Future<void> updateComment(String commentId, String newText) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      emit(PostInteractionFailure("User not logged in.", post: _getCurrentPostFromState()));
+      return;
+    }
+    Post? post = _getCurrentPostFromState();
+    if (post == null) return;
+
+    Comment? originalComment;
+    List<Comment> currentComments = [];
+    if (state is PostCommentsLoaded) {
+        currentComments = (state as PostCommentsLoaded).comments;
+        try {
+            originalComment = currentComments.firstWhere((c) => c.id == commentId);
+        } catch (e) { /* Comment not found */ }
+    }
+    if (originalComment == null || originalComment.userId != userId) {
+        emit(PostInteractionFailure("Cannot edit this comment.", post: post));
+        return;
+    }
+
+    final updatedComment = Comment(
+        id: commentId,
+        postId: postId,
+        userId: userId,
+        authorUsername: originalComment.authorUsername,
+        authorProfilePicUrl: originalComment.authorProfilePicUrl,
+        text: newText,
+        timestamp: Timestamp.now(),
+    );
+
+    final optimisticComments = currentComments.map((c) => c.id == commentId ? updatedComment : c).toList();
+    emit(PostCommentsLoaded(post, optimisticComments));
+
+    try {
+        await _postRepository.updateComment(updatedComment);
+        developer.log('PostInteractionCubit: Comment $commentId updated.', name: 'PostInteractionCubit');
+    } catch (e) {
+        developer.log('PostInteractionCubit: Error updating comment $commentId: $e', name: 'PostInteractionCubit');
+        emit(PostInteractionFailure("Failed to update comment: ${e.toString()}", post: post));
+        if (state is PostCommentsLoaded) emit(PostCommentsLoaded(post, currentComments));
+    }
+  }
+
+  Future<void> deleteComment(String commentId) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      emit(PostInteractionFailure("User not logged in.", post: _getCurrentPostFromState()));
+      return;
+    }
+    Post? post = _getCurrentPostFromState();
+    if (post == null) return;
+
+    if (state is PostCommentsLoaded) {
+        final comments = (state as PostCommentsLoaded).comments;
+        final commentToDelete = comments.firstWhere(
+            (c) => c.id == commentId, 
+            orElse: () => Comment(id: '', postId: '', userId: '', authorUsername: '', text: '', timestamp: Timestamp.now()) 
+        );
+        if (commentToDelete.id.isNotEmpty && commentToDelete.userId != userId) {
+             emit(PostInteractionFailure("You can only delete your own comments.", post: post));
+             return;
+        }
+    }
+
+    try {
+        await _postRepository.deleteComment(postId, commentId);
+        developer.log('PostInteractionCubit: Comment $commentId deleted.', name: 'PostInteractionCubit');
+    } catch (e) {
+        developer.log('PostInteractionCubit: Error deleting comment $commentId: $e', name: 'PostInteractionCubit');
+        emit(PostInteractionFailure("Failed to delete comment: ${e.toString()}", post: post));
+    }
+  }
+
+  Future<void> toggleCommentsEnabled() async { // <-- Новий метод
+    final userId = _currentUserId;
+    Post? currentPost = _getCurrentPostFromState();
+
+    if (userId == null || currentPost == null || currentPost.userId != userId) {
+      emit(PostInteractionFailure("Cannot toggle comments: Not authorized or post not found.", post: currentPost));
+      return;
+    }
+
+    final newIsEnabled = !currentPost.isCommentsEnabled;
+    final optimisticPost = currentPost.copyWith(isCommentsEnabled: newIsEnabled);
+
+    List<Comment> currentComments = (state is PostCommentsLoaded) ? (state as PostCommentsLoaded).comments : [];
+    if (state is PostCommentsLoaded || currentComments.isNotEmpty) {
+         emit(PostCommentsLoaded(optimisticPost, currentComments));
+    } else {
+        emit(PostUpdated(optimisticPost));
+    }
+
+
+    try {
+      await _postRepository.updatePostSettings(postId, isCommentsEnabled: newIsEnabled);
+      developer.log('PostInteractionCubit: Comments for post $postId set to $newIsEnabled.', name: 'PostInteractionCubit');
+    } catch (e) {
+      developer.log('PostInteractionCubit: Error toggling comments enabled: $e', name: 'PostInteractionCubit');
+      emit(PostInteractionFailure("Failed to update comment settings: ${e.toString()}", post: currentPost));
+    }
+  }
+
+  Post? _getCurrentPostFromState() {
+    if (state is PostInteractionInitial) return (state as PostInteractionInitial).post;
+    if (state is PostUpdated) return (state as PostUpdated).post;
+    if (state is PostCommentsLoaded) return (state as PostCommentsLoaded).post;
+    if (state is PostInteractionLoading) return (state as PostInteractionLoading).post;
+    if (state is PostInteractionFailure) {
+        final failureState = state as PostInteractionFailure;
+        if (failureState.post != null) return failureState.post;
+    }
+    if (this.state is PostInteractionInitial) {
+      return (this.state as PostInteractionInitial).post;
+    }
+    return null;
+  }
+
+  @override
+  Future<void> close() {
+    _postSubscription?.cancel();
+    _commentsSubscription?.cancel();
+    developer.log('PostInteractionCubit for post $postId closed.', name: 'PostInteractionCubit');
+    return super.close();
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/post_interaction_cubit.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/post_interaction_state.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/post_interaction_state.dart
+part of 'post_interaction_cubit.dart';
+
+abstract class PostInteractionState extends Equatable {
+  const PostInteractionState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class PostInteractionInitial extends PostInteractionState {
+    final Post post;
+    const PostInteractionInitial(this.post);
+    @override
+    List<Object?> get props => [post];
+}
+
+// Стан, коли завантажуються коментарі або оновлюється пост
+class PostInteractionLoading extends PostInteractionState {
+  final Post post; // Поточний стан поста
+  const PostInteractionLoading(this.post);
+  @override
+  List<Object?> get props => [post];
+}
+
+
+class PostUpdated extends PostInteractionState {
+  final Post post;
+  const PostUpdated(this.post);
+
+  @override
+  List<Object?> get props => [post];
+}
+
+class PostCommentsLoaded extends PostInteractionState {
+  final Post post; // Додаємо пост сюди, щоб мати доступ до isCommentsEnabled
+  final List<Comment> comments;
+  const PostCommentsLoaded(this.post, this.comments);
+
+  @override
+  List<Object?> get props => [post, comments];
+}
+
+class PostInteractionFailure extends PostInteractionState {
+  final Post? post; // Повертаємо пост, щоб UI міг відновити попередній стан
+  final String error;
+  const PostInteractionFailure(this.error, {this.post});
+
+  @override
+  List<Object?> get props => [error, post];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/post_interaction_state.dart ===
+
+
+=== FILE: lib/features/social/presentation/screens/create_post_screen.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/screens/create_post_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import '../../../../core/domain/entities/post.dart'; // Для PostType
+import '../../../../core/domain/repositories/post_repository.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../cubit/create_post_cubit.dart';
+import 'dart:developer' as developer;
+
+class CreatePostScreen extends StatefulWidget {
+  const CreatePostScreen({super.key});
+
+  static Route<bool> route() {
+    return MaterialPageRoute<bool>(
+      builder: (_) => const CreatePostScreen(),
+    );
+  }
+
+  @override
+  State<CreatePostScreen> createState() => _CreatePostScreenState();
+}
+
+class _CreatePostScreenState extends State<CreatePostScreen> {
+  final _textController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _areCommentsEnabled = true; // За замовчуванням коментарі увімкнені
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => CreatePostCubit(
+        RepositoryProvider.of<PostRepository>(context),
+        RepositoryProvider.of<UserProfileRepository>(context),
+        RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
+      ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Create Post'),
+          actions: [
+            BlocBuilder<CreatePostCubit, CreatePostState>(
+              builder: (context, state) {
+                return TextButton(
+                  onPressed: state is CreatePostLoading
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            context.read<CreatePostCubit>().submitPost(
+                                  textContent: _textController.text,
+                                  isCommentsEnabled: _areCommentsEnabled, // Передаємо значення
+                                );
+                          }
+                        },
+                  child: state is CreatePostLoading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Publish', style: TextStyle(fontWeight: FontWeight.bold)),
+                );
+              },
+            ),
+          ],
+        ),
+        body: BlocConsumer<CreatePostCubit, CreatePostState>(
+          listener: (context, state) {
+            if (state is CreatePostSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Post published successfully!'), backgroundColor: Colors.green),
+              );
+              Navigator.of(context).pop(true);
+            } else if (state is CreatePostFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+              );
+            }
+          },
+          builder: (context, state) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _textController,
+                      decoration: const InputDecoration(
+                        hintText: 'What\'s on your mind?',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 8,
+                      maxLength: 500,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          // Дозволяємо порожній текст, якщо буде медіа (поки не реалізовано)
+                          // if (_mediaFile == null) return 'Post content cannot be empty.';
+                          return 'Post content cannot be empty.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: const Text('Enable Comments'),
+                      subtitle: Text(_areCommentsEnabled ? 'Users can comment on this post' : 'Comments are disabled'),
+                      value: _areCommentsEnabled,
+                      onChanged: (bool value) {
+                        setState(() {
+                          _areCommentsEnabled = value;
+                        });
+                      },
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                    // Тут буде місце для додавання медіа в майбутньому
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/screens/create_post_screen.dart ===
+
+
+=== FILE: lib/features/social/presentation/screens/explore_screen.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/screens/explore_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import '../cubit/explore_feed_cubit.dart';
+import '../widgets/post_list_item.dart';
+import 'create_post_screen.dart'; // Для навігації
+import 'dart:developer' as developer;
+
+class ExploreScreen extends StatelessWidget {
+  const ExploreScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ExploreFeedCubit(
+        RepositoryProvider.of<PostRepository>(context),
+      ),
+      child: const _ExploreView(),
+    );
+  }
+}
+
+class _ExploreView extends StatelessWidget {
+  const _ExploreView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: BlocBuilder<ExploreFeedCubit, ExploreFeedState>(
+        builder: (context, state) {
+          if (state is ExploreFeedInitial || state is ExploreFeedLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ExploreFeedLoaded) {
+            if (state.posts.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                       Icon(Icons.dynamic_feed_outlined, size: 60, color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Nothing to explore yet.',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Be the first to share something!',
+                        style: TextStyle(fontSize: 15, color: Colors.grey),
+                         textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              );
+            }
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<ExploreFeedCubit>().fetchPosts();
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 70), // Відступ для FAB
+                itemCount: state.posts.length,
+                itemBuilder: (context, index) {
+                  final post = state.posts[index];
+                  return PostListItem(post: post);
+                },
+              ),
+            );
+          } else if (state is ExploreFeedError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Error loading posts: ${state.message}', textAlign: TextAlign.center),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<ExploreFeedCubit>().fetchPosts(),
+                      child: const Text('Try Again'),
+                    )
+                  ],
+                ),
+              )
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.of(context).push<bool>(CreatePostScreen.route());
+          if (result == true && context.mounted) {
+            // Опціонально: оновити стрічку після створення посту,
+            // хоча стрім має автоматично оновитися.
+            // context.read<ExploreFeedCubit>().fetchPosts();
+            developer.log("Returned from CreatePostScreen, post might have been created.", name: "ExploreScreenFAB");
+          }
+        },
+        tooltip: 'Create Post',
+        child: const Icon(Icons.add_comment_outlined),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/screens/explore_screen.dart ===
+
+
+=== FILE: lib/features/social/presentation/screens/post_detail_screen.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/screens/post_detail_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:intl/intl.dart';
+import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/entities/comment.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../cubit/post_interaction_cubit.dart';
+import '../widgets/comment_list_item.dart';
+import 'dart:developer' as developer;
+
+class PostDetailScreen extends StatefulWidget {
+  final String postId;
+  final Post initialPost;
+
+  const PostDetailScreen({super.key, required this.postId, required this.initialPost});
+
+  @override
+  State<PostDetailScreen> createState() => _PostDetailScreenState();
+}
+
+class _PostDetailScreenState extends State<PostDetailScreen> {
+  final _commentController = TextEditingController();
+  final _commentFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    _commentFocusNode.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _submitComment(BuildContext context, PostInteractionCubit cubit) {
+    if (_commentController.text.trim().isEmpty) return;
+    cubit.addComment(_commentController.text.trim());
+    _commentController.clear();
+    _commentFocusNode.unfocus();
+  }
+
+  Post? _extractPostFromState(PostInteractionState state) {
+    if (state is PostInteractionInitial) return state.post;
+    if (state is PostUpdated) return state.post;
+    if (state is PostCommentsLoaded) return state.post;
+    if (state is PostInteractionLoading) return state.post;
+    if (state is PostInteractionFailure) return state.post;
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final currentAuthUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
+
+    return BlocProvider(
+      create: (context) => PostInteractionCubit(
+        RepositoryProvider.of<PostRepository>(context),
+        RepositoryProvider.of<UserProfileRepository>(context),
+        RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
+        widget.postId,
+        widget.initialPost,
+      )..fetchComments(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: BlocBuilder<PostInteractionCubit, PostInteractionState>(
+            builder: (context, state) {
+              String titleText = "Post";
+              // Використовуємо _extractPostFromState для отримання поста
+              Post? appBarPost = _extractPostFromState(state);
+              if (appBarPost != null) titleText = appBarPost.authorUsername;
+              return Text(titleText);
+            },
+          ),
+          actions: [
+            BlocBuilder<PostInteractionCubit, PostInteractionState>(
+              builder: (context, state) {
+                // Використовуємо _extractPostFromState для отримання поста
+                Post? post = _extractPostFromState(state);
+                if (post != null && post.userId == currentAuthUserId) {
+                  return IconButton(
+                    icon: Icon(
+                      post.isCommentsEnabled ? Icons.comment_outlined : Icons.comments_disabled_outlined,
+                      color: post.isCommentsEnabled ? theme.colorScheme.primary : Colors.grey,
+                    ),
+                    tooltip: post.isCommentsEnabled ? 'Disable Comments' : 'Enable Comments',
+                    onPressed: () {
+                      context.read<PostInteractionCubit>().toggleCommentsEnabled();
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
+        body: BlocConsumer<PostInteractionCubit, PostInteractionState>(
+          listener: (context, state) {
+            if (state is PostInteractionFailure && state.post == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+              );
+              Navigator.of(context).pop();
+            } else if (state is PostInteractionFailure) {
+               ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+              );
+            }
+          },
+          builder: (context, state) {
+            final cubit = context.read<PostInteractionCubit>();
+            // Використовуємо _extractPostFromState для отримання поста
+            Post? post = _extractPostFromState(state);
+            List<Comment> comments = [];
+            bool isLoadingPostDetails = state is PostInteractionLoading;
+            bool isLoadingComments = false;
+
+            if (state is PostCommentsLoaded) {
+              comments = state.comments;
+            } else if (post != null && state is! PostInteractionFailure && state is! PostCommentsLoaded){
+              isLoadingComments = true;
+            }
+
+            if (post == null && isLoadingPostDetails) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (post == null) {
+              // Якщо ми тут і стан не Failure з post == null (що обробляється в listener),
+              // то це може бути початковий момент до завантаження.
+              // Або якщо _extractPostFromState повернув null для непередбаченого стану.
+              if (state is PostInteractionFailure && state.post == null) {
+                 return const Center(child: Text("Post not found or could not be loaded."));
+              }
+               return const Center(child: CircularProgressIndicator()); // Або інша заглушка
+            }
+            
+            final bool isLikedByCurrentUser = currentAuthUserId != null && post.likedBy.contains(currentAuthUserId);
+
+            return Column(
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
+                                        ? NetworkImage(post.authorProfilePicUrl!) : null,
+                                    child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
+                                        ? const Icon(Icons.person, size: 22) : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(post.authorUsername, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                                        Text(DateFormat.yMMMMd('en_US').add_jm().format(post.timestamp.toDate()), style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(post.textContent, style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.45)),
+                              if (post.mediaUrl != null) ...[
+                                const SizedBox(height: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: AspectRatio(aspectRatio: 16 / 9, child: Image.network(post.mediaUrl!, fit: BoxFit.cover)),
+                                ),
+                              ],
+                              const SizedBox(height: 16),
+                              Divider(height: 1, color: Colors.grey.shade300),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    TextButton.icon(
+                                      icon: Icon(isLikedByCurrentUser ? Icons.thumb_up_alt : Icons.thumb_up_alt_outlined, color: isLikedByCurrentUser ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color),
+                                      label: Text('${post.likesCount} Like${post.likesCount == 1 ? "" : "s"}', style: TextStyle(color: isLikedByCurrentUser ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color)),
+                                      onPressed: () => cubit.toggleLike(),
+                                    ),
+                                    TextButton.icon(
+                                      icon: Icon(Icons.chat_bubble_outline, color: theme.textTheme.bodyMedium?.color),
+                                      label: Text('${post.commentsCount} Comment${post.commentsCount == 1 ? "" : "s"}', style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+                                      onPressed: post.isCommentsEnabled ? () => _commentFocusNode.requestFocus() : null,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Divider(height: 1, color: Colors.grey.shade300),
+                              if (post.isCommentsEnabled) const SizedBox(height: 16),
+                              if (post.isCommentsEnabled) Text("Comments", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (isLoadingComments && comments.isEmpty)
+                        const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
+                      if (!post.isCommentsEnabled && !isLoadingComments) // Прибираємо comments.isEmpty, щоб показувати завжди, якщо вимкнено
+                         SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16),
+                            child: Center(child: Text("Comments are disabled for this post.", style: TextStyle(color: Colors.grey.shade600))),
+                          ),
+                        ),
+                      if (post.isCommentsEnabled && comments.isEmpty && !isLoadingComments)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16),
+                            child: Center(child: Text("No comments yet. Be the first!", style: TextStyle(color: Colors.grey.shade600))),
+                          ),
+                        ),
+                      if (comments.isNotEmpty)
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => CommentListItem(comment: comments[index]),
+                            childCount: comments.length,
+                          ),
+                        ),
+                       SliverToBoxAdapter(child: SizedBox(height: (post.isCommentsEnabled && currentAuthUserId != null) ? 100 : 20)),
+                    ],
+                  ),
+                ),
+                if (post.isCommentsEnabled && currentAuthUserId != null) // Показуємо поле вводу тільки якщо коментарі увімкнені та користувач авторизований
+                  SafeArea(
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 12.0),
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, -3))],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _commentController,
+                              focusNode: _commentFocusNode,
+                              decoration: InputDecoration(
+                                hintText: 'Write a comment...',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
+                                filled: true,
+                                fillColor: theme.scaffoldBackgroundColor.withOpacity(0.8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              ),
+                              textInputAction: TextInputAction.send,
+                              onSubmitted: (text) => _submitComment(context, cubit),
+                              minLines: 1,
+                              maxLines: 3,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _submitComment(context, cubit),
+                              borderRadius: BorderRadius.circular(22),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.send, color: Colors.white, size: 22),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/screens/post_detail_screen.dart ===
+
+
+=== FILE: lib/features/social/presentation/widgets/comment_list_item.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/widgets/comment_list_item.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:intl/intl.dart';
+import '../../../../core/domain/entities/comment.dart';
+import '../cubit/post_interaction_cubit.dart'; // Для виклику delete/update
+import 'dart:developer' as developer;
+
+class CommentListItem extends StatelessWidget {
+  final Comment comment;
+
+  const CommentListItem({super.key, required this.comment});
+
+  void _showEditCommentDialog(BuildContext context, PostInteractionCubit cubit) {
+    final TextEditingController textController = TextEditingController(text: comment.text);
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Comment'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: textController,
+              autofocus: true,
+              maxLines: null, // Дозволяє багаторядкове введення
+              keyboardType: TextInputType.multiline,
+              decoration: const InputDecoration(
+                hintText: 'Your comment...',
+              ),
+               validator: (value) => value == null || value.trim().isEmpty ? 'Comment cannot be empty' : null,
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Save'),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                    cubit.updateComment(comment.id, textController.text.trim());
+                    Navigator.of(dialogContext).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteCommentDialog(BuildContext context, PostInteractionCubit cubit) {
+     showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Comment?'),
+          content: const Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+              onPressed: () {
+                 cubit.deleteComment(comment.id);
+                 Navigator.of(dialogContext).pop();
+                 ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Comment deleted.'), backgroundColor: Colors.orangeAccent, duration: Duration(seconds: 2))
+                 );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final timeAgo = DateFormat.yMMMd().add_jm().format(comment.timestamp.toDate());
+    final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
+    final bool isAuthor = currentUserId == comment.userId;
+    final cubit = context.read<PostInteractionCubit>(); // Отримуємо кубіт з контексту
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
+                ? NetworkImage(comment.authorProfilePicUrl!)
+                : null,
+            child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
+                ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      comment.authorUsername,
+                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      timeAgo,
+                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600, fontSize: 11),
+                    ),
+                    const Spacer(),
+                    if (isAuthor)
+                      SizedBox( // Обмежуємо розмір кнопки меню
+                        width: 30, height: 30,
+                        child: PopupMenuButton<String>(
+                          icon: Icon(Icons.more_vert, size: 18, color: Colors.grey.shade600),
+                          padding: EdgeInsets.zero,
+                          tooltip: "Comment options",
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: ListTile(leading: Icon(Icons.edit_outlined, size: 20), title: Text('Edit', style: TextStyle(fontSize: 14)), dense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'delete',
+                              child: ListTile(leading: Icon(Icons.delete_outline, size: 20, color: Colors.redAccent), title: Text('Delete', style: TextStyle(fontSize: 14, color: Colors.redAccent)), dense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                            ),
+                          ],
+                          onSelected: (String value) {
+                            if (value == 'edit') {
+                              _showEditCommentDialog(context, cubit);
+                            } else if (value == 'delete') {
+                              _showDeleteCommentDialog(context, cubit);
+                            }
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  comment.text,
+                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 14.5, color: theme.textTheme.bodyLarge?.color?.withOpacity(0.85)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/widgets/comment_list_item.dart ===
+
+
+=== FILE: lib/features/social/presentation/widgets/post_list_item.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/widgets/post_list_item.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:intl/intl.dart';
+import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/repositories/post_repository.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../cubit/post_interaction_cubit.dart';
+import '../screens/post_detail_screen.dart';
+import 'dart:developer' as developer;
+
+
+class PostListItem extends StatelessWidget {
+  final Post post;
+
+  const PostListItem({super.key, required this.post});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      key: ValueKey(post.id),
+      create: (context) => PostInteractionCubit(
+        RepositoryProvider.of<PostRepository>(context),
+        RepositoryProvider.of<UserProfileRepository>(context),
+        RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
+        post.id,
+        post,
+      ),
+      child: _PostListItemContent(),
+    );
+  }
+}
+
+class _PostListItemContent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Використовуємо BlocBuilder для отримання актуального стану поста
+    return BlocBuilder<PostInteractionCubit, PostInteractionState>(
+      builder: (context, state) {
+        Post currentPost;
+        if (state is PostInteractionInitial) {
+          currentPost = state.post;
+        } else if (state is PostUpdated) {
+          currentPost = state.post;
+        } else if (state is PostCommentsLoaded) {
+          currentPost = state.post;
+        } else if (state is PostInteractionLoading) {
+          currentPost = state.post;
+        } else if (state is PostInteractionFailure && state.post != null) {
+           currentPost = state.post!;
+        }
+        else {
+          // Спробуємо отримати початковий пост з кубіта, якщо стан непередбачений
+          final initialPostFromCubit = context.read<PostInteractionCubit>().state;
+          if (initialPostFromCubit is PostInteractionInitial) {
+            currentPost = initialPostFromCubit.post;
+          } else {
+             developer.log('PostListItem: Unexpected state or post not available: $state', name: 'PostListItem');
+             return Card( // Заглушка на випадок помилки
+               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+               child: const Padding(
+                 padding: EdgeInsets.all(16.0),
+                 child: Text("Error loading post content."),
+               ),
+             );
+          }
+        }
+
+        final timeAgo = DateFormat.yMMMd().add_jm().format(currentPost.timestamp.toDate());
+        final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
+        final bool isLikedByCurrentUser = currentUserId != null && currentPost.likedBy.contains(currentUserId);
+
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PostDetailScreen(postId: currentPost.id, initialPost: currentPost),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundImage: currentPost.authorProfilePicUrl != null && currentPost.authorProfilePicUrl!.isNotEmpty
+                            ? NetworkImage(currentPost.authorProfilePicUrl!)
+                            : null,
+                        child: currentPost.authorProfilePicUrl == null || currentPost.authorProfilePicUrl!.isEmpty
+                            ? const Icon(Icons.person, size: 20)
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              currentPost.authorUsername,
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              timeAgo,
+                              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // IconButton(icon: Icon(Icons.more_vert), onPressed: () { /* TODO: Post options */ })
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (currentPost.textContent.isNotEmpty)
+                    Text(
+                      currentPost.textContent,
+                      style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (currentPost.mediaUrl != null) ...[
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Image.network(currentPost.mediaUrl!, fit: BoxFit.cover),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      TextButton.icon(
+                        icon: Icon(
+                          isLikedByCurrentUser ? Icons.thumb_up_alt : Icons.thumb_up_alt_outlined,
+                          color: isLikedByCurrentUser ? theme.colorScheme.primary : Colors.grey.shade700,
+                          size: 20,
+                        ),
+                        label: Text(
+                          currentPost.likesCount.toString(),
+                          style: TextStyle(
+                            color: isLikedByCurrentUser ? theme.colorScheme.primary : Colors.grey.shade700,
+                            fontSize: 14,
+                            fontWeight: isLikedByCurrentUser ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        onPressed: () {
+                          context.read<PostInteractionCubit>().toggleLike();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0,0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      TextButton.icon(
+                        icon: Icon(
+                          currentPost.isCommentsEnabled ? Icons.chat_bubble_outline : Icons.chat_bubble_outline_rounded,
+                          color: Colors.grey.shade700,
+                          size: 20,
+                        ),
+                        label: Text(
+                          currentPost.commentsCount.toString(),
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                        ),
+                        onPressed: () {
+                           Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => PostDetailScreen(postId: currentPost.id, initialPost: currentPost),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0,0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/widgets/post_list_item.dart ===
 
 
 === FILE: lib/features/workout_tracking/data/repositories/workout_log_repository_impl.dart ===

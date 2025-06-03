@@ -20,6 +20,8 @@ import 'core/domain/repositories/workout_log_repository.dart';
 import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart';
 import 'core/domain/repositories/league_repository.dart';
 import 'features/progress/data/repositories/league_repository_impl.dart';
+import 'core/domain/repositories/post_repository.dart'; // <-- Новий імпорт
+import 'features/social/data/repositories/post_repository_impl.dart'; // <-- Новий імпорт
 
 
 void main() async {
@@ -61,6 +63,9 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<LeagueRepository>(
           create: (context) => LeagueRepositoryImpl(),
         ),
+        RepositoryProvider<PostRepository>( // <-- Додано PostRepository
+          create: (context) => PostRepositoryImpl(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -69,12 +74,12 @@ class MainApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amberAccent, 
+            accentColor: Colors.amberAccent,
             brightness: Brightness.light,
           ).copyWith(
             primary: primaryOrange,
             onPrimary: Colors.white,
-            secondary: Colors.amberAccent, 
+            secondary: Colors.amberAccent,
             surface: Colors.white,
             onSurface: textBlackColor,
             background: const Color(0xFFF5F5F5),
@@ -84,7 +89,7 @@ class MainApp extends StatelessWidget {
           ),
           useMaterial3: true,
           fontFamily: 'Inter',
-          
+
           textTheme: const TextTheme(
             displayLarge: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w900, color: textBlackColor),
             displayMedium: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w900, color: textBlackColor),
@@ -174,7 +179,7 @@ class MainApp extends StatelessWidget {
             showUnselectedLabels: true,
             elevation: 8.0,
           ),
-          cardTheme: CardThemeData( // <--- ВИПРАВЛЕНО: CardTheme -> CardThemeData
+          cardTheme: CardThemeData(
             elevation: 1.5,
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
@@ -190,7 +195,7 @@ class MainApp extends StatelessWidget {
             titleTextStyle: const TextStyle(fontFamily: 'Inter', color: textBlackColor, fontSize: 16, fontWeight: FontWeight.w500),
             subtitleTextStyle: TextStyle(fontFamily: 'Inter', color: Colors.grey[600], fontSize: 14),
           ),
-          dialogTheme: DialogThemeData( // <--- ВИПРАВЛЕНО: DialogTheme -> DialogThemeData
+          dialogTheme: DialogThemeData(
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
             titleTextStyle: const TextStyle(fontFamily: 'Inter', color: textBlackColor, fontSize: 20, fontWeight: FontWeight.w600),

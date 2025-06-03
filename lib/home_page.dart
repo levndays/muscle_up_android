@@ -15,7 +15,8 @@ import 'features/routines/presentation/screens/create_edit_routine_screen.dart';
 import 'features/workout_tracking/presentation/screens/active_workout_screen.dart';
 import 'core/domain/entities/workout_session.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
-import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
+// import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart'; // Замінено на ExploreScreen
+import 'features/social/presentation/screens/explore_screen.dart'; // <-- Новий імпорт для постів
 import 'features/progress/presentation/screens/progress_screen.dart';
 
 class HomePage extends StatelessWidget {
@@ -46,14 +47,14 @@ class _HomePageContentState extends State<_HomePageContent> {
 
   static final List<Widget> _bottomNavScreens = <Widget>[
     const UserRoutinesScreen(),
-    const ExerciseExplorerScreen(),
+    const ExploreScreen(), // <-- ЗМІНЕНО: тепер це стрічка постів
     const ProgressScreen(),
     const ProfileScreen(),
   ];
 
   static final List<String> _bottomNavScreenTitles = <String>[
     'My Routines',
-    'Explore Exercises',
+    'Explore Posts', // <-- ЗМІНЕНО: назва вкладки
     'My Progress',
     'Profile',
   ];
@@ -170,13 +171,13 @@ class _HomePageContentState extends State<_HomePageContent> {
   @override
   Widget build(BuildContext context) {
     developer.log("HomePageContent building, _selectedIndex: $_selectedIndex", name: "HomePage");
-    
+
     Widget currentBody;
     bool showFab = false;
-    Widget appBarTitle; 
+    Widget appBarTitle;
 
     final TextStyle? baseMuscleUpStyle = Theme.of(context).appBarTheme.titleTextStyle;
-    final Color muscleUpOrangeColor = Theme.of(context).colorScheme.primary; 
+    final Color muscleUpOrangeColor = Theme.of(context).colorScheme.primary;
     final Color defaultAppBarTextColor = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.black87;
 
 
@@ -187,7 +188,7 @@ class _HomePageContentState extends State<_HomePageContent> {
       );
       showFab = true;
       appBarTitle = GestureDetector(
-        onTap: _navigateToDashboard, 
+        onTap: _navigateToDashboard,
         child: RichText(
           text: TextSpan(
             style: baseMuscleUpStyle,
@@ -200,10 +201,10 @@ class _HomePageContentState extends State<_HomePageContent> {
       );
     } else if (_selectedIndex >= 0 && _selectedIndex < _bottomNavScreens.length) {
       currentBody = _bottomNavScreens[_selectedIndex];
-      showFab = false; 
-      
+      showFab = false;
+
       final screenTitleText = _bottomNavScreenTitles[_selectedIndex];
-      
+
       appBarTitle = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -211,7 +212,7 @@ class _HomePageContentState extends State<_HomePageContent> {
             onTap: _navigateToDashboard,
             child: RichText(
               text: TextSpan(
-                style: baseMuscleUpStyle?.copyWith(fontSize: 20), 
+                style: baseMuscleUpStyle?.copyWith(fontSize: 20),
                 children: <TextSpan>[
                   TextSpan(text: 'Muscle', style: TextStyle(color: muscleUpOrangeColor)),
                   const TextSpan(text: 'UP'),
@@ -222,9 +223,9 @@ class _HomePageContentState extends State<_HomePageContent> {
           Text(
             '  |  $screenTitleText',
             style: baseMuscleUpStyle?.copyWith(
-              fontSize: 18, 
-              fontWeight: baseMuscleUpStyle.fontWeight, 
-              color: defaultAppBarTextColor, 
+              fontSize: 18,
+              fontWeight: baseMuscleUpStyle.fontWeight,
+              color: defaultAppBarTextColor,
             ),
           ),
         ],
@@ -258,7 +259,7 @@ class _HomePageContentState extends State<_HomePageContent> {
       ),
       body: currentBody,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: showFab 
+      floatingActionButton: showFab
           ? Container(
              margin: const EdgeInsets.only(bottom: 12.0),
               child: FloatingActionButton.extended(
@@ -267,7 +268,7 @@ class _HomePageContentState extends State<_HomePageContent> {
                   'START WORKOUT',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w900, 
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),
                 ),
@@ -286,9 +287,9 @@ class _HomePageContentState extends State<_HomePageContent> {
             label: 'ROUTINES',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined), 
-            activeIcon: Icon(Icons.explore),
-            label: 'EXPLORE',
+            icon: Icon(Icons.travel_explore_outlined), // <-- ЗМІНЕНО ІКОНКУ
+            activeIcon: Icon(Icons.travel_explore), // <-- ЗМІНЕНО ІКОНКУ
+            label: 'EXPLORE', // Назва може залишитися, якщо хочете, або змінити на 'FEED'
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events_outlined),

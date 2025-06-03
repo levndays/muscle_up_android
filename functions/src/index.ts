@@ -6,6 +6,8 @@ import { logger } from "firebase-functions";
 import {
   onDocumentWritten,
   onDocumentUpdated,
+  onDocumentCreated, // <-- Новий імпорт
+  onDocumentDeleted, // <-- Новий імпорт
   Change,
   FirestoreEvent,
 } from "firebase-functions/v2/firestore";
@@ -25,7 +27,6 @@ enum AchievementId {
 
 const defaultRegion = "us-central1";
 
-// Функція для отримання дня тижня (0 - НД, 1 - ПН, ..., 6 - СБ) з JS Date в UTC
 const getUTCDayOfWeek = (date: Date): number => {
     return date.getUTCDay();
 };
@@ -34,7 +35,6 @@ const getDayKeyFromJsDate = (date: Date): string => {
     return days[getUTCDayOfWeek(date)];
 };
 
-// Функція для отримання дати на початок дня в UTC
 const getUTCDayStart = (jsDate: Date): Date => {
     return new Date(Date.UTC(jsDate.getUTCFullYear(), jsDate.getUTCMonth(), jsDate.getUTCDate()));
 };
@@ -50,27 +50,27 @@ export const createUserProfile = functionsV1.region(defaultRegion).auth.user().o
     }
 
     await userDocRef.set({
-      uid: user.uid, 
-      email: user.email?.toLowerCase() ?? null, 
-      displayName: null, 
-      profilePictureUrl: user.photoURL ?? null, 
+      uid: user.uid,
+      email: user.email?.toLowerCase() ?? null,
+      displayName: null,
+      profilePictureUrl: user.photoURL ?? null,
       username: null,
-      gender: null, 
+      gender: null,
       dateOfBirth: null,
-      heightCm: null, 
-      weightKg: null, 
-      fitnessGoal: null, 
-      activityLevel: null, 
-      xp: 0, 
+      heightCm: null,
+      weightKg: null,
+      fitnessGoal: null,
+      activityLevel: null,
+      xp: 0,
       level: 1,
-      currentStreak: 0, 
-      longestStreak: 0, 
+      currentStreak: 0,
+      longestStreak: 0,
       lastWorkoutTimestamp: null,
-      lastScheduledWorkoutCompletionTimestamp: null, // Нове поле
-      lastScheduledWorkoutDayKey: null, // Нове поле
+      lastScheduledWorkoutCompletionTimestamp: null,
+      lastScheduledWorkoutDayKey: null,
       followersCount: 0,
-      followingCount: 0, 
-      achievedRewardIds: [], 
+      followingCount: 0,
+      achievedRewardIds: [],
       profileSetupComplete: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -104,11 +104,11 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
     const totalVolume = newWorkoutData.totalVolume || 0;
     const completedAt = (newWorkoutData.endedAt instanceof Timestamp) ? newWorkoutData.endedAt : Timestamp.now();
     const startedAtTimestamp = (newWorkoutData.startedAt instanceof Timestamp) ? newWorkoutData.startedAt : Timestamp.now();
-    
+
     let xpGained = 50;
     if (totalVolume > 0) xpGained += Math.round(totalVolume / 100);
-    if (durationSeconds > 0) xpGained += Math.round(durationSeconds / (5 * 60)); 
-    xpGained = Math.min(xpGained, 200); 
+    if (durationSeconds > 0) xpGained += Math.round(durationSeconds / (5 * 60));
+    xpGained = Math.min(xpGained, 200);
 
     const userProfileRef = admin.firestore().collection("users").doc(userId);
     const userRoutinesRef = admin.firestore().collection("userRoutines").where("userId", "==", userId);
@@ -123,10 +123,10 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             throw new Error(`User profile ${userId} not found.`);
         }
         const currentProfile = profileDoc.data()!;
-        
+
         const newXp = (currentProfile.xp || 0) + xpGained;
-        let calculatedNewLevel = currentProfile.level || 1; 
-        
+        let calculatedNewLevel = currentProfile.level || 1;
+
         let currentStreak = currentProfile.currentStreak || 0;
         let longestStreak = currentProfile.longestStreak || 0;
         let newLastScheduledWorkoutCompletionTimestamp = currentProfile.lastScheduledWorkoutCompletionTimestamp as Timestamp | undefined;
@@ -146,7 +146,6 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             const scheduledDays = (routineData?.scheduledDays as string[] | undefined)?.map((d) => d.toUpperCase()) ?? [];
 
             if (scheduledDays.length > 0 && scheduledDays.includes(currentWorkoutDayKey)) {
-                // Це тренування за розкладом
                 logger.info("Streak V3: Workout is on a scheduled day.", {userId, currentWorkoutDayKey, routineId: routineIdOfCompletedWorkout});
 
                 if (currentProfile.lastScheduledWorkoutCompletionTimestamp && currentProfile.lastScheduledWorkoutDayKey) {
@@ -155,12 +154,10 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
 
                     if (currentWorkoutDayStartUTC.getTime() === lastScheduledCompletionDayStartUTC.getTime() && currentProfile.lastScheduledWorkoutDayKey === currentWorkoutDayKey) {
                        logger.info("Streak V3: Workout on the same scheduled day as last. Streak not incremented.", {userId});
-                       // Не збільшуємо стрік, бо це вже зараховане тренування за цей день
                     } else {
-                        // Перевіряємо, чи не було пропущено попереднього запланованого дня
                         let wasPreviousScheduledDayMissed = false;
                         let tempDate = new Date(lastScheduledCompletionDayStartUTC);
-                        tempDate.setUTCDate(tempDate.getUTCDate() + 1); // Починаємо з наступного дня після останнього запланованого
+                        tempDate.setUTCDate(tempDate.getUTCDate() + 1);
 
                         while(tempDate.getTime() < currentWorkoutDayStartUTC.getTime()) {
                             const dayKeyToTest = getDayKeyFromJsDate(tempDate);
@@ -173,17 +170,16 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
                         }
 
                         if (wasPreviousScheduledDayMissed) {
-                            currentStreak = 1; // Пропуск, скидаємо стрік
+                            currentStreak = 1;
                             logger.info("Streak V3: Previous scheduled day was missed. Streak reset to 1.", {userId});
                         } else {
-                            currentStreak++; // Не було пропусків, збільшуємо стрік
+                            currentStreak++;
                             logger.info("Streak V3: No missed scheduled days. Streak incremented.", {userId, newStreak: currentStreak});
                         }
                         newLastScheduledWorkoutCompletionTimestamp = completedAt;
                         newLastScheduledWorkoutDayKey = currentWorkoutDayKey;
                     }
                 } else {
-                    // Перше заплановане тренування
                     currentStreak = 1;
                     newLastScheduledWorkoutCompletionTimestamp = completedAt;
                     newLastScheduledWorkoutDayKey = currentWorkoutDayKey;
@@ -191,30 +187,27 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
                 }
             } else {
               logger.info("Streak V3: Workout was from a routine, but not on a scheduled day of that routine (or routine has no schedule). Streak not affected by this logic.", {userId, currentWorkoutDayKey, routineScheduledDays: scheduledDays });
-              // Ad-hoc тренування або тренування за рутиною, але не в запланований день. Не впливає на "scheduled streak".
-              // Можна додати окрему логіку для "calendar day streak" тут, якщо потрібно.
             }
         } else {
           logger.info("Streak V3: Workout was not from a routine with schedule. Streak not affected by this logic.", {userId});
-          // Тренування не за рутиною з розкладом. Не впливає на "scheduled streak".
         }
-        
+
         longestStreak = Math.max(longestStreak, currentStreak);
 
         const xpPerLevelBase = 200;
         const calculateXpForNextLevelUp = (currentLevel: number): number => {
             return xpPerLevelBase + (currentLevel - 1) * 50;
         };
-        
+
         let xpNeededForCurrentLevelToComplete = calculateXpForNextLevelUp(calculatedNewLevel);
         let totalXpAtStartOfCurrentLevel = 0;
         for (let i = 1; i < calculatedNewLevel; i++) {
             totalXpAtStartOfCurrentLevel += calculateXpForNextLevelUp(i);
         }
-        
+
         while (newXp >= totalXpAtStartOfCurrentLevel + xpNeededForCurrentLevelToComplete) {
-            totalXpAtStartOfCurrentLevel += xpNeededForCurrentLevelToComplete; 
-            calculatedNewLevel++; 
+            totalXpAtStartOfCurrentLevel += xpNeededForCurrentLevelToComplete;
+            calculatedNewLevel++;
             xpNeededForCurrentLevelToComplete = calculateXpForNextLevelUp(calculatedNewLevel);
         }
 
@@ -230,13 +223,13 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
             relatedEntityId: AchievementId.FIRST_WORKOUT, relatedEntityType: "achievement",
           });
         }
-        
+
         const profileUpdateData: {[key: string]: any} = {
           xp: newXp,
-          level: calculatedNewLevel, 
+          level: calculatedNewLevel,
           currentStreak,
           longestStreak,
-          lastWorkoutTimestamp: completedAt, // Завжди оновлюємо загальний час останнього тренування
+          lastWorkoutTimestamp: completedAt,
           achievedRewardIds,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
@@ -247,7 +240,7 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
         if (newLastScheduledWorkoutDayKey) {
             profileUpdateData.lastScheduledWorkoutDayKey = newLastScheduledWorkoutDayKey;
         }
-        
+
         logger.info("Preparing to update profile in transaction", { userId, updatesToApply: profileUpdateData });
         transaction.update(userProfileRef, profileUpdateData);
         logger.info("User profile updated.", { userId, updatedXp: newXp, updatedLevel: calculatedNewLevel, updatedCurrentStreak: currentStreak });
@@ -293,6 +286,53 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
           });
         }
       }
+    }
+  }
+);
+
+// --- Нові Cloud Functions для лічильника коментарів ---
+
+export const onCommentCreated = onDocumentCreated(
+  { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
+  async (event: FirestoreEvent<DocumentSnapshot | undefined, { postId: string; commentId: string }>) => {
+    const { postId, commentId } = event.params;
+    const commentData = event.data?.data();
+
+    if (!commentData) {
+      logger.warn("Comment data missing in onCommentCreated.", {postId, commentId});
+      return;
+    }
+    logger.info(`New comment ${commentId} created for post ${postId}. Incrementing count.`);
+
+    const postRef = admin.firestore().collection("posts").doc(postId);
+    try {
+      await postRef.update({
+        commentsCount: admin.firestore.FieldValue.increment(1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Також оновлюємо updatedAt поста
+      });
+      logger.info(`Successfully incremented commentsCount for post ${postId}.`);
+    } catch (error: any) {
+      logger.error(`Error incrementing commentsCount for post ${postId}: ${error.message || error}`, {postId, commentId});
+    }
+  }
+);
+
+export const onCommentDeleted = onDocumentDeleted(
+  { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
+  async (event: FirestoreEvent<DocumentSnapshot | undefined, { postId: string; commentId: string }>) => {
+    const { postId, commentId } = event.params;
+
+    logger.info(`Comment ${commentId} deleted for post ${postId}. Decrementing count.`);
+
+    const postRef = admin.firestore().collection("posts").doc(postId);
+    try {
+      await postRef.update({
+        commentsCount: admin.firestore.FieldValue.increment(-1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Також оновлюємо updatedAt поста
+      });
+      logger.info(`Successfully decremented commentsCount for post ${postId}.`);
+    } catch (error: any) {
+      logger.error(`Error decrementing commentsCount for post ${postId}: ${error.message || error}`, {postId, commentId});
     }
   }
 );
