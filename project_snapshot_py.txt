@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-06-03T05:45:10.929703
+Snapshot created on: 2025-06-03T06:28:33.860939
 ================================================================================
 
 === FILE: .firebaserc ===
@@ -10649,7 +10649,7 @@ node_modules/
 --------------------------------------------------
 // FILE: functions/src/index.ts
 import * as functionsV1 from "firebase-functions/v1";
-import * as functionsV2 from "firebase-functions/v2"; // For scheduled functions
+import * as functionsV2 from "firebase-functions/v2";
 import { logger } from "firebase-functions";
 import {
   onDocumentWritten,
@@ -10673,6 +10673,16 @@ enum AchievementId {
   EARLY_BIRD = "earlyBird",
   FIRST_WORKOUT = "firstWorkout",
   PERSONAL_RECORD_SET = "personalRecordSet",
+}
+
+enum NotificationType { // Re-define for function context or import if shared
+  ACHIEVEMENT_UNLOCKED = "achievementUnlocked",
+  WORKOUT_REMINDER = "workoutReminder",
+  NEW_FOLLOWER = "newFollower", // NEW
+  ROUTINE_SHARED = "routineShared",
+  SYSTEM_MESSAGE = "systemMessage",
+  ADVICE = "advice",
+  CUSTOM = "custom",
 }
 
 enum RecordVerificationStatus {
@@ -10719,8 +10729,12 @@ export const createUserProfile = functionsV1.region(defaultRegion).auth.user().o
       dateOfBirth: null, heightCm: null, weightKg: null, fitnessGoal: null,
       activityLevel: null, xp: 0, level: 1, currentStreak: 0, longestStreak: 0,
       lastWorkoutTimestamp: null, lastScheduledWorkoutCompletionTimestamp: null,
-      lastScheduledWorkoutDayKey: null, followersCount: 0, followingCount: 0,
-      achievedRewardIds: [], profileSetupComplete: false,
+      lastScheduledWorkoutDayKey: null,
+      followersCount: 0,
+      followingCount: 0,
+      achievedRewardIds: [],
+      following: [],
+      profileSetupComplete: false,
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
     logger.info("V1 User profile successfully created.", { uid: user.uid });
@@ -11051,7 +11065,7 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
       notificationsToAdd.push({
         ref: authorProfileRef.collection("notifications").doc(),
         data: {
-          type: newStatus === RecordVerificationStatus.VERIFIED ? "achievementUnlocked" : "systemMessage",
+          type: newStatus === RecordVerificationStatus.VERIFIED ? NotificationType.ACHIEVEMENT_UNLOCKED.toString() : NotificationType.SYSTEM_MESSAGE.toString(),
           title: authorNotificationTitle, message: authorNotificationMessage,
           timestamp: FieldValue.serverTimestamp(), isRead: false,
           iconName: newStatus === RecordVerificationStatus.VERIFIED ? "military_tech" : "gavel",
@@ -11068,13 +11082,13 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
         recordXp = Math.min(recordXp, 1500);
         writeBatch.update(authorProfileRef, {
           xp: FieldValue.increment(recordXp),
-          achievedRewardIds: FieldValue.arrayUnion([AchievementId.PERSONAL_RECORD_SET]),
+          achievedRewardIds: FieldValue.arrayUnion(AchievementId.PERSONAL_RECORD_SET),
           updatedAt: FieldValue.serverTimestamp(),
         });
         notificationsToAdd.push({
           ref: authorProfileRef.collection("notifications").doc(),
           data: {
-            type: "achievementUnlocked",
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
             title: `New Record: ${recordDetails?.exerciseName ?? "Exercise"} Verified!`,
             message: `You earned ${recordXp} XP for your verified record of ${recordDetails?.weightKg}kg x ${recordDetails?.reps} reps!`,
             timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
@@ -11088,14 +11102,100 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
       await writeBatch.commit();
       logger.info(`Batch committed for ${snapshot.docs.length} record claim updates.`);
       
-      const notificationCreationPromises = notificationsToAdd.map(notif => notif.ref.set(notif.data));
+      const notificationCreationPromises = notificationsToAdd.map((notif) => notif.ref.set(notif.data));
       await Promise.all(notificationCreationPromises);
       logger.info(`Created ${notificationsToAdd.length} notifications for processed claims.`);
-
     } catch (error) {
       logger.error("Error committing batch or creating notifications for record claim processing:", error);
     }
     return;
+  }
+);
+
+export const handleUserFollowListUpdate = onDocumentWritten(
+  { document: "users/{userId}", region: defaultRegion, memory: "256MiB" },
+  async (event: FirestoreEvent<Change<DocumentSnapshot> | undefined, { userId: string }>) => {
+    const currentUserId = event.params.userId;
+    const change = event.data;
+    if (!change) {
+      logger.info(`No data change for user ${currentUserId}, exiting handleUserFollowListUpdate.`);
+      return;
+    }
+
+    const beforeData = change.before.exists ? change.before.data() : null;
+    const afterData = change.after.exists ? change.after.data() : null;
+
+    if (!afterData && beforeData) {
+      logger.info(`User document ${currentUserId} deleted. No follow/unfollow action to process based on 'following' list.`);
+      return;
+    }
+    if (!afterData) {
+      logger.info(`User document ${currentUserId} does not exist after event. Cannot process follow list update.`);
+      return;
+    }
+
+    const followingBefore: string[] = Array.isArray(beforeData?.following) ? beforeData?.following : [];
+    const followingAfter: string[] = Array.isArray(afterData.following) ? afterData.following : [];
+
+    const db = admin.firestore();
+    const batch = db.batch();
+    let operationsInBatch = 0;
+    const MAX_BATCH_OPERATIONS = 480; // Leave more room for notifications
+
+    const followedUserIds = followingAfter.filter((id) => !followingBefore.includes(id));
+    for (const targetUserId of followedUserIds) {
+      if (operationsInBatch >= MAX_BATCH_OPERATIONS - 3) { await batch.commit(); operationsInBatch = 0; }
+      const targetUserRef = db.collection("users").doc(targetUserId);
+      batch.update(targetUserRef, { followersCount: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() });
+      operationsInBatch++;
+      logger.info(`User ${currentUserId} followed ${targetUserId}. Incremented ${targetUserId}'s followersCount.`);
+
+      // Create notification for the target user
+      const notificationRef = targetUserRef.collection("notifications").doc();
+      batch.set(notificationRef, {
+        type: NotificationType.NEW_FOLLOWER.toString(), // Use enum string value
+        title: "New Follower!",
+        message: `${afterData.username ?? afterData.displayName ?? "Someone"} started following you.`,
+        senderUserId: currentUserId, // Include sender ID for potential navigation
+        senderUsername: afterData.username ?? afterData.displayName ?? "A user",
+        senderProfilePicUrl: afterData.profilePictureUrl ?? null,
+        timestamp: FieldValue.serverTimestamp(),
+        isRead: false,
+        iconName: "person_add_alt_1",
+        relatedEntityId: currentUserId,
+        relatedEntityType: "userProfile",
+      });
+      operationsInBatch++;
+      logger.info(`Created newFollower notification for ${targetUserId} from ${currentUserId}.`);
+    }
+
+    const unfollowedUserIds = followingBefore.filter((id) => !followingAfter.includes(id));
+    for (const targetUserId of unfollowedUserIds) {
+      if (operationsInBatch >= MAX_BATCH_OPERATIONS - 1) { await batch.commit(); operationsInBatch = 0; }
+      const targetUserRef = db.collection("users").doc(targetUserId);
+      batch.update(targetUserRef, { followersCount: FieldValue.increment(-1), updatedAt: FieldValue.serverTimestamp() });
+      operationsInBatch++;
+      logger.info(`User ${currentUserId} unfollowed ${targetUserId}. Decremented ${targetUserId}'s followersCount.`);
+    }
+
+    if (followingAfter.length !== followingBefore.length) {
+      if (operationsInBatch >= MAX_BATCH_OPERATIONS - 1) { await batch.commit(); operationsInBatch = 0; }
+      const currentUserRef = db.collection("users").doc(currentUserId);
+      batch.update(currentUserRef, { followingCount: followingAfter.length, updatedAt: FieldValue.serverTimestamp() });
+      operationsInBatch++;
+      logger.info(`Updated ${currentUserId}'s followingCount to ${followingAfter.length}.`);
+    }
+
+    if (operationsInBatch > 0) {
+      try {
+        await batch.commit();
+        logger.info(`Batch committed for follow/unfollow and notification operations related to ${currentUserId}.`);
+      } catch (error) {
+        logger.error(`Error committing follow/unfollow/notification batch for ${currentUserId}:`, error);
+      }
+    } else {
+      logger.info(`No direct follow/unfollow operations detected for ${currentUserId} in handleUserFollowListUpdate that require db writes.`);
+    }
   }
 );
 --------------------------------------------------
@@ -13377,13 +13477,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 enum NotificationType {
-  achievementUnlocked, // Досягнення
-  workoutReminder,     // Нагадування про тренування
-  newFollower,         // Новий підписник (на майбутнє)
-  routineShared,       // Хтось поділився рутиною (на майбутнє)
-  systemMessage,       // Системне повідомлення
-  advice,              // Новий тип для порад
-  custom,              // Інший тип
+  achievementUnlocked,
+  workoutReminder,
+  newFollower,         // NEW: Added new follower notification type
+  routineShared,
+  systemMessage,
+  advice,
+  custom,
 }
 
 class AppNotification extends Equatable {
@@ -13393,9 +13493,12 @@ class AppNotification extends Equatable {
   final String message;
   final Timestamp timestamp;
   final bool isRead;
-  final String? relatedEntityId;   // Наприклад, ID досягнення, рутини
-  final String? relatedEntityType; // Наприклад, 'achievement', 'routine'
-  final String? iconName;          // Назва іконки з Material Icons або кастомної
+  final String? relatedEntityId;
+  final String? relatedEntityType;
+  final String? iconName;
+  final String? senderProfilePicUrl; // NEW: Optional, for follower notifications
+  final String? senderUsername;      // NEW: Optional, for follower notifications
+
 
   const AppNotification({
     required this.id,
@@ -13407,6 +13510,8 @@ class AppNotification extends Equatable {
     this.relatedEntityId,
     this.relatedEntityType,
     this.iconName,
+    this.senderProfilePicUrl, // NEW
+    this.senderUsername,      // NEW
   });
 
   factory AppNotification.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
@@ -13423,20 +13528,23 @@ class AppNotification extends Equatable {
       relatedEntityId: data['relatedEntityId'] as String?,
       relatedEntityType: data['relatedEntityType'] as String?,
       iconName: data['iconName'] as String?,
+      senderProfilePicUrl: data['senderProfilePicUrl'] as String?, // NEW
+      senderUsername: data['senderUsername'] as String?,           // NEW
     );
   }
 
-  Map<String, dynamic> toMap() { // Для створення/оновлення
+  Map<String, dynamic> toMap() {
     return {
-      // 'id' не потрібен тут, бо це ID документа
-      'type': type.name, // Зберігаємо як рядок
+      'type': type.name,
       'title': title,
       'message': message,
-      'timestamp': timestamp, // Або FieldValue.serverTimestamp() при створенні
+      'timestamp': timestamp,
       'isRead': isRead,
       if (relatedEntityId != null) 'relatedEntityId': relatedEntityId,
       if (relatedEntityType != null) 'relatedEntityType': relatedEntityType,
       if (iconName != null) 'iconName': iconName,
+      if (senderProfilePicUrl != null) 'senderProfilePicUrl': senderProfilePicUrl, // NEW
+      if (senderUsername != null) 'senderUsername': senderUsername,               // NEW
     };
   }
 
@@ -13450,6 +13558,10 @@ class AppNotification extends Equatable {
     String? relatedEntityId,
     String? relatedEntityType,
     String? iconName,
+    String? senderProfilePicUrl, // NEW
+    bool allowNullSenderProfilePicUrl = false, // NEW
+    String? senderUsername,      // NEW
+    bool allowNullSenderUsername = false, // NEW
   }) {
     return AppNotification(
       id: id ?? this.id,
@@ -13461,6 +13573,8 @@ class AppNotification extends Equatable {
       relatedEntityId: relatedEntityId ?? this.relatedEntityId,
       relatedEntityType: relatedEntityType ?? this.relatedEntityType,
       iconName: iconName ?? this.iconName,
+      senderProfilePicUrl: allowNullSenderProfilePicUrl ? senderProfilePicUrl : (senderProfilePicUrl ?? this.senderProfilePicUrl), // NEW
+      senderUsername: allowNullSenderUsername ? senderUsername : (senderUsername ?? this.senderUsername),                         // NEW
     );
   }
 
@@ -13475,6 +13589,8 @@ class AppNotification extends Equatable {
         relatedEntityId,
         relatedEntityType,
         iconName,
+        senderProfilePicUrl, // NEW
+        senderUsername,      // NEW
       ];
 
   static NotificationType _parseNotificationType(String? typeString) {
@@ -13482,7 +13598,7 @@ class AppNotification extends Equatable {
     try {
       return NotificationType.values.byName(typeString);
     } catch (e) {
-      return NotificationType.custom; // Тип за замовчуванням, якщо розпарсити не вдалося
+      return NotificationType.custom;
     }
   }
 }
@@ -14265,15 +14381,17 @@ class UserProfile extends Equatable {
   final String? activityLevel;
   final int xp;
   final int level;
-  final int currentStreak; // Тепер це "scheduled workout streak"
-  final int longestStreak; // Тепер це "longest scheduled workout streak"
-  final Timestamp? lastWorkoutTimestamp; // Загальний час останнього тренування (для інших цілей, не для цього стріку)
-  final Timestamp? lastScheduledWorkoutCompletionTimestamp; // Час останнього ВЧАСНОГО ЗАПЛАНОВАНОГО тренування
-  final String? lastScheduledWorkoutDayKey; // Ключ дня тижня останнього ВЧАСНОГО ЗАПЛАНОВАНОГО тренування (напр. "MON")
+  final int currentStreak; 
+  final int longestStreak; 
+  final Timestamp? lastWorkoutTimestamp; 
+  final Timestamp? lastScheduledWorkoutCompletionTimestamp; 
+  final String? lastScheduledWorkoutDayKey; 
 
   final int followersCount;
   final int followingCount;
   final List<String> achievedRewardIds;
+  final List<String> following; // NEW: List of user IDs this user is following
+  // final List<String> followers; // This will be managed by functions, not directly in client model for modification
   final bool profileSetupComplete;
   final Timestamp createdAt;
   final Timestamp updatedAt;
@@ -14295,11 +14413,12 @@ class UserProfile extends Equatable {
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.lastWorkoutTimestamp,
-    this.lastScheduledWorkoutCompletionTimestamp, // Нове поле
-    this.lastScheduledWorkoutDayKey,          // Нове поле
+    this.lastScheduledWorkoutCompletionTimestamp, 
+    this.lastScheduledWorkoutDayKey,         
     this.followersCount = 0,
     this.followingCount = 0,
     this.achievedRewardIds = const [],
+    this.following = const [], // NEW: Initialize
     required this.profileSetupComplete,
     required this.createdAt,
     required this.updatedAt,
@@ -14330,6 +14449,7 @@ class UserProfile extends Equatable {
       followersCount: data['followersCount'] as int? ?? 0,
       followingCount: data['followingCount'] as int? ?? 0,
       achievedRewardIds: List<String>.from(data['achievedRewardIds'] ?? []),
+      following: List<String>.from(data['following'] ?? []), // NEW: Parse
       profileSetupComplete: data['profileSetupComplete'] as bool? ?? false,
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp? ?? Timestamp.now(),
@@ -14337,7 +14457,26 @@ class UserProfile extends Equatable {
   }
 
   Map<String, dynamic> toMap() {
-    final Map<String, dynamic> data = {};
+    final Map<String, dynamic> data = {
+      'profileSetupComplete': profileSetupComplete,
+      'following': following, // NEW: Include in map for updates by current user
+      // These fields are generally managed by server/functions or set on creation
+      // 'uid': uid,
+      // 'email': email,
+      // 'xp': xp,
+      // 'level': level,
+      // 'currentStreak': currentStreak,
+      // 'longestStreak': longestStreak,
+      // 'lastWorkoutTimestamp': lastWorkoutTimestamp,
+      // 'lastScheduledWorkoutCompletionTimestamp': lastScheduledWorkoutCompletionTimestamp,
+      // 'lastScheduledWorkoutDayKey': lastScheduledWorkoutDayKey,
+      // 'followersCount': followersCount,
+      // 'followingCount': followingCount,
+      // 'achievedRewardIds': achievedRewardIds,
+      // 'createdAt': createdAt,
+      // 'updatedAt': updatedAt, // This will be set by FieldValue.serverTimestamp() in repository
+    };
+    // Add optional fields only if they are not null to avoid overwriting with null
     if (displayName != null) data['displayName'] = displayName;
     if (profilePictureUrl != null) data['profilePictureUrl'] = profilePictureUrl;
     if (username != null) data['username'] = username;
@@ -14347,8 +14486,7 @@ class UserProfile extends Equatable {
     if (weightKg != null) data['weightKg'] = weightKg;
     if (fitnessGoal != null) data['fitnessGoal'] = fitnessGoal;
     if (activityLevel != null) data['activityLevel'] = activityLevel;
-    data['profileSetupComplete'] = profileSetupComplete;
-    // Нові поля не додаються клієнтом, вони керуються функцією
+    
     return data;
   }
 
@@ -14369,11 +14507,12 @@ class UserProfile extends Equatable {
     int? currentStreak,
     int? longestStreak,
     ValueGetter<Timestamp?>? lastWorkoutTimestamp,
-    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp, // Нове
-    ValueGetter<String?>? lastScheduledWorkoutDayKey,             // Нове
+    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp, 
+    ValueGetter<String?>? lastScheduledWorkoutDayKey,             
     int? followersCount,
     int? followingCount,
     List<String>? achievedRewardIds,
+    List<String>? following, // NEW
     bool? profileSetupComplete,
     Timestamp? createdAt,
     Timestamp? updatedAt,
@@ -14400,6 +14539,7 @@ class UserProfile extends Equatable {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       achievedRewardIds: achievedRewardIds ?? this.achievedRewardIds,
+      following: following ?? this.following, // NEW
       profileSetupComplete: profileSetupComplete ?? this.profileSetupComplete,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -14411,9 +14551,10 @@ class UserProfile extends Equatable {
         uid, email, displayName, profilePictureUrl, username, gender, dateOfBirth,
         heightCm, weightKg, fitnessGoal, activityLevel, xp, level,
         currentStreak, longestStreak, lastWorkoutTimestamp,
-        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey, // Нові
+        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey, 
         followersCount, followingCount,
         achievedRewardIds, 
+        following, // NEW
         profileSetupComplete, createdAt, updatedAt
       ];
 }
@@ -14685,9 +14826,14 @@ import '../entities/user_profile.dart';
 abstract class UserProfileRepository {
   Future<UserProfile?> getUserProfile(String userId);
   Future<void> updateUserProfile(UserProfile userProfile);
-  Stream<UserProfile?> getUserProfileStream(String userId); // <--- НОВИЙ МЕТОД
+  Stream<UserProfile?> getUserProfileStream(String userId);
+  
+  // NEW METHODS for Follow/Unfollow
+  Future<void> followUser(String currentUserId, String targetUserId);
+  Future<void> unfollowUser(String currentUserId, String targetUserId);
+  Future<List<UserProfile>> getFollowingList(String userId, {String? lastFetchedUserId, int limit = 20});
+  Future<List<UserProfile>> getFollowersList(String userId, {String? lastFetchedUserId, int limit = 20});
 }
-
 --------------------------------------------------
 === END OF FILE: lib/core/domain/repositories/user_profile_repository.dart ===
 
@@ -16968,6 +17114,10 @@ import '../../../../core/domain/entities/achievement.dart';
 import '../cubit/user_profile_cubit.dart';
 import '../../../profile_setup/presentation/screens/profile_setup_screen.dart';
 import '../../../../auth_gate.dart';
+// NEW IMPORTS
+import '../../../social/presentation/screens/follow_list_screen.dart';
+import '../../../social/presentation/cubit/follow_list_cubit.dart' show FollowListType;
+
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
 const Color profilePurple = Color(0xFFB700FF);
@@ -17176,6 +17326,24 @@ class _ProfileScreenContent extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 25),
+                _buildSocialStatRow(
+                  context,
+                  'FOLLOWERS',
+                  _formatNumberWithSpaces(userProfile.followersCount),
+                  () {
+                    Navigator.of(context).push(FollowListScreen.route(userId: userProfile.uid, type: FollowListType.followers));
+                  } 
+                ),
+                const SizedBox(height: 12),
+                _buildSocialStatRow(
+                  context,
+                  'FOLLOWING',
+                  _formatNumberWithSpaces(userProfile.followingCount),
+                   () {
+                     Navigator.of(context).push(FollowListScreen.route(userId: userProfile.uid, type: FollowListType.following));
+                   }
+                ),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -17187,10 +17355,10 @@ class _ProfileScreenContent extends StatelessWidget {
                           children: [
                             const Icon(Icons.local_fire_department, color: profilePrimaryOrange, size: 28),
                             const SizedBox(width: 5),
-                            Text('${userProfile.longestStreak}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18, color: profileTextBlack)), // <--- ВИПРАВЛЕНО НА longestStreak
+                            Text('${userProfile.longestStreak}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 18, color: profileTextBlack)),
                           ],
                         ),
-                        Text('BEST STREAK', style: theme.textTheme.bodyMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 11)), // <--- ВИПРАВЛЕНО НАПИС
+                        Text('BEST STREAK', style: theme.textTheme.bodyMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.bold, fontSize: 11)),
                       ],
                     ),
                     Row(
@@ -17214,10 +17382,6 @@ class _ProfileScreenContent extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 25),
-                _buildSocialStatRow(context, 'FOLLOWERS', _formatNumberWithSpaces(userProfile.followersCount)),
-                const SizedBox(height: 8),
-                _buildSocialStatRow(context, 'FOLLOWING', _formatNumberWithSpaces(userProfile.followingCount)),
-                const SizedBox(height: 20),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -17307,6 +17471,12 @@ class _ProfileScreenContent extends StatelessWidget {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (_) => ProfileSetupScreen(userProfileToEdit: userProfile),
                         )).then((updated) {
+                           if (updated == true && context.mounted) {
+                              final currentAuthUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
+                              if (currentAuthUserId != null) {
+                                context.read<UserProfileCubit>().fetchUserProfile(currentAuthUserId, forceRemote: true);
+                              }
+                            }
                         });
                       },
                       style: TextButton.styleFrom(padding: EdgeInsets.zero),
@@ -17336,15 +17506,31 @@ class _ProfileScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialStatRow(BuildContext context, String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: profileTextBlack, fontSize: 16)),
-        Text(value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: profileBlue, fontWeight: FontWeight.w900, fontSize: 18)),
-      ],
+ Widget _buildSocialStatRow(BuildContext context, String label, String value, [VoidCallback? onTap]) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, color: profileTextBlack, fontSize: 16)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(value, style: theme.textTheme.headlineSmall?.copyWith(color: profileBlue, fontWeight: FontWeight.w900, fontSize: 18)),
+                if (onTap != null)
+                  Icon(Icons.chevron_right, color: profileBlue.withOpacity(0.7), size: 22),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
+
 
   Widget _buildRewardItem(BuildContext context, Achievement achievement, bool isAchieved, String? conditionMessage) {
     return Padding(
@@ -17413,7 +17599,7 @@ class _ProfileScreenContent extends StatelessWidget {
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
-import 'dart:developer' as developer; // Для логування
+import 'dart:developer' as developer;
 
 class UserProfileRepositoryImpl implements UserProfileRepository {
   final FirebaseFirestore _firestore;
@@ -17435,7 +17621,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         return UserProfile.fromFirestore(docSnapshot as DocumentSnapshot<Map<String, dynamic>>);
       } else {
         developer.log("User profile NOT found for userId: $userId", name: "UserProfileRepoImpl");
-        return null; // Повертаємо null, якщо документ не існує
+        return null;
       }
     } catch (e, s) {
       developer.log("Error fetching user profile for userId: $userId", error: e, stackTrace: s, name: "UserProfileRepoImpl");
@@ -17451,18 +17637,30 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       throw ArgumentError("User ID in profile cannot be empty for update.");
     }
     try {
-      final dataToUpdate = userProfile.toMap()
-        ..['updatedAt'] = FieldValue.serverTimestamp(); // profileSetupComplete вже має бути в userProfile.toMap()
+      final Map<String, dynamic> dataToUpdate = userProfile.toMap();
+      // Важливо: `toMap()` тепер включає `following` але не `followersCount` чи `followingCount`
+      // Ці лічильники будуть оновлюватися тільки Cloud Functions
+      // `updatedAt` має бути встановлено
+      dataToUpdate['updatedAt'] = FieldValue.serverTimestamp();
 
-      // uid не є частиною даних документа, а є його ID, тому його не потрібно записувати в поля.
-      // createdAt встановлюється один раз при створенні і не має оновлюватися.
-      // Ми припускаємо, що toMap() вже правильно обробляє, які поля включати.
-      // Якщо ви хочете бути впевненим, що createdAt не перезаписується,
-      // ви можете його видалити з dataToUpdate, якщо він там є, але це залежить від реалізації toMap().
-      // dataToUpdate.remove('createdAt'); 
-
+      // Видаляємо поля, які не повинні оновлюватися клієнтом напряму,
+      // якщо toMap їх включає, окрім `following`
+      dataToUpdate.remove('followersCount'); 
+      dataToUpdate.remove('followingCount'); 
+      dataToUpdate.remove('createdAt'); // createdAt не має оновлюватися
+      dataToUpdate.remove('uid'); // uid - це ID документа
+      dataToUpdate.remove('email'); // email зазвичай не змінюється
+      dataToUpdate.remove('xp');
+      dataToUpdate.remove('level');
+      dataToUpdate.remove('currentStreak');
+      dataToUpdate.remove('longestStreak');
+      dataToUpdate.remove('lastWorkoutTimestamp');
+      dataToUpdate.remove('lastScheduledWorkoutCompletionTimestamp');
+      dataToUpdate.remove('lastScheduledWorkoutDayKey');
+      dataToUpdate.remove('achievedRewardIds');
+      
       await _firestore.collection('users').doc(userProfile.uid).update(dataToUpdate);
-      developer.log("User profile updated successfully for userId: ${userProfile.uid}", name: "UserProfileRepoImpl");
+      developer.log("User profile updated successfully for userId: ${userProfile.uid}. Data: $dataToUpdate", name: "UserProfileRepoImpl");
     } catch (e, s) {
       developer.log("Error updating user profile for userId: ${userProfile.uid}", error: e, stackTrace: s, name: "UserProfileRepoImpl");
       throw Exception('Failed to update user profile: ${e.toString()}');
@@ -17484,14 +17682,117 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         }
         developer.log("Profile stream received no data (document might not exist) for userId: $userId", name: "UserProfileRepoImpl");
         return null;
-      }).handleError((error, stackTrace) { // Обробка помилок у стрімі
+      }).handleError((error, stackTrace) {
         developer.log("Error in user profile stream for userId: $userId", error: error, stackTrace: stackTrace, name: "UserProfileRepoImpl");
-        // Можна або передати помилку далі, або повернути null/попереднє значення, якщо є логіка кешування
         throw Exception('Error in profile stream: ${error.toString()}');
       });
     } catch (e, s) {
       developer.log("Error setting up user profile stream for userId: $userId", error: e, stackTrace: s, name: "UserProfileRepoImpl");
       return Stream.error(Exception('Failed to set up user profile stream: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<void> followUser(String currentUserId, String targetUserId) async {
+    if (currentUserId.isEmpty || targetUserId.isEmpty) {
+      throw ArgumentError("User IDs cannot be empty.");
+    }
+    if (currentUserId == targetUserId) {
+      throw ArgumentError("Cannot follow yourself.");
+    }
+    developer.log("User $currentUserId attempting to follow $targetUserId", name: "UserProfileRepoImpl.followUser");
+    try {
+      final currentUserDocRef = _firestore.collection('users').doc(currentUserId);
+      // Функція Cloud оновить лічильники та список followers у targetUserId
+      await currentUserDocRef.update({
+        'following': FieldValue.arrayUnion([targetUserId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      developer.log("User $currentUserId successfully added $targetUserId to their following list. Cloud Function will handle reciprocal.", name: "UserProfileRepoImpl.followUser");
+    } catch (e, s) {
+      developer.log("Error following user $targetUserId by $currentUserId: $e", error: e, stackTrace: s, name: "UserProfileRepoImpl.followUser");
+      throw Exception('Failed to follow user: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> unfollowUser(String currentUserId, String targetUserId) async {
+    if (currentUserId.isEmpty || targetUserId.isEmpty) {
+      throw ArgumentError("User IDs cannot be empty.");
+    }
+    developer.log("User $currentUserId attempting to unfollow $targetUserId", name: "UserProfileRepoImpl.unfollowUser");
+    try {
+      final currentUserDocRef = _firestore.collection('users').doc(currentUserId);
+      // Функція Cloud оновить лічильники та список followers у targetUserId
+      await currentUserDocRef.update({
+        'following': FieldValue.arrayRemove([targetUserId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+       developer.log("User $currentUserId successfully removed $targetUserId from their following list. Cloud Function will handle reciprocal.", name: "UserProfileRepoImpl.unfollowUser");
+    } catch (e, s) {
+      developer.log("Error unfollowing user $targetUserId by $currentUserId: $e", error: e, stackTrace: s, name: "UserProfileRepoImpl.unfollowUser");
+      throw Exception('Failed to unfollow user: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<UserProfile>> getFollowingList(String userId, {String? lastFetchedUserId, int limit = 20}) async {
+    if (userId.isEmpty) throw ArgumentError("User ID cannot be empty.");
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (!userDoc.exists) return [];
+      
+      final List<String> followingIds = List<String>.from(userDoc.data()?['following'] ?? []);
+      if (followingIds.isEmpty) return [];
+
+      // Firestore 'in' query supports up to 30 elements per query.
+      // We need to paginate this manually if `followingIds` is large.
+      // For simplicity, this example will fetch all or up to `limit` if it's small enough.
+      // A more robust solution would use multiple queries or a different data structure if lists are very large.
+      
+      final List<UserProfile> profiles = [];
+      for (int i = 0; i < followingIds.length; i += 10) { // Fetch in chunks of 10 (max 30 for 'in')
+          final chunk = followingIds.sublist(i, i + 10 > followingIds.length ? followingIds.length : i + 10);
+          if (chunk.isEmpty) break;
+
+          final querySnapshot = await _firestore.collection('users').where(FieldPath.documentId, whereIn: chunk).get();
+          profiles.addAll(querySnapshot.docs.map((doc) => UserProfile.fromFirestore(doc as DocumentSnapshot<Map<String,dynamic>>)));
+          if (profiles.length >= limit) break;
+      }
+      return profiles.take(limit).toList();
+
+    } catch (e,s) {
+      developer.log("Error fetching following list for $userId: $e", error: e, stackTrace: s, name: "UserProfileRepoImpl.getFollowingList");
+      throw Exception('Failed to fetch following list: ${e.toString()}');
+    }
+  }
+  
+  @override
+  Future<List<UserProfile>> getFollowersList(String userId, {String? lastFetchedUserId, int limit = 20}) async {
+    if (userId.isEmpty) throw ArgumentError("User ID cannot be empty.");
+    try {
+      // Followers are not stored as a list on the user's document directly for easy querying (for this method).
+      // Instead, we query for users who have `userId` in their `following` list.
+      // This is less efficient for getting a follower list but ensures consistency.
+      // An alternative (more complex) would be to maintain a `followers` subcollection or list.
+      Query query = _firestore.collection('users')
+          .where('following', arrayContains: userId)
+          .orderBy('username') // Or another field for consistent pagination
+          .limit(limit);
+
+      if (lastFetchedUserId != null) {
+        final lastDoc = await _firestore.collection('users').doc(lastFetchedUserId).get();
+        if (lastDoc.exists) {
+          query = query.startAfterDocument(lastDoc);
+        }
+      }
+      
+      final snapshot = await query.get();
+      return snapshot.docs.map((doc) => UserProfile.fromFirestore(doc as DocumentSnapshot<Map<String,dynamic>>)).toList();
+
+    } catch (e,s) {
+      developer.log("Error fetching followers list for $userId: $e", error: e, stackTrace: s, name: "UserProfileRepoImpl.getFollowersList");
+      throw Exception('Failed to fetch followers list: ${e.toString()}');
     }
   }
 }
@@ -21477,6 +21778,143 @@ class ExploreFeedError extends ExploreFeedState {
 === END OF FILE: lib/features/social/presentation/cubit/explore_feed_state.dart ===
 
 
+=== FILE: lib/features/social/presentation/cubit/follow_list_cubit.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/follow_list_cubit.dart
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../../core/domain/entities/user_profile.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import 'dart:developer' as developer;
+
+part 'follow_list_state.dart';
+
+class FollowListCubit extends Cubit<FollowListState> {
+  final UserProfileRepository _userProfileRepository;
+  final String _userIdToList; // User whose list we are fetching
+  final FollowListType _listType;
+  
+  bool _isFetching = false;
+  String? _lastFetchedDocumentId; // For pagination
+  final int _limit = 20;
+
+  FollowListCubit(
+    this._userProfileRepository,
+    this._userIdToList,
+    this._listType,
+  ) : super(FollowListInitial()) {
+    fetchInitialList();
+  }
+
+  Future<void> fetchInitialList() async {
+    if (_isFetching) return;
+    _isFetching = true;
+    emit(const FollowListLoading(isInitialLoad: true));
+    _lastFetchedDocumentId = null; // Reset for initial load
+    try {
+      List<UserProfile> profiles;
+      if (_listType == FollowListType.followers) {
+        profiles = await _userProfileRepository.getFollowersList(_userIdToList, limit: _limit);
+      } else {
+        profiles = await _userProfileRepository.getFollowingList(_userIdToList, limit: _limit);
+      }
+      _lastFetchedDocumentId = profiles.isNotEmpty ? profiles.last.uid : null;
+      emit(FollowListLoaded(profiles, hasMore: profiles.length >= _limit));
+      developer.log("FollowListCubit: Initial list fetched. Type: ${_listType.name}, Count: ${profiles.length}", name: "FollowListCubit");
+    } catch (e, s) {
+      developer.log("Error fetching initial follow list: $e", name: "FollowListCubit", error: e, stackTrace: s);
+      emit(FollowListError(e.toString().replaceFirst("Exception: ", "")));
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  Future<void> fetchMore() async {
+    if (_isFetching || !(state is FollowListLoaded && (state as FollowListLoaded).hasMore)) {
+      return;
+    }
+    _isFetching = true;
+    
+    final currentState = state as FollowListLoaded;
+    emit(FollowListLoading(currentProfiles: currentState.profiles, isInitialLoad: false));
+
+    try {
+      List<UserProfile> newProfiles;
+      if (_listType == FollowListType.followers) {
+        newProfiles = await _userProfileRepository.getFollowersList(
+          _userIdToList,
+          lastFetchedUserId: _lastFetchedDocumentId,
+          limit: _limit,
+        );
+      } else {
+        newProfiles = await _userProfileRepository.getFollowingList(
+          _userIdToList,
+          lastFetchedUserId: _lastFetchedDocumentId,
+          limit: _limit,
+        );
+      }
+      _lastFetchedDocumentId = newProfiles.isNotEmpty ? newProfiles.last.uid : null;
+      final combinedProfiles = List<UserProfile>.from(currentState.profiles)..addAll(newProfiles);
+      emit(FollowListLoaded(combinedProfiles, hasMore: newProfiles.length >= _limit));
+       developer.log("FollowListCubit: Fetched more. Type: ${_listType.name}, New Count: ${newProfiles.length}, Total: ${combinedProfiles.length}", name: "FollowListCubit");
+    } catch (e,s) {
+      developer.log("Error fetching more follow list: $e", name: "FollowListCubit", error: e, stackTrace: s);
+      emit(FollowListError(e.toString().replaceFirst("Exception: ", ""))); // Consider keeping old data on error for better UX
+      // emit(FollowListLoaded(currentState.profiles, hasMore: currentState.hasMore)); // Or revert to previous loaded state
+    } finally {
+      _isFetching = false;
+    }
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/follow_list_cubit.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/follow_list_state.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/follow_list_state.dart
+part of 'follow_list_cubit.dart';
+
+enum FollowListType { followers, following }
+
+abstract class FollowListState extends Equatable {
+  const FollowListState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class FollowListInitial extends FollowListState {}
+
+class FollowListLoading extends FollowListState {
+  final List<UserProfile> currentProfiles; // For pagination, show existing while loading more
+  final bool isInitialLoad;
+  const FollowListLoading({this.currentProfiles = const [], this.isInitialLoad = true});
+
+  @override
+  List<Object?> get props => [currentProfiles, isInitialLoad];
+}
+
+class FollowListLoaded extends FollowListState {
+  final List<UserProfile> profiles;
+  final bool hasMore; // For pagination
+  const FollowListLoaded(this.profiles, {this.hasMore = false});
+
+  @override
+  List<Object?> get props => [profiles, hasMore];
+}
+
+class FollowListError extends FollowListState {
+  final String message;
+  const FollowListError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/follow_list_state.dart ===
+
+
 === FILE: lib/features/social/presentation/cubit/post_interaction_cubit.dart ===
 --------------------------------------------------
 // lib/features/social/presentation/cubit/post_interaction_cubit.dart
@@ -21911,6 +22349,234 @@ class PostInteractionFailure extends PostInteractionState {
 }
 --------------------------------------------------
 === END OF FILE: lib/features/social/presentation/cubit/post_interaction_state.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/user_interaction_cubit.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/user_interaction_cubit.dart
+import 'dart:async';
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import '../../../../core/domain/entities/user_profile.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import 'dart:developer' as developer;
+
+part 'user_interaction_state.dart';
+
+class UserInteractionCubit extends Cubit<UserInteractionState> {
+  final UserProfileRepository _userProfileRepository;
+  final fb_auth.FirebaseAuth _firebaseAuth;
+  final String targetUserId; // ID користувача, чий профіль переглядається
+
+  StreamSubscription<UserProfile?>? _targetUserProfileSubscription;
+  StreamSubscription<UserProfile?>? _currentUserProfileSubscription; // Для відстеження `following` списку поточного користувача
+
+  UserProfile? _currentTargetUserProfile;
+  UserProfile? _currentAuthUserProfile;
+
+
+  UserInteractionCubit(
+    this._userProfileRepository,
+    this._firebaseAuth,
+    this.targetUserId,
+  ) : super(UserInteractionInitial()) {
+    _initialize();
+  }
+
+  String? get _currentAuthUserId => _firebaseAuth.currentUser?.uid;
+
+  Future<void> _initialize() async {
+    final authUserId = _currentAuthUserId;
+    if (authUserId == null) {
+      emit(const UserInteractionError("User not authenticated."));
+      return;
+    }
+
+    emit(const UserInteractionLoading(loadingMessage: "Loading profile..."));
+
+    try {
+      // Підписка на профіль цільового користувача
+      _targetUserProfileSubscription?.cancel();
+      _targetUserProfileSubscription = _userProfileRepository.getUserProfileStream(targetUserId).listen(
+        (profile) {
+          _currentTargetUserProfile = profile;
+          _emitLoadedStateIfNeeded();
+        },
+        onError: (error, stackTrace) {
+          developer.log('Error in target user profile stream for $targetUserId: $error', name: 'UserInteractionCubit', error: error, stackTrace: stackTrace);
+          emit(UserInteractionError('Failed to load profile: ${error.toString()}', targetUserProfile: _currentTargetUserProfile, wasFollowing: _getIsFollowingState()));
+        },
+      );
+
+      // Підписка на профіль поточного автентифікованого користувача
+      _currentUserProfileSubscription?.cancel();
+      _currentUserProfileSubscription = _userProfileRepository.getUserProfileStream(authUserId).listen(
+        (profile) {
+          _currentAuthUserProfile = profile;
+          _emitLoadedStateIfNeeded();
+        },
+        onError: (error, stackTrace) {
+          developer.log('Error in current auth user profile stream for $authUserId: $error', name: 'UserInteractionCubit', error: error, stackTrace: stackTrace);
+          // Don't necessarily emit top-level error, as target profile might still be fine
+        },
+      );
+
+    } catch (e, s) {
+      developer.log('Error during UserInteractionCubit initialization: $e', error: e, stackTrace: s, name: 'UserInteractionCubit');
+      emit(UserInteractionError('Failed to initialize: ${e.toString()}'));
+    }
+  }
+  
+  bool _getIsFollowingState() {
+    if (_currentAuthUserProfile == null || _currentTargetUserProfile == null) {
+      return false;
+    }
+    return _currentAuthUserProfile!.following.contains(_currentTargetUserProfile!.uid);
+  }
+
+  void _emitLoadedStateIfNeeded() {
+    if (_currentTargetUserProfile != null && _currentAuthUserProfile != null) {
+      final bool isCurrentlyFollowing = _getIsFollowingState();
+      // Якщо попередній стан був помилкою, але ми успішно завантажили дані,
+      // або якщо це перший успішний завантаження, або якщо змінилися дані.
+      if (state is UserInteractionError || state is UserInteractionInitial || state is UserInteractionLoading ||
+          (state is UserInteractionProfileLoaded && 
+           ((state as UserInteractionProfileLoaded).targetUserProfile != _currentTargetUserProfile || 
+            (state as UserInteractionProfileLoaded).isFollowing != isCurrentlyFollowing))
+          ) {
+        emit(UserInteractionProfileLoaded(
+          targetUserProfile: _currentTargetUserProfile!,
+          isFollowing: isCurrentlyFollowing,
+        ));
+      }
+    } else if (_currentTargetUserProfile == null && (state is UserInteractionInitial || state is UserInteractionLoading)) {
+      // Якщо targetUserProfile ще завантажується, але authUser вже є.
+      // Можна залишити Loading або перейти в стан з помилкою, якщо target не завантажиться.
+    }
+  }
+
+
+  Future<void> toggleFollow() async {
+    final authUserId = _currentAuthUserId;
+    if (authUserId == null || targetUserId == authUserId) {
+      emit(UserInteractionError("Cannot follow/unfollow: Invalid operation.", targetUserProfile: _currentTargetUserProfile, wasFollowing: _getIsFollowingState()));
+      return;
+    }
+
+    final currentState = state;
+    if (currentState is UserInteractionProfileLoaded) {
+      emit(currentState.copyWith(isProcessingFollow: true)); // Show loading on button
+
+      final bool wasFollowing = currentState.isFollowing;
+      try {
+        if (wasFollowing) {
+          await _userProfileRepository.unfollowUser(authUserId, targetUserId);
+          emit(UserInteractionUnfollowSuccess(targetUserProfile: currentState.targetUserProfile, isFollowing: false));
+          developer.log('User $authUserId unfollowed $targetUserId', name: 'UserInteractionCubit');
+        } else {
+          await _userProfileRepository.followUser(authUserId, targetUserId);
+           emit(UserInteractionFollowSuccess(targetUserProfile: currentState.targetUserProfile, isFollowing: true));
+          developer.log('User $authUserId followed $targetUserId', name: 'UserInteractionCubit');
+        }
+        // Хмарні функції оновлять лічильники, стрім профілю їх підхопить.
+      } catch (e, s) {
+        developer.log('Error toggling follow: $e', name: 'UserInteractionCubit', error: e, stackTrace: s);
+        // Revert to previous state on error
+        emit(UserInteractionError("Failed to ${wasFollowing ? 'unfollow' : 'follow'}: ${e.toString()}", targetUserProfile: currentState.targetUserProfile, wasFollowing: wasFollowing));
+      }
+    } else {
+       emit(UserInteractionError("Cannot process follow/unfollow in current state: $currentState", targetUserProfile: _currentTargetUserProfile, wasFollowing: _getIsFollowingState()));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _targetUserProfileSubscription?.cancel();
+    _currentUserProfileSubscription?.cancel();
+    developer.log('UserInteractionCubit for target $targetUserId closed.', name: 'UserInteractionCubit');
+    return super.close();
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/user_interaction_cubit.dart ===
+
+
+=== FILE: lib/features/social/presentation/cubit/user_interaction_state.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/cubit/user_interaction_state.dart
+part of 'user_interaction_cubit.dart';
+
+abstract class UserInteractionState extends Equatable {
+  const UserInteractionState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class UserInteractionInitial extends UserInteractionState {}
+
+class UserInteractionLoading extends UserInteractionState {
+  final String? loadingMessage;
+  const UserInteractionLoading({this.loadingMessage});
+  @override
+  List<Object?> get props => [loadingMessage];
+}
+
+class UserInteractionProfileLoaded extends UserInteractionState {
+  final UserProfile targetUserProfile;
+  final bool isFollowing; // Is the current authenticated user following the targetUserProfile?
+  final bool isProcessingFollow; // True if follow/unfollow action is in progress
+
+  const UserInteractionProfileLoaded({
+    required this.targetUserProfile,
+    required this.isFollowing,
+    this.isProcessingFollow = false,
+  });
+
+  UserInteractionProfileLoaded copyWith({
+    UserProfile? targetUserProfile,
+    bool? isFollowing,
+    bool? isProcessingFollow,
+  }) {
+    return UserInteractionProfileLoaded(
+      targetUserProfile: targetUserProfile ?? this.targetUserProfile,
+      isFollowing: isFollowing ?? this.isFollowing,
+      isProcessingFollow: isProcessingFollow ?? this.isProcessingFollow,
+    );
+  }
+
+  @override
+  List<Object?> get props => [targetUserProfile, isFollowing, isProcessingFollow];
+}
+
+class UserInteractionFollowSuccess extends UserInteractionProfileLoaded {
+  const UserInteractionFollowSuccess({
+    required super.targetUserProfile,
+    required super.isFollowing,
+  }) : super(isProcessingFollow: false);
+}
+
+class UserInteractionUnfollowSuccess extends UserInteractionProfileLoaded {
+  const UserInteractionUnfollowSuccess({
+    required super.targetUserProfile,
+    required super.isFollowing,
+  }) : super(isProcessingFollow: false);
+}
+
+
+class UserInteractionError extends UserInteractionState {
+  final String message;
+  final UserProfile? targetUserProfile; // To retain profile data on error if possible
+  final bool? wasFollowing;          // To retain follow state on error if possible
+
+  const UserInteractionError(this.message, {this.targetUserProfile, this.wasFollowing});
+
+  @override
+  List<Object?> get props => [message, targetUserProfile, wasFollowing];
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/cubit/user_interaction_state.dart ===
 
 
 === FILE: lib/features/social/presentation/screens/create_post_screen.dart ===
@@ -22403,6 +23069,139 @@ class _ExploreView extends StatelessWidget {
 === END OF FILE: lib/features/social/presentation/screens/explore_screen.dart ===
 
 
+=== FILE: lib/features/social/presentation/screens/follow_list_screen.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/screens/follow_list_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../cubit/follow_list_cubit.dart';
+import '../widgets/follow_list_item_widget.dart';
+import 'dart:developer' as developer;
+
+class FollowListScreen extends StatefulWidget {
+  final String userIdToList; // ID користувача, чий список ми переглядаємо
+  final FollowListType listType; // Тип списку: followers або following
+
+  const FollowListScreen({
+    super.key,
+    required this.userIdToList,
+    required this.listType,
+  });
+
+  static Route route({required String userId, required FollowListType type}) {
+    return MaterialPageRoute(
+      builder: (_) => FollowListScreen(userIdToList: userId, listType: type),
+    );
+  }
+
+  @override
+  State<FollowListScreen> createState() => _FollowListScreenState();
+}
+
+class _FollowListScreenState extends State<FollowListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 200) { // Завантажувати, коли до кінця списку < 200px
+      context.read<FollowListCubit>().fetchMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String title = widget.listType == FollowListType.followers ? 'Followers' : 'Following';
+
+    return BlocProvider(
+      create: (context) => FollowListCubit(
+        RepositoryProvider.of<UserProfileRepository>(context),
+        widget.userIdToList,
+        widget.listType,
+      ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+        ),
+        body: BlocBuilder<FollowListCubit, FollowListState>(
+          builder: (context, state) {
+            if (state is FollowListInitial || (state is FollowListLoading && state.isInitialLoad)) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is FollowListError) {
+              return Center(
+                 child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text('Error: ${state.message}', textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.read<FollowListCubit>().fetchInitialList(),
+                        child: const Text('Try Again'),
+                      )
+                    ],
+                  ),
+                )
+              );
+            }
+            if (state is FollowListLoaded || (state is FollowListLoading && !state.isInitialLoad)) {
+              final profiles = (state is FollowListLoaded) ? state.profiles : (state as FollowListLoading).currentProfiles;
+              final hasMore = (state is FollowListLoaded) ? state.hasMore : true; // Assume hasMore while loading more
+
+              if (profiles.isEmpty && !(state is FollowListLoading && !state.isInitialLoad)) {
+                return Center(
+                  child: Text(
+                    widget.listType == FollowListType.followers
+                        ? 'This user has no followers yet.'
+                        : 'This user is not following anyone yet.',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: () => context.read<FollowListCubit>().fetchInitialList(),
+                child: ListView.separated(
+                  controller: _scrollController,
+                  itemCount: profiles.length + (hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == profiles.length && hasMore) {
+                      return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2.5)));
+                    }
+                    if (index >= profiles.length) return const SizedBox.shrink();
+                    return FollowListItemWidget(userProfile: profiles[index]);
+                  },
+                  separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
+                ),
+              );
+            }
+            return const Center(child: Text("Something went wrong."));
+          },
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/screens/follow_list_screen.dart ===
+
+
 === FILE: lib/features/social/presentation/screens/post_detail_screen.dart ===
 --------------------------------------------------
 // lib/features/social/presentation/screens/post_detail_screen.dart
@@ -22714,6 +23513,263 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 === END OF FILE: lib/features/social/presentation/screens/post_detail_screen.dart ===
 
 
+=== FILE: lib/features/social/presentation/screens/view_user_profile_screen.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/screens/view_user_profile_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:intl/intl.dart';
+import '../../../../core/domain/entities/user_profile.dart';
+import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../cubit/user_interaction_cubit.dart';
+import 'dart:developer' as developer;
+// NEW IMPORTS
+import 'follow_list_screen.dart';
+import '../cubit/follow_list_cubit.dart' show FollowListType;
+
+
+const Color profilePrimaryOrange = Color(0xFFED5D1A);
+const Color profileTextBlack = Colors.black87;
+// (інші константи кольорів, якщо потрібні, як у ProfileScreen)
+const Color profileBlue = Color(0xFF0077FF);
+
+
+class ViewUserProfileScreen extends StatelessWidget {
+  final String targetUserId;
+
+  const ViewUserProfileScreen({super.key, required this.targetUserId});
+
+  static Route route(String targetUserId) {
+    return MaterialPageRoute(
+      builder: (_) => ViewUserProfileScreen(targetUserId: targetUserId),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentAuthUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
+
+    if (currentAuthUserId == targetUserId) {
+      developer.log("Viewing own profile via ViewUserProfileScreen. CurrentUserID: $currentAuthUserId, TargetUserID: $targetUserId", name: "ViewUserProfileScreen");
+    }
+
+    return BlocProvider(
+      create: (context) => UserInteractionCubit(
+        RepositoryProvider.of<UserProfileRepository>(context),
+        RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
+        targetUserId,
+      ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: BlocBuilder<UserInteractionCubit, UserInteractionState>(
+            builder: (context, state) {
+              if (state is UserInteractionProfileLoaded) {
+                return Text(state.targetUserProfile.displayName ?? state.targetUserProfile.username ?? 'User Profile');
+              }
+              return const Text('User Profile');
+            },
+          ),
+        ),
+        body: BlocConsumer<UserInteractionCubit, UserInteractionState>(
+          listener: (context, state) {
+            if (state is UserInteractionError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${state.message}'), backgroundColor: Colors.red),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is UserInteractionInitial || state is UserInteractionLoading) {
+              return Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(state is UserInteractionLoading && state.loadingMessage!=null ? Colors.transparent : profilePrimaryOrange)));
+            }
+            if (state is UserInteractionError && state.targetUserProfile == null) {
+              return Center(child: Text('Could not load profile: ${state.message}'));
+            }
+            if (state is UserInteractionProfileLoaded || (state is UserInteractionError && state.targetUserProfile != null) ) {
+              
+              UserProfile userProfile;
+              bool isFollowingUser;
+              bool isProcessingFollowAction;
+
+              if (state is UserInteractionProfileLoaded) {
+                 userProfile = state.targetUserProfile;
+                 isFollowingUser = state.isFollowing;
+                 isProcessingFollowAction = state.isProcessingFollow;
+              } else if (state is UserInteractionError && state.targetUserProfile != null) {
+                 userProfile = state.targetUserProfile!;
+                 isFollowingUser = state.wasFollowing ?? false;
+                 isProcessingFollowAction = false;
+              } else {
+                return const Center(child: Text("An unexpected error occurred displaying the profile."));
+              }
+             
+              final theme = Theme.of(context);
+              final bool isOwnProfile = currentAuthUserId == userProfile.uid;
+              
+              String firstName = "User";
+              String lastName = "";
+              if (userProfile.displayName != null && userProfile.displayName!.trim().isNotEmpty) {
+                final names = userProfile.displayName!.trim().split(' ');
+                firstName = names.first;
+                if (names.length > 1) lastName = names.sublist(1).join(' ');
+              } else if (userProfile.username != null && userProfile.username!.trim().isNotEmpty) {
+                firstName = userProfile.username!;
+              }
+
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 45,
+                          backgroundColor: profilePrimaryOrange,
+                          backgroundImage: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
+                              ? NetworkImage(userProfile.profilePictureUrl!)
+                              : null,
+                          child: userProfile.profilePictureUrl == null || userProfile.profilePictureUrl!.isEmpty
+                              ? const Icon(Icons.person, size: 45, color: Colors.white)
+                              : null,
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                firstName.toUpperCase(),
+                                style: theme.textTheme.headlineMedium?.copyWith(color: profileTextBlack, fontWeight: FontWeight.w900, height: 1.1),
+                                maxLines: 1, overflow: TextOverflow.ellipsis,
+                              ),
+                              if (lastName.isNotEmpty)
+                                Text(
+                                  lastName.toUpperCase(),
+                                  style: theme.textTheme.headlineMedium?.copyWith(color: profilePrimaryOrange, fontWeight: FontWeight.w900, height: 1.1),
+                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                ),
+                              if (userProfile.username != null && userProfile.username!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    '@${userProfile.username}',
+                                    style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStatColumn(
+                          context,
+                          userProfile.followersCount,
+                          'Followers',
+                          onTap: () {
+                             Navigator.of(context).push(FollowListScreen.route(userId: userProfile.uid, type: FollowListType.followers));
+                          }
+                        ),
+                        _buildStatColumn(
+                          context,
+                          userProfile.followingCount,
+                          'Following',
+                          onTap: () {
+                             Navigator.of(context).push(FollowListScreen.route(userId: userProfile.uid, type: FollowListType.following));
+                          }
+                        ),
+                        _buildStatColumn(context, userProfile.level, 'Level'),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+
+                    if (!isOwnProfile && currentAuthUserId != null)
+                      ElevatedButton.icon(
+                        icon: Icon(
+                          isFollowingUser ? Icons.person_remove_outlined : Icons.person_add_alt_1_outlined,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          isFollowingUser ? 'UNFOLLOW' : 'FOLLOW',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isFollowingUser ? Colors.grey.shade600 : profilePrimaryOrange,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: isProcessingFollowAction ? null : () {
+                          context.read<UserInteractionCubit>().toggleFollow();
+                        },
+                      ),
+                    if (isProcessingFollowAction && !isOwnProfile)
+                       const Padding(padding: EdgeInsets.only(top: 8.0), child: Center(child: SizedBox(width:20, height:20, child: CircularProgressIndicator(strokeWidth: 2.5)))),
+                    
+                    const SizedBox(height: 25),
+                    Text('User\'s Posts', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8)
+                      ),
+                      child: Text('Posts by ${userProfile.username ?? "this user"} will appear here.', style: TextStyle(color: Colors.grey.shade600)),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const Center(child: Text("Profile not available."));
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatColumn(BuildContext context, int count, String label, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0), // Додаємо трохи padding для тап-зони
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              NumberFormat.compact().format(count),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: profileTextBlack),
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade700, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+                ),
+                if (onTap != null) // Іконка тільки якщо є onTap
+                  Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade500)
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/screens/view_user_profile_screen.dart ===
+
+
 === FILE: lib/features/social/presentation/widgets/comment_list_item.dart ===
 --------------------------------------------------
 // lib/features/social/presentation/widgets/comment_list_item.dart
@@ -22887,23 +23943,79 @@ class CommentListItem extends StatelessWidget {
 === END OF FILE: lib/features/social/presentation/widgets/comment_list_item.dart ===
 
 
+=== FILE: lib/features/social/presentation/widgets/follow_list_item_widget.dart ===
+--------------------------------------------------
+// lib/features/social/presentation/widgets/follow_list_item_widget.dart
+import 'package:flutter/material.dart';
+import '../../../../core/domain/entities/user_profile.dart';
+import '../screens/view_user_profile_screen.dart'; // Для переходу на профіль
+
+class FollowListItemWidget extends StatelessWidget {
+  final UserProfile userProfile;
+
+  const FollowListItemWidget({super.key, required this.userProfile});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 22,
+        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+        backgroundImage: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
+            ? NetworkImage(userProfile.profilePictureUrl!)
+            : null,
+        child: userProfile.profilePictureUrl == null || userProfile.profilePictureUrl!.isEmpty
+            ? Icon(Icons.person, size: 22, color: theme.colorScheme.primary)
+            : null,
+      ),
+      title: Text(
+        userProfile.displayName ?? userProfile.username ?? 'Unknown User',
+        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      subtitle: userProfile.username != null && userProfile.username!.isNotEmpty
+          ? Text(
+              '@${userProfile.username}',
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+            )
+          : null,
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: () {
+        Navigator.of(context).push(ViewUserProfileScreen.route(userProfile.uid));
+      },
+    );
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/features/social/presentation/widgets/follow_list_item_widget.dart ===
+
+
 === FILE: lib/features/social/presentation/widgets/post_card_content_widget.dart ===
 --------------------------------------------------
 // lib/features/social/presentation/widgets/post_card_content_widget.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Потрібен для RepositoryProvider
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth; // Для перевірки userId
+import 'package:flutter_bloc/flutter_bloc.dart'; 
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth; 
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
-import '../cubit/post_interaction_cubit.dart'; // Для голосування
+import '../cubit/post_interaction_cubit.dart'; 
 import 'vote_progress_bar_widget.dart';
 import 'dart:developer' as developer;
 
+// NEW COLORS FOR RECORD CLAIM
+const Color recordClaimBaseBlue = Color(0xFF067BC2); // #067BC2
+const Color recordClaimLighterBlue = Color(0xFF4FA8D8); // Трохи світліший варіант для градієнту
+const Color recordClaimDarkerBlue = Color(0xFF045C9B); // Трохи темніший варіант для градієнту
+
+const Color recordVerifyColor = Color(0xFF0A8754); // #0A8754
+const Color recordDisputeColor = Color(0xFFEF2917); // #EF2917
+
+
 class PostCardContentWidget extends StatelessWidget {
   final Post post;
-  final VoteType? currentUserVote; // Передаємо поточний голос для кнопок
-  final bool isDetailedView; // Прапорець для розрізнення детального перегляду від списку
+  final VoteType? currentUserVote; 
+  final bool isDetailedView; 
 
   const PostCardContentWidget({
     super.key,
@@ -22952,23 +24064,23 @@ class PostCardContentWidget extends StatelessWidget {
         if (status == RecordVerificationStatus.expired) return "EXPIRED";
     }
     if (status == RecordVerificationStatus.pending || status == null) return "AWAITS VOTING";
-    if (status == RecordVerificationStatus.contested) return "CONTESTED";
+    if (status == RecordVerificationStatus.contested) return "CONTESTED"; // Хоча ми його не використовуємо активно
     return "UNKNOWN";
   }
 
   Color _getRecordStatusColor(RecordVerificationStatus? status, bool? isVerified, BuildContext context) {
-    if (isVerified == true) return Colors.green.shade300;
+    if (isVerified == true) return recordVerifyColor; // NEW COLOR
     if (isVerified == false) {
-        if (status == RecordVerificationStatus.rejected) return Colors.red.shade300;
-        if (status == RecordVerificationStatus.expired) return Colors.red.shade400;
+        if (status == RecordVerificationStatus.rejected) return recordDisputeColor; // NEW COLOR
+        if (status == RecordVerificationStatus.expired) return recordDisputeColor.withOpacity(0.8); // NEW COLOR (трохи світліший)
     }
     switch (status) {
-      case RecordVerificationStatus.pending: return Colors.yellow.shade300;
-      case RecordVerificationStatus.verified: return Colors.green.shade300;
-      case RecordVerificationStatus.rejected: return Colors.red.shade300;
-      case RecordVerificationStatus.expired: return Colors.red.shade400;
-      case RecordVerificationStatus.contested: return Colors.orange.shade300;
-      default: return Colors.yellow.shade300;
+      case RecordVerificationStatus.pending: return Colors.yellow.shade700; // Залишаємо жовтим для "pending"
+      case RecordVerificationStatus.verified: return recordVerifyColor;
+      case RecordVerificationStatus.rejected: return recordDisputeColor;
+      case RecordVerificationStatus.expired: return recordDisputeColor.withOpacity(0.8);
+      case RecordVerificationStatus.contested: return Colors.orange.shade600; // Якщо буде використовуватися
+      default: return Colors.yellow.shade700; // Default to pending color
     }
   }
 
@@ -22977,8 +24089,7 @@ class PostCardContentWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     final bool isAuthorOfPost = currentAuthUserId == post.userId;
-    const Color verifyButtonColor = Color(0xFF4CAF50);
-
+    
     int verifyCount = 0;
     int disputeCount = 0;
     post.verificationVotes.forEach((_, voteStr) {
@@ -22992,7 +24103,7 @@ class PostCardContentWidget extends StatelessWidget {
 
 
     if (post.type == PostType.routineShare && post.routineSnapshot != null) {
-      return Padding( // Додано відступ для консистентності з іншими типами постів
+      return Padding( 
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
           padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
@@ -23038,14 +24149,20 @@ class PostCardContentWidget extends StatelessWidget {
         ),
       );
     } else if (post.type == PostType.recordClaim && post.recordDetails != null) {
-      return Padding( // Додано відступ
+      return Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF00BFFF), Color(0xFF87CEFA)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            // NEW GRADIENT FOR RECORD CLAIM
+            gradient: const LinearGradient(
+                colors: [recordClaimLighterBlue, recordClaimBaseBlue, recordClaimDarkerBlue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                stops: [0.0, 0.5, 1.0],
+            ),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.25), blurRadius: 8, offset: const Offset(0,4))],
+            boxShadow: [BoxShadow(color: recordClaimBaseBlue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0,5))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -23057,22 +24174,40 @@ class PostCardContentWidget extends StatelessWidget {
                 ])),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('by @${post.authorUsername}', style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
-                  Text('STATUS: ${_getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified)}', style: theme.textTheme.bodySmall?.copyWith(color: _getRecordStatusColor(post.recordVerificationStatus, post.isRecordVerified, context), fontWeight: FontWeight.bold, fontSize: 11)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _getRecordStatusColor(post.recordVerificationStatus, post.isRecordVerified, context).withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified),
+                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 0.5),
+                    ),
+                  ),
                 ]),
               ]),
               const SizedBox(height: 12),
               Text('${post.recordDetails!['reps'] ?? 'N/A'} REPS / ${post.recordDetails!['weightKg']?.toStringAsFixed(1) ?? 'N/A'} KG', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
               const SizedBox(height: 10),
-              VoteProgressBarWidget(verifyCount: verifyCount, disputeCount: disputeCount, height: 22, verifyColor: verifyButtonColor, disputeColor: Colors.red.shade600, backgroundColor: Colors.black.withOpacity(0.3), centerTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, shadows: [Shadow(color: Colors.black87, blurRadius: 2, offset: Offset(0,1))])),
+              VoteProgressBarWidget(
+                verifyCount: verifyCount, 
+                disputeCount: disputeCount, 
+                height: 22, 
+                verifyColor: recordVerifyColor, // NEW COLOR
+                disputeColor: recordDisputeColor, // NEW COLOR
+                backgroundColor: Colors.black.withOpacity(0.3), 
+                centerTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, shadows: [Shadow(color: Colors.black87, blurRadius: 2, offset: Offset(0,1))])
+              ),
               if (post.recordDetails!['videoUrl'] != null && post.recordDetails!['videoUrl'].isNotEmpty)
-                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: const Text('Watch Proof', style: TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
+                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO: Launch URL */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: const Text('Watch Proof', style: TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
               if (canVote)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: Row(children: [
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? verifyButtonColor.withOpacity(0.7) : verifyButtonColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('VALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? recordVerifyColor.withOpacity(0.7) : recordVerifyColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('VALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
                     const SizedBox(width: 12),
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? Colors.red.shade700.withOpacity(0.7) : Colors.red.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('UNVALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? recordDisputeColor.withOpacity(0.7) : recordDisputeColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('DISPUTE', style: TextStyle(fontWeight: FontWeight.bold)))), // "UNVALIDATE" замінено на "DISPUTE"
                   ]),
                 )
             ],
@@ -23080,8 +24215,6 @@ class PostCardContentWidget extends StatelessWidget {
         ),
       );
     }
-    // Для standard постів або якщо немає даних для routine/record, нічого не відображаємо тут.
-    // Основний текст та медіа обробляються поза цим віджетом.
     return const SizedBox.shrink();
   }
 }
@@ -23104,12 +24237,10 @@ import '../cubit/post_interaction_cubit.dart';
 import '../screens/post_detail_screen.dart';
 import 'dart:developer' as developer;
 
-// НЕ ПОТРІБНІ ТУТ, бо логіка в PostCardContentWidget
-// import '../../../../core/domain/entities/routine.dart';
-// import '../../../../core/domain/repositories/routine_repository.dart';
-// import '../../../social/presentation/screens/create_post_screen.dart';
-// import 'vote_progress_bar_widget.dart';
-import 'post_card_content_widget.dart'; // <-- НОВИЙ ІМПОРТ
+import 'post_card_content_widget.dart'; 
+// NEW IMPORT for navigating to other user's profile
+import '../screens/view_user_profile_screen.dart';
+
 
 class PostListItem extends StatelessWidget {
   final Post post;
@@ -23133,9 +24264,6 @@ class PostListItem extends StatelessWidget {
 }
 
 class _PostListItemContent extends StatelessWidget {
-  // _addRoutineToMyRoutines тепер знаходиться в PostCardContentWidget
-  // Якщо він потрібен лише там, його можна видалити звідси.
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -23179,7 +24307,7 @@ class _PostListItemContent extends StatelessWidget {
         final timeAgo = DateFormat.yMMMd('en_US').add_jm().format(currentPost.timestamp.toDate());
         final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
         final bool isLikedByCurrentUser = currentAuthUserId != null && currentPost.likedBy.contains(currentAuthUserId);
-        final bool isDetailedView = false; // В PostListItem це завжди не детальний перегляд
+        final bool isDetailedView = false;
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -23201,24 +24329,38 @@ class _PostListItemContent extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                        backgroundImage: currentPost.authorProfilePicUrl != null && currentPost.authorProfilePicUrl!.isNotEmpty
-                            ? NetworkImage(currentPost.authorProfilePicUrl!)
-                            : null,
-                        child: currentPost.authorProfilePicUrl == null || currentPost.authorProfilePicUrl!.isEmpty
-                            ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
-                            : null,
+                      GestureDetector( // Make avatar tappable
+                        onTap: () {
+                           if (currentPost.userId != currentAuthUserId) { // Prevent navigating to own profile this way
+                            Navigator.of(context).push(ViewUserProfileScreen.route(currentPost.userId));
+                          }
+                        },
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                          backgroundImage: currentPost.authorProfilePicUrl != null && currentPost.authorProfilePicUrl!.isNotEmpty
+                              ? NetworkImage(currentPost.authorProfilePicUrl!)
+                              : null,
+                          child: currentPost.authorProfilePicUrl == null || currentPost.authorProfilePicUrl!.isEmpty
+                              ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
+                              : null,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              currentPost.authorUsername,
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                             GestureDetector( // Make username tappable
+                              onTap: () {
+                                if (currentPost.userId != currentAuthUserId) {
+                                  Navigator.of(context).push(ViewUserProfileScreen.route(currentPost.userId));
+                                }
+                              },
+                              child: Text(
+                                currentPost.authorUsername,
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ),
                             Text(
                               timeAgo,
@@ -23243,11 +24385,11 @@ class _PostListItemContent extends StatelessWidget {
                        child: Text(
                          currentPost.textContent,
                          style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
-                         maxLines: 3, // Менше рядків для прев'ю у стрічці
+                         maxLines: 3,
                          overflow: TextOverflow.ellipsis,
                        ),
                      ),
-                  if (currentPost.mediaUrl != null && currentPost.type == PostType.standard) ...[ // Медіа тільки для стандартного поста у списку
+                  if (currentPost.mediaUrl != null && currentPost.type == PostType.standard) ...[
                     const SizedBox(height: 10),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -23338,8 +24480,8 @@ class VoteProgressBarWidget extends StatelessWidget {
   final int verifyCount;
   final int disputeCount;
   final double height;
-  final Color verifyColor;
-  final Color disputeColor;
+  final Color verifyColor; // Колір передається ззовні
+  final Color disputeColor; // Колір передається ззовні
   final Color backgroundColor;
   final TextStyle? centerTextStyle;
 
@@ -23348,8 +24490,8 @@ class VoteProgressBarWidget extends StatelessWidget {
     required this.verifyCount,
     required this.disputeCount,
     this.height = 20.0,
-    this.verifyColor = const Color(0xFF4CAF50), 
-    this.disputeColor = Colors.redAccent,
+    this.verifyColor = const Color(0xFF0A8754), // Оновлений дефолтний (хоча він буде перезаписаний)
+    this.disputeColor = const Color(0xFFEF2917), // Оновлений дефолтний (хоча він буде перезаписаний)
     this.backgroundColor = Colors.black26, 
     this.centerTextStyle,
   });
@@ -23364,7 +24506,6 @@ class VoteProgressBarWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(height / 2),
-        // border: Border.all(color: Colors.black54, width: 1.5) // ВИДАЛЕНО ОБВОДКУ
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(height / 2),
@@ -23378,7 +24519,7 @@ class VoteProgressBarWidget extends StatelessWidget {
                     Container(
                       width: maxWidth * verifyRatio,
                       decoration: BoxDecoration(
-                        color: verifyColor,
+                        color: verifyColor, // Використовуємо переданий колір
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(height / 2),
                           bottomLeft: Radius.circular(height / 2),
@@ -23391,7 +24532,7 @@ class VoteProgressBarWidget extends StatelessWidget {
                       Expanded(
                         child: Container(
                            decoration: BoxDecoration(
-                            color: disputeColor,
+                            color: disputeColor, // Використовуємо переданий колір
                             borderRadius: BorderRadius.only(
                               topRight: Radius.circular(height / 2),
                               bottomRight: Radius.circular(height / 2),
@@ -23412,7 +24553,6 @@ class VoteProgressBarWidget extends StatelessWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 13,
-                  // shadows: [Shadow(color: Colors.black54, blurRadius: 1, offset: Offset(0,1))] // ВИДАЛЕНО ТІНІ
                 ),
               ),
             ),
