@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/comment.dart';
+import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
@@ -34,6 +35,14 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
 
   String? get _currentUserId => _firebaseAuth.currentUser?.uid;
 
+  VoteType? _getCurrentUserVote(Post post) {
+    final userId = _currentUserId;
+    if (userId == null || !post.verificationVotes.containsKey(userId)) {
+      return null;
+    }
+    return stringToVoteType(post.verificationVotes[userId]);
+  }
+
   void _subscribeToPostUpdates() {
     Post? postForLoadingState = _getCurrentPostFromState();
     if (postForLoadingState == null && state is PostInteractionInitial) {
@@ -53,14 +62,15 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
     _postSubscription = _postRepository.getPostStreamById(postId).listen(
       (updatedPost) {
         if (updatedPost != null) {
+          final currentUserVote = _getCurrentUserVote(updatedPost);
           List<Comment> currentComments = [];
           if (state is PostCommentsLoaded) {
             currentComments = (state as PostCommentsLoaded).comments;
-            emit(PostCommentsLoaded(updatedPost, currentComments));
+            emit(PostCommentsLoaded(updatedPost, currentComments, currentUserVote: currentUserVote));
           } else {
-             emit(PostUpdated(updatedPost));
+             emit(PostUpdated(updatedPost, currentUserVote: currentUserVote));
           }
-          developer.log('PostInteractionCubit: Post $postId updated by stream.', name: 'PostInteractionCubit');
+          developer.log('PostInteractionCubit: Post $postId updated by stream. User vote: $currentUserVote', name: 'PostInteractionCubit');
         } else {
           developer.log('PostInteractionCubit: Post $postId not found or deleted by stream.', name: 'PostInteractionCubit');
           emit(const PostInteractionFailure("Post not found. It might have been deleted."));
@@ -94,14 +104,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
       newLikedBy.add(userId);
     }
     final optimisticPost = currentPost.copyWith(likedBy: newLikedBy);
-    
-    List<Comment> currentComments = [];
-    if (state is PostCommentsLoaded) {
-        currentComments = (state as PostCommentsLoaded).comments;
-        emit(PostCommentsLoaded(optimisticPost, currentComments));
-    } else {
-        emit(PostUpdated(optimisticPost));
-    }
+    _emitUpdatedStateWithPost(optimisticPost); // Use helper to emit correct state with vote info
 
     try {
       if (isLiked) {
@@ -112,7 +115,68 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
       developer.log('PostInteractionCubit: Like toggled for post $postId by user $userId', name: 'PostInteractionCubit');
     } catch (e, s) {
       developer.log('PostInteractionCubit: Error toggling like: $e', name: 'PostInteractionCubit', error: e, stackTrace: s);
+      // Revert optimistic update
+      _emitUpdatedStateWithPost(currentPost);
       emit(PostInteractionFailure("Failed to update like: ${e.toString()}", post: currentPost));
+    }
+  }
+
+  Future<void> castVote(VoteType voteType) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      emit(PostInteractionFailure("User not logged in to vote.", post: _getCurrentPostFromState()));
+      return;
+    }
+    Post? currentPost = _getCurrentPostFromState();
+    if (currentPost == null) {
+      emit(const PostInteractionFailure("Post data not available for vote action."));
+      return;
+    }
+    if (currentPost.type != PostType.recordClaim) {
+      emit(PostInteractionFailure("Can only vote on record claims.", post: currentPost));
+      return;
+    }
+    if (currentPost.userId == userId) {
+      emit(PostInteractionFailure("You cannot vote on your own record claim.", post: currentPost));
+      return;
+    }
+
+    final Map<String, String> newVotes = Map.from(currentPost.verificationVotes);
+    final String voteString = voteTypeToString(voteType);
+    
+    bool shouldRetract = newVotes[userId] == voteString;
+
+    if (shouldRetract) {
+      newVotes.remove(userId);
+    } else {
+      newVotes[userId] = voteString;
+    }
+    
+    final optimisticPost = currentPost.copyWith(verificationVotes: newVotes);
+    _emitUpdatedStateWithPost(optimisticPost);
+
+    try {
+      if (shouldRetract) {
+        await _postRepository.retractVote(postId, userId);
+        developer.log('User $userId retracted vote ${voteType.name} for post $postId', name: 'PostInteractionCubit');
+      } else {
+        await _postRepository.castVote(postId, userId, voteType);
+        developer.log('User $userId cast vote ${voteType.name} for post $postId', name: 'PostInteractionCubit');
+      }
+    } catch (e) {
+      developer.log('Error casting/retracting vote: $e', name: 'PostInteractionCubit');
+      // Revert optimistic update on error
+      _emitUpdatedStateWithPost(currentPost);
+      emit(PostInteractionFailure("Failed to ${shouldRetract ? 'retract' : 'cast'} vote: ${e.toString()}", post: currentPost));
+    }
+  }
+
+  void _emitUpdatedStateWithPost(Post post) {
+    final currentUserVote = _getCurrentUserVote(post);
+    if (state is PostCommentsLoaded) {
+      emit(PostCommentsLoaded(post, (state as PostCommentsLoaded).comments, currentUserVote: currentUserVote));
+    } else {
+      emit(PostUpdated(post, currentUserVote: currentUserVote));
     }
   }
 
@@ -141,7 +205,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
         authorUsername: userProfile.username ?? userProfile.displayName ?? 'User',
         authorProfilePicUrl: userProfile.profilePictureUrl,
         text: text,
-        timestamp: Timestamp.now(),
+        timestamp: Timestamp.now(), // Will be set by server
       );
 
       try {
@@ -168,8 +232,9 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
     _commentsSubscription?.cancel();
     _commentsSubscription = _postRepository.getCommentsStream(postId).listen(
       (comments) {
-        Post? latestPost = _getCurrentPostFromState() ?? currentPost;
-        emit(PostCommentsLoaded(latestPost!, comments));
+        Post? latestPost = _getCurrentPostFromState() ?? currentPost; // Ensure we use the most recent post
+        final currentUserVote = _getCurrentUserVote(latestPost!);
+        emit(PostCommentsLoaded(latestPost, comments, currentUserVote: currentUserVote));
         developer.log('PostInteractionCubit: Loaded ${comments.length} comments for post $postId', name: 'PostInteractionCubit');
       },
       onError: (error, stackTrace) {
@@ -208,11 +273,12 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
         authorUsername: originalComment.authorUsername,
         authorProfilePicUrl: originalComment.authorProfilePicUrl,
         text: newText,
-        timestamp: Timestamp.now(),
+        timestamp: Timestamp.now(), // Will be set by server on update
     );
 
     final optimisticComments = currentComments.map((c) => c.id == commentId ? updatedComment : c).toList();
-    emit(PostCommentsLoaded(post, optimisticComments));
+    final currentUserVote = _getCurrentUserVote(post);
+    emit(PostCommentsLoaded(post, optimisticComments, currentUserVote: currentUserVote));
 
     try {
         await _postRepository.updateComment(updatedComment);
@@ -220,7 +286,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
     } catch (e) {
         developer.log('PostInteractionCubit: Error updating comment $commentId: $e', name: 'PostInteractionCubit');
         emit(PostInteractionFailure("Failed to update comment: ${e.toString()}", post: post));
-        if (state is PostCommentsLoaded) emit(PostCommentsLoaded(post, currentComments));
+        if (state is PostCommentsLoaded) emit(PostCommentsLoaded(post, currentComments, currentUserVote: currentUserVote));
     }
   }
 
@@ -254,7 +320,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
     }
   }
 
-  Future<void> toggleCommentsEnabled() async { // <-- Новий метод
+  Future<void> toggleCommentsEnabled() async {
     final userId = _currentUserId;
     Post? currentPost = _getCurrentPostFromState();
 
@@ -265,20 +331,14 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
 
     final newIsEnabled = !currentPost.isCommentsEnabled;
     final optimisticPost = currentPost.copyWith(isCommentsEnabled: newIsEnabled);
-
-    List<Comment> currentComments = (state is PostCommentsLoaded) ? (state as PostCommentsLoaded).comments : [];
-    if (state is PostCommentsLoaded || currentComments.isNotEmpty) {
-         emit(PostCommentsLoaded(optimisticPost, currentComments));
-    } else {
-        emit(PostUpdated(optimisticPost));
-    }
-
+    _emitUpdatedStateWithPost(optimisticPost);
 
     try {
       await _postRepository.updatePostSettings(postId, isCommentsEnabled: newIsEnabled);
       developer.log('PostInteractionCubit: Comments for post $postId set to $newIsEnabled.', name: 'PostInteractionCubit');
     } catch (e) {
       developer.log('PostInteractionCubit: Error toggling comments enabled: $e', name: 'PostInteractionCubit');
+      _emitUpdatedStateWithPost(currentPost); // Revert optimistic update
       emit(PostInteractionFailure("Failed to update comment settings: ${e.toString()}", post: currentPost));
     }
   }
@@ -292,8 +352,10 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
         final failureState = state as PostInteractionFailure;
         if (failureState.post != null) return failureState.post;
     }
-    if (this.state is PostInteractionInitial) {
-      return (this.state as PostInteractionInitial).post;
+    // Fallback for safety, though ideally one of the above should match.
+    final currentState = this.state; // Access instance's state
+    if (currentState is PostInteractionInitial) {
+      return currentState.post;
     }
     return null;
   }

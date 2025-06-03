@@ -89,4 +89,38 @@ class RoutineRepositoryImpl implements RoutineRepository {
       rethrow; // Перекидаємо оригінальну помилку, якщо це "Routine not found..."
     }
   }
+
+  @override
+  Future<void> copyRoutineFromSnapshot(Map<String, dynamic> routineSnapshot, String targetUserId) async {
+    try {
+      final newRoutineDocRef = _firestore.collection('userRoutines').doc();
+      
+      // Reconstruct exercises from snapshot
+      List<RoutineExercise> exercises = (routineSnapshot['exercises'] as List<dynamic>?)
+              ?.map((e) => RoutineExercise.fromMap(e as Map<String, dynamic>))
+              .toList() ?? [];
+
+      final newRoutine = UserRoutine(
+        id: newRoutineDocRef.id,
+        userId: targetUserId,
+        name: routineSnapshot['name'] ?? 'Copied Routine',
+        description: routineSnapshot['description'],
+        exercises: exercises,
+        scheduledDays: List<String>.from(routineSnapshot['scheduledDays'] ?? []),
+        isPublic: false, // Copied routines are private by default
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      );
+
+      final routineDataToSave = newRoutine.toMap();
+      routineDataToSave['createdAt'] = FieldValue.serverTimestamp();
+      routineDataToSave['updatedAt'] = FieldValue.serverTimestamp();
+
+      await newRoutineDocRef.set(routineDataToSave);
+      developer.log('Routine copied from snapshot to user $targetUserId with ID: ${newRoutineDocRef.id}', name: 'RoutineRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error copying routine from snapshot: $e', name: 'RoutineRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to copy routine: ${e.toString()}');
+    }
+  }
 }

@@ -6,4 +6,6 @@ abstract class RoutineRepository { // <-- Ключове слово "abstract cl
   Future<List<UserRoutine>> getUserRoutines(String userId);
   Future<void> updateRoutine(UserRoutine routine);
   Future<void> deleteRoutine(String routineId);
+  // NEW METHOD
+  Future<void> copyRoutineFromSnapshot(Map<String, dynamic> routineSnapshot, String targetUserId);
 }

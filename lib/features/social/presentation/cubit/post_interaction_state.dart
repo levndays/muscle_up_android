@@ -15,9 +15,8 @@ class PostInteractionInitial extends PostInteractionState {
     List<Object?> get props => [post];
 }
 
-// Стан, коли завантажуються коментарі або оновлюється пост
 class PostInteractionLoading extends PostInteractionState {
-  final Post post; // Поточний стан поста
+  final Post post;
   const PostInteractionLoading(this.post);
   @override
   List<Object?> get props => [post];
@@ -26,23 +25,27 @@ class PostInteractionLoading extends PostInteractionState {
 
 class PostUpdated extends PostInteractionState {
   final Post post;
-  const PostUpdated(this.post);
+  final VoteType? currentUserVote; // NEW
+
+  const PostUpdated(this.post, {this.currentUserVote});
 
   @override
-  List<Object?> get props => [post];
+  List<Object?> get props => [post, currentUserVote];
 }
 
 class PostCommentsLoaded extends PostInteractionState {
-  final Post post; // Додаємо пост сюди, щоб мати доступ до isCommentsEnabled
+  final Post post;
   final List<Comment> comments;
-  const PostCommentsLoaded(this.post, this.comments);
+  final VoteType? currentUserVote; // NEW
+
+  const PostCommentsLoaded(this.post, this.comments, {this.currentUserVote});
 
   @override
-  List<Object?> get props => [post, comments];
+  List<Object?> get props => [post, comments, currentUserVote];
 }
 
 class PostInteractionFailure extends PostInteractionState {
-  final Post? post; // Повертаємо пост, щоб UI міг відновити попередній стан
+  final Post? post;
   final String error;
   const PostInteractionFailure(this.error, {this.post});
 

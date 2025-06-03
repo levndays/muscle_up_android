@@ -1,21 +1,19 @@
 // lib/core/domain/entities/achievement.dart
-import 'package:flutter/material.dart'; // Для IconData
-import 'user_profile.dart'; // <--- ПОТРІБНО ІМПОРТУВАТИ UserProfile
+import 'package:flutter/material.dart';
+import 'user_profile.dart';
 
-// Унікальні ідентифікатори для кожної нагороди
 enum AchievementId {
-  earlyBird, // За першу реєстрацію/завершення профілю
-  firstWorkout, // За перше завершене тренування
-  consistentKing10, // За 10 днів стріку
-  consistentKing30, // За 30 днів стріку
-  volumeStarter, // За досягнення певного об'єму (напр. 1000 кг)
-  volumePro, // За досягнення більшого об'єму (напр. 10000 кг)
+  earlyBird,
+  firstWorkout,
+  consistentKing10,
+  consistentKing30,
+  volumeStarter,
+  volumePro,
   level5Reached,
   level10Reached,
-  // Додайте інші ID нагород тут
+  personalRecordSet, // <-- NEW ACHIEVEMENT ID
 }
 
-// Тип для функції-перевірки умови
 typedef ConditionChecker = String? Function(UserProfile userProfile);
 
 class Achievement {
@@ -23,7 +21,8 @@ class Achievement {
   final String name;
   final String description;
   final IconData icon;
-  final ConditionChecker? conditionCheckerMessage; // Використовуємо typedef
+  final ConditionChecker? conditionCheckerMessage;
+  final bool isPersonalized; // <-- NEW FIELD to indicate if name/desc can be dynamic
 
   const Achievement({
     required this.id,
@@ -31,16 +30,26 @@ class Achievement {
     required this.description,
     required this.icon,
     this.conditionCheckerMessage,
+    this.isPersonalized = false, // <-- Default to false
   });
+
+  // Helper to get dynamic name for personalized achievements
+  String getDynamicName({String? detail}) {
+    if (isPersonalized && detail != null) {
+      return name.replaceFirst('[Detail]', detail);
+    }
+    return name;
+  }
+
+  // Helper to get dynamic description
+  String getDynamicDescription({String? detail}) {
+    if (isPersonalized && detail != null) {
+      return description.replaceFirst('[Detail]', detail);
+    }
+    return description;
+  }
 }
 
-// Словник усіх можливих нагород в додатку
-// Це дозволяє централізовано керувати описом нагород
-// Зверніть увагу: поля тут мають бути final, якщо клас Achievement має const конструктор.
-// Або конструктор Achievement не має бути const. Оскільки ми використовуємо const Achievement,
-// то allAchievements також має бути final, а не просто змінною.
-// Або, якщо allAchievements має змінюватися (малоймовірно), тоді Achievement не має бути const.
-// Для поточного використання, робимо allAchievements final.
 final Map<AchievementId, Achievement> allAchievements = {
   AchievementId.earlyBird: const Achievement(
     id: AchievementId.earlyBird,
@@ -55,40 +64,45 @@ final Map<AchievementId, Achievement> allAchievements = {
     icon: Icons.fitness_center,
   ),
   AchievementId.consistentKing10: Achievement(
-    id: AchievementId.consistentKing10,
-    name: 'STREAK STAR (10)',
-    description: '10-day workout streak! You are on fire!',
-    icon: Icons.local_fire_department,
-    conditionCheckerMessage: (UserProfile profile) { // Явно вказуємо тип параметра
-      if (profile.longestStreak >= 10) return null;
-      return 'Current best streak: ${profile.longestStreak}/10 days.';
-    }
-  ),
+      id: AchievementId.consistentKing10,
+      name: 'STREAK STAR (10)',
+      description: '10-day workout streak! You are on fire!',
+      icon: Icons.local_fire_department,
+      conditionCheckerMessage: (UserProfile profile) {
+        if (profile.longestStreak >= 10) return null;
+        return 'Current best streak: ${profile.longestStreak}/10 days.';
+      }),
   AchievementId.consistentKing30: Achievement(
-    id: AchievementId.consistentKing30,
-    name: 'CONSISTENT KING (30)',
-    description: '30-day workout streak! Unstoppable!',
-    icon: Icons.whatshot,
-     conditionCheckerMessage: (UserProfile profile) { // Явно вказуємо тип параметра
-      if (profile.longestStreak >= 30) return null;
-      return 'Current best streak: ${profile.longestStreak}/30 days.';
-    }
-  ),
+      id: AchievementId.consistentKing30,
+      name: 'CONSISTENT KING (30)',
+      description: '30-day workout streak! Unstoppable!',
+      icon: Icons.whatshot,
+      conditionCheckerMessage: (UserProfile profile) {
+        if (profile.longestStreak >= 30) return null;
+        return 'Current best streak: ${profile.longestStreak}/30 days.';
+      }),
   AchievementId.volumeStarter: Achievement(
     id: AchievementId.volumeStarter,
     name: 'VOLUME STARTER',
     description: 'Lifted over 10,000 KG in total volume!',
     icon: Icons.line_weight,
-    conditionCheckerMessage: (UserProfile profile) => "Needs total volume tracking in profile.",
+    conditionCheckerMessage: (UserProfile profile) =>
+        "Needs total volume tracking in profile.",
   ),
   AchievementId.level5Reached: Achievement(
-    id: AchievementId.level5Reached,
-    name: 'LEVEL 5 REACHED',
-    description: 'Congratulations on reaching level 5!',
-    icon: Icons.star_border_purple500_outlined,
-    conditionCheckerMessage: (UserProfile profile) { // Явно вказуємо тип параметра
-      if (profile.level >= 5) return null;
-      return 'Current level: ${profile.level}/5.';
-    }
+      id: AchievementId.level5Reached,
+      name: 'LEVEL 5 REACHED',
+      description: 'Congratulations on reaching level 5!',
+      icon: Icons.star_border_purple500_outlined,
+      conditionCheckerMessage: (UserProfile profile) {
+        if (profile.level >= 5) return null;
+        return 'Current level: ${profile.level}/5.';
+      }),
+  AchievementId.personalRecordSet: const Achievement( // <-- NEW ACHIEVEMENT
+    id: AchievementId.personalRecordSet,
+    name: 'NEW RECORD: [Detail]!', // Placeholder for exercise name
+    description: 'Congratulations on setting a new personal record for [Detail]!', // Placeholder
+    icon: Icons.military_tech, // Or Icons.workspace_premium or Icons.verified
+    isPersonalized: true,
   ),
 };

@@ -11,7 +11,15 @@ import '../widgets/routine_list_item.dart';
 import 'create_edit_routine_screen.dart';
 
 class UserRoutinesScreen extends StatelessWidget {
-  const UserRoutinesScreen({super.key});
+  final bool isSelectionMode; // NEW: Parameter to enable selection mode
+
+  const UserRoutinesScreen({super.key, this.isSelectionMode = false}); // Default to false
+
+  static Route<UserRoutine?> route({bool isSelectionMode = false}) { // Update route method
+    return MaterialPageRoute<UserRoutine?>(
+      builder: (_) => UserRoutinesScreen(isSelectionMode: isSelectionMode),
+    );
+  }
 
   Future<void> _handleRoutineUpsertResult(UserRoutinesCubit cubit, bool? routineWasSavedOrUpdated) async {
     if (routineWasSavedOrUpdated == true) {
@@ -28,6 +36,11 @@ class UserRoutinesScreen extends StatelessWidget {
         FirebaseAuth.instance,
       )..fetchUserRoutines(),
       child: Scaffold(
+        appBar: isSelectionMode // NEW: Conditional AppBar
+            ? AppBar(
+                title: const Text('Select a Routine'),
+              )
+            : null, // No AppBar if not in selection mode (HomePage handles it)
         body: BlocConsumer<UserRoutinesCubit, UserRoutinesState>(
           listener: (context, state) {
             if (state is UserRoutinesError) {
@@ -89,18 +102,19 @@ class UserRoutinesScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       const Text('Create a routine to start organizing your workouts!', style: TextStyle(fontSize: 15, color: Colors.grey), textAlign: TextAlign.center),
                       const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Create Your First Routine'),
-                        onPressed: () async {
-                          final currentContext = context;
-                          final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
-                            builder: (_) => const CreateEditRoutineScreen(),
-                          ));
-                          if (!currentContext.mounted) return;
-                          _handleRoutineUpsertResult(userRoutinesCubit, result);
-                        },
-                      )
+                      if (!isSelectionMode) // Only show create button if not in selection mode
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.add_circle_outline),
+                          label: const Text('Create Your First Routine'),
+                          onPressed: () async {
+                            final currentContext = context;
+                            final result = await Navigator.of(currentContext).push<bool>(MaterialPageRoute(
+                              builder: (_) => const CreateEditRoutineScreen(),
+                            ));
+                            if (!currentContext.mounted) return;
+                            _handleRoutineUpsertResult(userRoutinesCubit, result);
+                          },
+                        )
                     ],
                   ),
                 ),
@@ -122,6 +136,7 @@ class UserRoutinesScreen extends StatelessWidget {
                     routine: routine,
                     onRoutineUpdated: () => userRoutinesCubit.fetchUserRoutines(),
                     onRoutineDeleted: () => userRoutinesCubit.routineDeleted(routine.id),
+                    isSelectionMode: isSelectionMode, // Pass selection mode
                   );
                 },
               ),
@@ -129,7 +144,7 @@ class UserRoutinesScreen extends StatelessWidget {
           },
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: Builder(
+        floatingActionButton: isSelectionMode ? null : Builder( // NEW: Hide FAB in selection mode
           builder: (fabContext) {
             return FloatingActionButton.extended(
               onPressed: () async {

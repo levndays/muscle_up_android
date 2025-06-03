@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/comment.dart';
+import '../../../../core/domain/entities/vote_type.dart'; // <-- NEW IMPORT
 import '../../../../core/domain/repositories/post_repository.dart';
 import 'dart:developer' as developer;
 
@@ -23,10 +24,10 @@ class PostRepositoryImpl implements PostRepository {
       final docRef = _postsCollection.doc();
       final postWithId = post.copyWith(
         id: docRef.id,
-        // timestamp: Timestamp.now(), // Firestore оновить це значення на серверний час
       );
       Map<String, dynamic> postData = postWithId.toMap();
-      postData['timestamp'] = FieldValue.serverTimestamp(); // Гарантуємо серверний час
+      postData['timestamp'] = FieldValue.serverTimestamp();
+      postData['updatedAt'] = FieldValue.serverTimestamp(); // Also set updatedAt on creation
 
       await docRef.set(postData);
       developer.log('Post created with ID: ${docRef.id}', name: 'PostRepositoryImpl');
@@ -95,7 +96,6 @@ class PostRepositoryImpl implements PostRepository {
     }
   }
 
-
   @override
   Future<void> addLike(String postId, String userId) async {
     try {
@@ -133,7 +133,6 @@ class PostRepositoryImpl implements PostRepository {
         ..['timestamp'] = FieldValue.serverTimestamp();
 
       await commentDocRef.set(commentWithIdMap);
-      // Оновлення updatedAt для поста, оскільки додано коментар
       await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
       developer.log('Comment added to post ${comment.postId} by user ${comment.userId}. commentsCount will be updated by Cloud Function.', name: 'PostRepositoryImpl');
     } catch (e, s) {
@@ -164,10 +163,9 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final Map<String, dynamic> updateData = {
         'text': comment.text,
-        'timestamp': FieldValue.serverTimestamp(),
+        'timestamp': FieldValue.serverTimestamp(), // Update timestamp on edit
       };
       await _commentsCollection(comment.postId).doc(comment.id).update(updateData);
-      // Оновлення updatedAt для поста, оскільки коментар оновлено
       await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
       developer.log('Comment ${comment.id} on post ${comment.postId} updated.', name: 'PostRepositoryImpl');
     } catch (e, s) {
@@ -183,12 +181,40 @@ class PostRepositoryImpl implements PostRepository {
     }
     try {
       await _commentsCollection(postId).doc(commentId).delete();
-      // Оновлення updatedAt для поста, оскільки коментар видалено
       await _postsCollection.doc(postId).update({'updatedAt': FieldValue.serverTimestamp()});
       developer.log('Comment $commentId on post $postId deleted.', name: 'PostRepositoryImpl');
     } catch (e, s) {
       developer.log('Error deleting comment $commentId on post $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
       throw Exception('Failed to delete comment: ${e.toString()}');
+    }
+  }
+
+  // NEW IMPLEMENTATION for Record Claim Votes
+  @override
+  Future<void> castVote(String postId, String userId, VoteType voteType) async {
+    try {
+      await _postsCollection.doc(postId).update({
+        'verificationVotes.$userId': voteTypeToString(voteType), // "verificationVotes.userId"
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      developer.log('User $userId cast vote "${voteTypeToString(voteType)}" for post $postId', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error casting vote for post $postId by user $userId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to cast vote: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> retractVote(String postId, String userId) async {
+    try {
+      await _postsCollection.doc(postId).update({
+        'verificationVotes.$userId': FieldValue.delete(), // Remove the user's vote field
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      developer.log('User $userId retracted vote for post $postId', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error retracting vote for post $postId by user $userId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to retract vote: ${e.toString()}');
     }
   }
 }

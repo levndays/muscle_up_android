@@ -8,16 +8,21 @@ import '../screens/create_edit_routine_screen.dart';
 import '../../../workout_tracking/presentation/screens/active_workout_screen.dart';
 import 'dart:developer' as developer;
 
+// NEW IMPORT FOR SOCIAL
+import '../../../social/presentation/screens/create_post_screen.dart';
+
 class RoutineListItem extends StatelessWidget {
   final UserRoutine routine;
   final VoidCallback onRoutineUpdated; // Колбек для оновлення списку після редагування
   final VoidCallback onRoutineDeleted; // Колбек для оновлення списку після видалення
+  final bool isSelectionMode; // NEW: Parameter to enable selection mode
 
   const RoutineListItem({
     super.key,
     required this.routine,
     required this.onRoutineUpdated,
     required this.onRoutineDeleted,
+    this.isSelectionMode = false, // Default to false
   });
 
   Future<void> _confirmDelete(BuildContext context) async {
@@ -87,30 +92,40 @@ class RoutineListItem extends StatelessWidget {
           ],
         ),
         isThreeLine: (routine.description != null && routine.description!.isNotEmpty) && routine.exercises.isNotEmpty,
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) async { // <--- Зробити async
-            if (value == 'start') {
-              Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
-            } else if (value == 'edit') {
-              final result = await Navigator.of(context).push<bool>(MaterialPageRoute( // <--- Чекаємо результат
-                builder: (_) => CreateEditRoutineScreen(routineToEdit: routine),
-              ));
-              if (result == true) { // Якщо результат true, викликаємо колбек
-                onRoutineUpdated();
-              }
-            } else if (value == 'delete') {
-              _confirmDelete(context);
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(value: 'start', child: ListTile(leading: Icon(Icons.play_circle_fill, color: Colors.green), title: Text('Start Workout'))),
-            const PopupMenuItem<String>(value: 'edit', child: ListTile(leading: Icon(Icons.edit_note), title: Text('Edit Routine'))),
-            const PopupMenuItem<String>(value: 'delete', child: ListTile(leading: Icon(Icons.delete_sweep_outlined, color: Colors.redAccent), title: Text('Delete Routine', style: TextStyle(color: Colors.redAccent)))),
-          ],
-        ),
+        trailing: isSelectionMode // NEW: Conditional trailing widget
+            ? const Icon(Icons.check_circle_outline) // Or another selection icon
+            : PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) async {
+                  if (value == 'start') {
+                    Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
+                  } else if (value == 'edit') {
+                    final result = await Navigator.of(context).push<bool>(MaterialPageRoute(
+                      builder: (_) => CreateEditRoutineScreen(routineToEdit: routine),
+                    ));
+                    if (result == true) {
+                      onRoutineUpdated();
+                    }
+                  } else if (value == 'share') {
+                     Navigator.of(context).push(CreatePostScreen.route(routineToShare: routine));
+                  }
+                  else if (value == 'delete') {
+                    _confirmDelete(context);
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(value: 'start', child: ListTile(leading: Icon(Icons.play_circle_fill, color: Colors.green), title: Text('Start Workout'))),
+                  const PopupMenuItem<String>(value: 'edit', child: ListTile(leading: Icon(Icons.edit_note), title: Text('Edit Routine'))),
+                  const PopupMenuItem<String>(value: 'share', child: ListTile(leading: Icon(Icons.share), title: Text('Share Routine'))),
+                  const PopupMenuItem<String>(value: 'delete', child: ListTile(leading: Icon(Icons.delete_sweep_outlined, color: Colors.redAccent), title: Text('Delete Routine', style: TextStyle(color: Colors.redAccent)))),
+                ],
+              ),
         onTap: () {
-           Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
+          if (isSelectionMode) { // NEW: Handle tap for selection mode
+            Navigator.pop(context, routine); // Return the selected routine
+          } else {
+            Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
+          }
         },
       ),
     );

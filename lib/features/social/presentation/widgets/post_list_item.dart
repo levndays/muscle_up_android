@@ -4,12 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:intl/intl.dart';
 import '../../../../core/domain/entities/post.dart';
+import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/post_interaction_cubit.dart';
 import '../screens/post_detail_screen.dart';
 import 'dart:developer' as developer;
 
+// НЕ ПОТРІБНІ ТУТ, бо логіка в PostCardContentWidget
+// import '../../../../core/domain/entities/routine.dart';
+// import '../../../../core/domain/repositories/routine_repository.dart';
+// import '../../../social/presentation/screens/create_post_screen.dart';
+// import 'vote_progress_bar_widget.dart';
+import 'post_card_content_widget.dart'; // <-- НОВИЙ ІМПОРТ
 
 class PostListItem extends StatelessWidget {
   final Post post;
@@ -33,32 +40,40 @@ class PostListItem extends StatelessWidget {
 }
 
 class _PostListItemContent extends StatelessWidget {
+  // _addRoutineToMyRoutines тепер знаходиться в PostCardContentWidget
+  // Якщо він потрібен лише там, його можна видалити звідси.
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Використовуємо BlocBuilder для отримання актуального стану поста
     return BlocBuilder<PostInteractionCubit, PostInteractionState>(
       builder: (context, state) {
         Post currentPost;
+        VoteType? currentUserVote;
+
         if (state is PostInteractionInitial) {
           currentPost = state.post;
+          currentUserVote = null;
         } else if (state is PostUpdated) {
           currentPost = state.post;
+          currentUserVote = state.currentUserVote;
         } else if (state is PostCommentsLoaded) {
           currentPost = state.post;
+          currentUserVote = state.currentUserVote;
         } else if (state is PostInteractionLoading) {
           currentPost = state.post;
+           currentUserVote = null;
         } else if (state is PostInteractionFailure && state.post != null) {
            currentPost = state.post!;
-        }
-        else {
-          // Спробуємо отримати початковий пост з кубіта, якщо стан непередбачений
-          final initialPostFromCubit = context.read<PostInteractionCubit>().state;
-          if (initialPostFromCubit is PostInteractionInitial) {
-            currentPost = initialPostFromCubit.post;
+           currentUserVote = null;
+        } else {
+          final initialPostFromCubitState = context.read<PostInteractionCubit>().state;
+          if (initialPostFromCubitState is PostInteractionInitial) {
+             currentPost = initialPostFromCubitState.post;
+             currentUserVote = null;
           } else {
              developer.log('PostListItem: Unexpected state or post not available: $state', name: 'PostListItem');
-             return Card( // Заглушка на випадок помилки
+             return Card(
                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                child: const Padding(
                  padding: EdgeInsets.all(16.0),
@@ -68,9 +83,10 @@ class _PostListItemContent extends StatelessWidget {
           }
         }
 
-        final timeAgo = DateFormat.yMMMd().add_jm().format(currentPost.timestamp.toDate());
-        final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
-        final bool isLikedByCurrentUser = currentUserId != null && currentPost.likedBy.contains(currentUserId);
+        final timeAgo = DateFormat.yMMMd('en_US').add_jm().format(currentPost.timestamp.toDate());
+        final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
+        final bool isLikedByCurrentUser = currentAuthUserId != null && currentPost.likedBy.contains(currentAuthUserId);
+        final bool isDetailedView = false; // В PostListItem це завжди не детальний перегляд
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -94,11 +110,12 @@ class _PostListItemContent extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 20,
+                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
                         backgroundImage: currentPost.authorProfilePicUrl != null && currentPost.authorProfilePicUrl!.isNotEmpty
                             ? NetworkImage(currentPost.authorProfilePicUrl!)
                             : null,
                         child: currentPost.authorProfilePicUrl == null || currentPost.authorProfilePicUrl!.isEmpty
-                            ? const Icon(Icons.person, size: 20)
+                            ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
                             : null,
                       ),
                       const SizedBox(width: 10),
@@ -117,18 +134,27 @@ class _PostListItemContent extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // IconButton(icon: Icon(Icons.more_vert), onPressed: () { /* TODO: Post options */ })
                     ],
                   ),
                   const SizedBox(height: 12),
-                  if (currentPost.textContent.isNotEmpty)
+                  if (currentPost.textContent.isNotEmpty && currentPost.type == PostType.standard)
                     Text(
                       currentPost.textContent,
                       style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
+                       maxLines: 5,
+                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (currentPost.mediaUrl != null) ...[
+                  if (currentPost.textContent.isNotEmpty && (currentPost.type == PostType.routineShare || currentPost.type == PostType.recordClaim))
+                     Padding(
+                       padding: const EdgeInsets.only(bottom: 8.0),
+                       child: Text(
+                         currentPost.textContent,
+                         style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
+                         maxLines: 3, // Менше рядків для прев'ю у стрічці
+                         overflow: TextOverflow.ellipsis,
+                       ),
+                     ),
+                  if (currentPost.mediaUrl != null && currentPost.type == PostType.standard) ...[ // Медіа тільки для стандартного поста у списку
                     const SizedBox(height: 10),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -138,6 +164,11 @@ class _PostListItemContent extends StatelessWidget {
                       ),
                     ),
                   ],
+                  PostCardContentWidget(
+                    post: currentPost,
+                    currentUserVote: currentUserVote,
+                    isDetailedView: isDetailedView,
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,

@@ -9,6 +9,8 @@ import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/post_interaction_cubit.dart';
 import '../widgets/comment_list_item.dart';
+import '../widgets/post_card_content_widget.dart';
+import '../../../../core/domain/entities/vote_type.dart';
 import 'dart:developer' as developer;
 
 class PostDetailScreen extends StatefulWidget {
@@ -69,7 +71,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           title: BlocBuilder<PostInteractionCubit, PostInteractionState>(
             builder: (context, state) {
               String titleText = "Post";
-              // Використовуємо _extractPostFromState для отримання поста
               Post? appBarPost = _extractPostFromState(state);
               if (appBarPost != null) titleText = appBarPost.authorUsername;
               return Text(titleText);
@@ -78,7 +79,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           actions: [
             BlocBuilder<PostInteractionCubit, PostInteractionState>(
               builder: (context, state) {
-                // Використовуємо _extractPostFromState для отримання поста
                 Post? post = _extractPostFromState(state);
                 if (post != null && post.userId == currentAuthUserId) {
                   return IconButton(
@@ -112,29 +112,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           },
           builder: (context, state) {
             final cubit = context.read<PostInteractionCubit>();
-            // Використовуємо _extractPostFromState для отримання поста
             Post? post = _extractPostFromState(state);
             List<Comment> comments = [];
             bool isLoadingPostDetails = state is PostInteractionLoading;
             bool isLoadingComments = false;
+            VoteType? currentUserVote; // Для PostCardContentWidget
 
             if (state is PostCommentsLoaded) {
               comments = state.comments;
-            } else if (post != null && state is! PostInteractionFailure && state is! PostCommentsLoaded){
+              currentUserVote = state.currentUserVote;
+            } else if (state is PostUpdated) {
+              currentUserVote = state.currentUserVote;
+            }
+            // Якщо коментарі ще не завантажені, але пост є
+            else if (post != null && state is! PostInteractionFailure && state is! PostCommentsLoaded){
               isLoadingComments = true;
             }
+
 
             if (post == null && isLoadingPostDetails) {
               return const Center(child: CircularProgressIndicator());
             }
             if (post == null) {
-              // Якщо ми тут і стан не Failure з post == null (що обробляється в listener),
-              // то це може бути початковий момент до завантаження.
-              // Або якщо _extractPostFromState повернув null для непередбаченого стану.
               if (state is PostInteractionFailure && state.post == null) {
                  return const Center(child: Text("Post not found or could not be loaded."));
               }
-               return const Center(child: CircularProgressIndicator()); // Або інша заглушка
+               return const Center(child: CircularProgressIndicator());
             }
             
             final bool isLikedByCurrentUser = currentAuthUserId != null && post.likedBy.contains(currentAuthUserId);
@@ -173,8 +176,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              Text(post.textContent, style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.45)),
-                              if (post.mediaUrl != null) ...[
+                              if(post.textContent.isNotEmpty) // Завжди показуємо текст, якщо він є
+                                Text(post.textContent, style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.45)),
+                              
+                              // ВИКОРИСТОВУЄМО PostCardContentWidget ДЛЯ СПЕЦІАЛЬНИХ КАРТОК
+                              if (post.type != PostType.standard)
+                                PostCardContentWidget(
+                                  post: post,
+                                  currentUserVote: currentUserVote,
+                                  isDetailedView: true, // Вказуємо, що це детальний перегляд
+                                ),
+                              
+                              if (post.mediaUrl != null && post.type == PostType.standard) ...[ // Медіа для стандартного поста
                                 const SizedBox(height: 12),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
@@ -210,7 +223,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       ),
                       if (isLoadingComments && comments.isEmpty)
                         const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
-                      if (!post.isCommentsEnabled && !isLoadingComments) // Прибираємо comments.isEmpty, щоб показувати завжди, якщо вимкнено
+                      if (!post.isCommentsEnabled && !isLoadingComments)
                          SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16),
@@ -235,7 +248,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ],
                   ),
                 ),
-                if (post.isCommentsEnabled && currentAuthUserId != null) // Показуємо поле вводу тільки якщо коментарі увімкнені та користувач авторизований
+                if (post.isCommentsEnabled && currentAuthUserId != null)
                   SafeArea(
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 12.0),

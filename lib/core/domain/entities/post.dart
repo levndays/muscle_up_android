@@ -1,11 +1,21 @@
 // lib/core/domain/entities/post.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'vote_type.dart';
 
 enum PostType {
   standard,
   recordClaim,
   routineShare,
+}
+
+// NEW: Enum for record claim verification status
+enum RecordVerificationStatus {
+  pending,    // Default state, awaiting votes/deadline
+  verified,   // Successfully verified
+  rejected,   // Rejected by votes or timeout without consensus
+  expired,    // Voting window closed without enough votes for consensus (can be merged with rejected)
+  contested,  // (Optional) If there's a strong dispute
 }
 
 class Post extends Equatable {
@@ -17,13 +27,19 @@ class Post extends Equatable {
   final PostType type;
   final String textContent;
   final String? mediaUrl;
-  final List<String> likedBy; // Зберігаємо ID користувачів, які лайкнули
-  final int commentsCount; // Лічильник коментарів (буде оновлюватися функцією або на клієнті)
+  final List<String> likedBy;
+  final int commentsCount;
   final bool isCommentsEnabled;
   final String? relatedRoutineId;
   final Map<String, dynamic>? routineSnapshot;
-  final Map<String, dynamic>? recordDetails;
-  final bool? isRecordVerified;
+  final Map<String, dynamic>? recordDetails; // e.g., { exerciseId, exerciseName, weightKg, reps, videoUrl }
+
+  // Fields for Record Claim Verification
+  final RecordVerificationStatus? recordVerificationStatus; // NEW
+  final Timestamp? recordVerificationDeadline; // NEW
+  final bool? isRecordVerified; // This will reflect the final outcome of recordVerificationStatus
+  final Map<String, String> verificationVotes;
+  final List<String> votedAndRewardedUserIds; // NEW: Users who got XP for voting on this post
 
   const Post({
     required this.id,
@@ -41,9 +57,12 @@ class Post extends Equatable {
     this.routineSnapshot,
     this.recordDetails,
     this.isRecordVerified,
+    this.verificationVotes = const {},
+    this.recordVerificationStatus, // NEW
+    this.recordVerificationDeadline, // NEW
+    this.votedAndRewardedUserIds = const [], // NEW
   });
 
-  // Getter для кількості лайків
   int get likesCount => likedBy.length;
 
   factory Post.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
@@ -55,6 +74,15 @@ class Post extends Equatable {
       postType = PostType.values.byName(data['type'] ?? 'standard');
     } catch (_) {
       postType = PostType.standard;
+    }
+
+    RecordVerificationStatus? recordStatus;
+    if (data['recordVerificationStatus'] != null) {
+        try {
+            recordStatus = RecordVerificationStatus.values.byName(data['recordVerificationStatus']);
+        } catch (_) {
+            recordStatus = RecordVerificationStatus.pending; // Default or handle error
+        }
     }
 
     return Post(
@@ -73,6 +101,10 @@ class Post extends Equatable {
       routineSnapshot: data['routineSnapshot'] as Map<String, dynamic>?,
       recordDetails: data['recordDetails'] as Map<String, dynamic>?,
       isRecordVerified: data['isRecordVerified'] as bool?,
+      verificationVotes: Map<String, String>.from(data['verificationVotes'] ?? {}),
+      recordVerificationStatus: recordStatus, // NEW
+      recordVerificationDeadline: data['recordVerificationDeadline'] as Timestamp?, // NEW
+      votedAndRewardedUserIds: List<String>.from(data['votedAndRewardedUserIds'] ?? []), // NEW
     );
   }
 
@@ -81,7 +113,7 @@ class Post extends Equatable {
       'userId': userId,
       'authorUsername': authorUsername,
       'authorProfilePicUrl': authorProfilePicUrl,
-      'timestamp': timestamp,
+      'timestamp': timestamp, // Will be FieldValue.serverTimestamp() on create/update
       'type': type.name,
       'textContent': textContent,
       'mediaUrl': mediaUrl,
@@ -92,6 +124,11 @@ class Post extends Equatable {
       'routineSnapshot': routineSnapshot,
       'recordDetails': recordDetails,
       'isRecordVerified': isRecordVerified,
+      'verificationVotes': verificationVotes,
+      if (recordVerificationStatus != null) 'recordVerificationStatus': recordVerificationStatus!.name, // NEW
+      if (recordVerificationDeadline != null) 'recordVerificationDeadline': recordVerificationDeadline, // NEW
+      'votedAndRewardedUserIds': votedAndRewardedUserIds, // NEW
+      // 'updatedAt' should be handled by FieldValue.serverTimestamp() in repository
     };
   }
 
@@ -117,6 +154,12 @@ class Post extends Equatable {
     bool allowNullRecordDetails = false,
     bool? isRecordVerified,
     bool allowNullIsRecordVerified = false,
+    Map<String, String>? verificationVotes,
+    RecordVerificationStatus? recordVerificationStatus, // NEW
+    bool allowNullRecordVerificationStatus = false, // NEW
+    Timestamp? recordVerificationDeadline, // NEW
+    bool allowNullRecordVerificationDeadline = false, // NEW
+    List<String>? votedAndRewardedUserIds, // NEW
   }) {
     return Post(
       id: id ?? this.id,
@@ -134,6 +177,10 @@ class Post extends Equatable {
       routineSnapshot: allowNullRoutineSnapshot ? routineSnapshot : (routineSnapshot ?? this.routineSnapshot),
       recordDetails: allowNullRecordDetails ? recordDetails : (recordDetails ?? this.recordDetails),
       isRecordVerified: allowNullIsRecordVerified ? isRecordVerified : (isRecordVerified ?? this.isRecordVerified),
+      verificationVotes: verificationVotes ?? this.verificationVotes,
+      recordVerificationStatus: allowNullRecordVerificationStatus ? recordVerificationStatus : (recordVerificationStatus ?? this.recordVerificationStatus), // NEW
+      recordVerificationDeadline: allowNullRecordVerificationDeadline ? recordVerificationDeadline : (recordVerificationDeadline ?? this.recordVerificationDeadline), // NEW
+      votedAndRewardedUserIds: votedAndRewardedUserIds ?? this.votedAndRewardedUserIds, // NEW
     );
   }
 
@@ -154,5 +201,9 @@ class Post extends Equatable {
         routineSnapshot,
         recordDetails,
         isRecordVerified,
+        verificationVotes,
+        recordVerificationStatus, // NEW
+        recordVerificationDeadline, // NEW
+        votedAndRewardedUserIds, // NEW
       ];
 }

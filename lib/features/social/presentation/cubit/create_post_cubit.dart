@@ -26,10 +26,10 @@ class CreatePostCubit extends Cubit<CreatePostState> {
     required String textContent,
     String? mediaUrl,
     PostType type = PostType.standard,
-    bool isCommentsEnabled = true, // <-- Додано параметр
-    Map<String, dynamic>? routineSnapshot,
-    String? relatedRoutineId,
-    Map<String, dynamic>? recordDetails,
+    bool isCommentsEnabled = true,
+    Map<String, dynamic>? routineSnapshot, // NEW PARAMETER
+    String? relatedRoutineId,             // NEW PARAMETER
+    Map<String, dynamic>? recordDetails, // NEW PARAMETER
   }) async {
     final userId = _firebaseAuth.currentUser?.uid;
     if (userId == null) {
@@ -62,15 +62,15 @@ class CreatePostCubit extends Cubit<CreatePostState> {
         mediaUrl: mediaUrl,
         likedBy: [],
         commentsCount: 0,
-        isCommentsEnabled: isCommentsEnabled, // <-- Використовуємо передане значення
-        routineSnapshot: routineSnapshot,
-        relatedRoutineId: relatedRoutineId,
-        recordDetails: recordDetails,
+        isCommentsEnabled: isCommentsEnabled,
+        routineSnapshot: routineSnapshot, // NEW
+        relatedRoutineId: relatedRoutineId, // NEW
+        recordDetails: recordDetails, // NEW
       );
 
       await _postRepository.createPost(newPost);
-      emit(CreatePostSuccess(newPost.copyWith(id: "temp_id_client_generated")));
-      developer.log('Post submitted successfully by user: $userId, comments enabled: $isCommentsEnabled', name: 'CreatePostCubit');
+      emit(CreatePostSuccess(newPost.copyWith(id: "temp_id_client_generated"))); // Use copyWith to set a temporary ID
+      developer.log('Post submitted successfully by user: $userId, type: ${type.name}, comments enabled: $isCommentsEnabled', name: 'CreatePostCubit');
     } catch (e, s) {
       developer.log('Error submitting post: $e', name: 'CreatePostCubit', error: e, stackTrace: s);
       emit(CreatePostFailure(e.toString().replaceFirst("Exception: ", "")));
