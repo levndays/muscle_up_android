@@ -1,4 +1,5 @@
 // lib/features/social/presentation/screens/create_post_screen.dart
+import 'dart:io'; // NEW: For File type
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
@@ -7,18 +8,18 @@ import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/create_post_cubit.dart';
 import 'dart:developer' as developer;
-// NEW IMPORT
 import '../../../../core/domain/entities/routine.dart';
-import '../../../../core/domain/entities/predefined_exercise.dart'; // To select exercise for record
-import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart'; // To select exercise for record
-import '../../../routines/presentation/screens/user_routines_screen.dart'; // NEW IMPORT FOR ROUTINE SELECTION
+import '../../../../core/domain/entities/predefined_exercise.dart'; 
+import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart'; 
+import '../../../routines/presentation/screens/user_routines_screen.dart';
+import '../../../../core/services/image_picker_service.dart'; // NEW: Import image picker service
 
 class CreatePostScreen extends StatefulWidget {
   final UserRoutine? routineToShare;
 
   const CreatePostScreen({super.key, this.routineToShare});
 
-  static Route<bool> route({UserRoutine? routineToShare}) { // Update route method
+  static Route<bool> route({UserRoutine? routineToShare}) { 
     return MaterialPageRoute<bool>(
       builder: (_) => CreatePostScreen(routineToShare: routineToShare),
     );
@@ -32,24 +33,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _textController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _areCommentsEnabled = true;
-  PostType _selectedPostType = PostType.standard; // Default post type
+  PostType _selectedPostType = PostType.standard; 
 
-  // Fields for Routine Share posts
-  UserRoutine? _selectedRoutine; // NEW: holds the selected routine for sharing
+  UserRoutine? _selectedRoutine; 
 
-  // Fields for Record Claim posts
   PredefinedExercise? _selectedExerciseForRecord;
   final TextEditingController _recordWeightController = TextEditingController();
   final TextEditingController _recordRepsController = TextEditingController();
   final TextEditingController _recordVideoUrlController = TextEditingController();
+
+  File? _selectedMediaImage; // NEW: For storing selected image file
 
 
   @override
   void initState() {
     super.initState();
     if (widget.routineToShare != null) {
-      _selectedPostType = PostType.routineShare; // Automatically select RoutineShare if routine is passed
-      _selectedRoutine = widget.routineToShare; // NEW: Initialize selected routine
+      _selectedPostType = PostType.routineShare; 
+      _selectedRoutine = widget.routineToShare; 
       _textController.text = "Check out my new routine: ${widget.routineToShare!.name}!";
     }
   }
@@ -63,7 +64,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     super.dispose();
   }
 
-  // New: Method to build the post type selection widget
+  Future<void> _pickMediaImage() async { // NEW: Method to pick image for post
+    final ImagePickerService imagePickerService = ImagePickerService();
+    final File? image = await imagePickerService.pickImageFromGallery();
+    if (image != null) {
+      setState(() {
+        _selectedMediaImage = image;
+      });
+    }
+  }
+
   Widget _buildPostTypeSelector() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -72,47 +82,47 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ButtonSegment<PostType>(
             value: PostType.standard,
             label: Text('Standard'),
-            icon: Icon(Icons.note),
+            icon: Icon(Icons.note_outlined),
           ),
           ButtonSegment<PostType>(
             value: PostType.routineShare,
             label: Text('Routine'),
-            icon: Icon(Icons.share),
+            icon: Icon(Icons.share_outlined),
           ),
           ButtonSegment<PostType>(
             value: PostType.recordClaim,
             label: Text('Record'),
-            icon: Icon(Icons.emoji_events),
+            icon: Icon(Icons.emoji_events_outlined),
           ),
         ],
         selected: <PostType>{_selectedPostType},
         onSelectionChanged: (Set<PostType> newSelection) {
           setState(() {
             _selectedPostType = newSelection.first;
-            // Clear record claim fields if switching away from record type
             if (_selectedPostType != PostType.recordClaim) {
               _selectedExerciseForRecord = null;
               _recordWeightController.clear();
               _recordRepsController.clear();
               _recordVideoUrlController.clear();
             }
-            // Clear routine share fields if switching away from routine type
             if (_selectedPostType != PostType.routineShare) {
               _selectedRoutine = null;
             }
-            // If switching to routine share and no routine was initially passed,
-            // prompt user to select one.
-            if (_selectedPostType == PostType.routineShare && widget.routineToShare == null) {
-              // The `_buildRoutineShareFields` will handle the selection UI.
+            if (_selectedPostType != PostType.standard) { // NEW: Clear media if not standard
+                _selectedMediaImage = null;
             }
           });
         },
-        showSelectedIcon: false, // For a cleaner look
+        style: SegmentedButton.styleFrom(
+          selectedBackgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          selectedForegroundColor: Theme.of(context).colorScheme.primary,
+          side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+        ),
+        showSelectedIcon: false, 
       ),
     );
   }
 
-  // NEW: Method to build routine share specific fields
   Widget _buildRoutineShareFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +142,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               : null,
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
-            // NEW: Use UserRoutinesScreen.route with nullable return type
             final UserRoutine? selectedRoutine = await Navigator.of(context).push<UserRoutine?>(
               UserRoutinesScreen.route(isSelectionMode: true),
             );
@@ -145,7 +154,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               });
             }
           },
-          shape: Theme.of(context).inputDecorationTheme.border, // Apply default input border style
+          shape: Theme.of(context).inputDecorationTheme.border, 
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           tileColor: Theme.of(context).inputDecorationTheme.fillColor,
         ),
@@ -153,8 +162,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
   }
 
-
-  // New: Method to build record claim specific fields
   Widget _buildRecordClaimFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +187,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               });
             }
           },
-          shape: Theme.of(context).inputDecorationTheme.border, // Apply default input border style
+          shape: Theme.of(context).inputDecorationTheme.border,
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           tileColor: Theme.of(context).inputDecorationTheme.fillColor,
         ),
@@ -216,7 +223,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           validator: (value) {
             if (value != null && value.isNotEmpty) {
               final uri = Uri.tryParse(value);
-              // Check if parsing failed OR if it's not an absolute URI (e.g., just "myvideo.mp4")
               if (uri == null || !uri.hasAbsolutePath) {
                 return 'Enter a valid URL';
               }
@@ -224,6 +230,48 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             return null;
           },
         ),
+      ],
+    );
+  }
+
+  // NEW: Widget to display selected media and add button
+  Widget _buildMediaPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text('Attach Image (Optional):', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        if (_selectedMediaImage != null)
+          Stack(
+            alignment: Alignment.topRight,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  _selectedMediaImage!,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              IconButton(
+                icon: const CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)),
+                onPressed: () => setState(() => _selectedMediaImage = null),
+                tooltip: 'Remove Image',
+              ),
+            ],
+          )
+        else
+          OutlinedButton.icon(
+            icon: const Icon(Icons.add_photo_alternate_outlined),
+            label: const Text('Add Image'),
+            onPressed: _pickMediaImage,
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              textStyle: const TextStyle(fontSize: 15),
+            ),
+          ),
       ],
     );
   }
@@ -276,7 +324,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               routineSnapshot = _selectedRoutine!.toMap();
                               relatedRoutineId = _selectedRoutine!.id;
                             }
-
+                            // NEW: Pass selected media image file to cubit
                             context.read<CreatePostCubit>().submitPost(
                                   textContent: _textController.text,
                                   isCommentsEnabled: _areCommentsEnabled,
@@ -284,6 +332,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   relatedRoutineId: relatedRoutineId,
                                   routineSnapshot: routineSnapshot,
                                   recordDetails: recordDetails,
+                                  mediaImageFile: _selectedMediaImage, // NEW
                                 );
                           }
                         },
@@ -316,7 +365,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildPostTypeSelector(), // Always show selector
+                    _buildPostTypeSelector(), 
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _textController,
@@ -328,13 +377,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       maxLength: 500,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          // Allow empty text if it's a routine or record share, assuming the snapshot provides content
-                          if (_selectedPostType == PostType.routineShare || _selectedPostType == PostType.recordClaim) return null;
+                          if (_selectedPostType == PostType.routineShare || _selectedPostType == PostType.recordClaim || _selectedMediaImage != null) return null; // NEW: Allow empty text if media is present
                           return 'Post content cannot be empty.';
                         }
                         return null;
                       },
                     ),
+                     if (_selectedPostType == PostType.standard) // NEW: Show media picker only for standard posts
+                      _buildMediaPicker(),
                     const SizedBox(height: 16),
                     SwitchListTile(
                       title: const Text('Enable Comments'),
@@ -348,10 +398,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       activeColor: Theme.of(context).colorScheme.primary,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
-                    // Display routine details if sharing a routine
                     if (_selectedPostType == PostType.routineShare)
                       _buildRoutineShareFields(),
-                    // NEW: Display record claim fields if selected
                     if (_selectedPostType == PostType.recordClaim)
                       _buildRecordClaimFields(),
                     const SizedBox(height: 20),

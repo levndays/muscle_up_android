@@ -5,13 +5,14 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
+import 'dart:io'; // NEW: For File type
 
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/profile_setup_cubit.dart';
 import '../../../../home_page.dart'; 
 import '../../../profile/presentation/cubit/user_profile_cubit.dart' as global_user_profile_cubit;
-
+import '../../../../core/services/image_picker_service.dart'; // NEW: Import image picker service
 
 class ProfileSetupScreen extends StatefulWidget {
   final UserProfile? userProfileToEdit; // Новий параметр для редагування
@@ -37,6 +38,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   late ProfileSetupCubit _profileSetupCubit;
   bool _isEditingMode = false; // Прапорець для режиму редагування
+  File? _selectedAvatarImage; // NEW: For storing selected image file
+  String? _currentAvatarUrl; // NEW: For displaying current avatar
 
   @override
   void initState() {
@@ -47,11 +50,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     _profileSetupCubit = ProfileSetupCubit(
       RepositoryProvider.of<UserProfileRepository>(context),
       RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
-      // Передаємо initialProfile, якщо він є (для редагування)
       initialProfile: widget.userProfileToEdit, 
     );
     
-    // Ініціалізуємо поля, якщо це режим редагування
     if (_isEditingMode && widget.userProfileToEdit != null) {
       final profile = widget.userProfileToEdit!;
       _usernameController.text = profile.username ?? '';
@@ -62,17 +63,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _selectedDateOfBirth = profile.dateOfBirth?.toDate();
       _selectedFitnessGoal = profile.fitnessGoal;
       _selectedActivityLevel = profile.activityLevel;
+      _currentAvatarUrl = profile.profilePictureUrl; // NEW
     } else {
-      // Для нового профілю можемо спробувати заповнити displayName з FirebaseAuth
       final currentUser = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser;
       if (currentUser?.displayName != null && currentUser!.displayName!.isNotEmpty) {
         _displayNameController.text = currentUser.displayName!;
       } else if (currentUser?.email != null && currentUser!.email!.contains('@')) {
          _displayNameController.text = currentUser.email!.split('@').first;
       }
+       _currentAvatarUrl = currentUser?.photoURL; // NEW: For new users from FirebaseAuth
     }
 
-    // Слухачі для оновлення кубіта при зміні тексту
     _usernameController.addListener(() {
       _profileSetupCubit.updateField(username: _usernameController.text.trim());
     });
@@ -131,13 +132,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     }
   }
 
+  // NEW: Method to handle avatar image picking
+  Future<void> _pickAvatarImage() async {
+    final ImagePickerService imagePickerService = ImagePickerService();
+    final File? image = await imagePickerService.pickImageFromGallery();
+    if (image != null) {
+      setState(() {
+        _selectedAvatarImage = image;
+      });
+    }
+  }
+
   void _handleSaveProfile() {
     developer.log("Save Profile button pressed. IsEditing: $_isEditingMode", name: "ProfileSetupScreen");
     if (_formKey.currentState?.validate() ?? false) {
       developer.log("Form is valid, calling cubit.saveProfile()", name: "ProfileSetupScreen");
-      // Переконуємося, що всі дані з форми передані в кубіт перед збереженням
       _profileSetupCubit.updateField(
-        username: _usernameController.text.trim(), // username завжди передаємо, бо він обов'язковий
+        username: _usernameController.text.trim(),
         displayName: _displayNameController.text.trim().isNotEmpty ? _displayNameController.text.trim() : null,
         heightCm: double.tryParse(_heightController.text),
         weightKg: double.tryParse(_weightController.text),
@@ -146,7 +157,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         fitnessGoal: _selectedFitnessGoal,
         activityLevel: _selectedActivityLevel,
       );
-      _profileSetupCubit.saveProfile();
+      // NEW: Pass selected image file to the cubit for upload
+      _profileSetupCubit.saveProfile(avatarImageFile: _selectedAvatarImage);
     } else {
       developer.log("Form is NOT valid", name: "ProfileSetupScreen");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +173,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     String? Function(String?)? validator,
     TextInputType? keyboardType,
     bool isOptional = false,
-    // onChanged більше не потрібен тут, бо ми використовуємо listeners для контролерів
   }) {
     return TextFormField(
       controller: controller,
@@ -178,7 +189,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     required T? value,
     required String label,
     required List<DropdownMenuItem<T>> items,
-    required void Function(T?)? onChangedCallback, // Перейменовано для ясності
+    required void Function(T?)? onChangedCallback,
     String? Function(T?)? validator,
     bool isOptional = false,
   }) {
@@ -189,12 +200,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
       items: items,
       onChanged: (newValue) {
-        setState(() { // Оновлюємо локальний стан для UI
+        setState(() {
           if (label.toLowerCase().contains('gender')) _selectedGender = newValue as String?;
           if (label.toLowerCase().contains('goal')) _selectedFitnessGoal = newValue as String?;
           if (label.toLowerCase().contains('activity')) _selectedActivityLevel = newValue as String?;
         });
-        onChangedCallback?.call(newValue); // Викликаємо колбек для кубіта
+        onChangedCallback?.call(newValue);
       },
       validator: validator,
       isExpanded: true,
@@ -228,10 +239,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               }
 
               if (_isEditingMode) {
-                Navigator.of(context).pop(true); // Повертаємо true, щоб ProfileScreen знав про оновлення
+                Navigator.of(context).pop(true); 
               } else {
                  Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomePage()), // Або AuthGate, якщо HomePage вимагає UserProfileCubit
+                  MaterialPageRoute(builder: (context) => const HomePage()), 
                   (Route<dynamic> route) => false,
                 );
               }
@@ -246,18 +257,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           builder: (context, state) {
             developer.log("ProfileSetupScreen rebuilding UI with state: $state", name: "ProfileSetupScreen.Builder");
             
-            // Використовуємо дані з `widget.userProfileToEdit` для початкового заповнення,
-            // а потім оновлюємо з `state` якщо він ProfileSetupDataLoaded.
-            // Це допомагає уникнути перезапису полів, які користувач щойно змінив.
             if (state is ProfileSetupDataLoaded && !_isEditingMode) {
-              // Якщо це НЕ режим редагування і кубіт завантажив дані (наприклад, після невдалої спроби збереження)
-              // оновлюємо контролери з даних кубіта
               final profileFromCubit = state.userProfile;
               _usernameController.text = profileFromCubit.username ?? _usernameController.text;
               _displayNameController.text = profileFromCubit.displayName ?? _displayNameController.text;
               _heightController.text = profileFromCubit.heightCm?.toStringAsFixed(0) ?? _heightController.text;
               _weightController.text = profileFromCubit.weightKg?.toStringAsFixed(1) ?? _weightController.text;
-              // Dropdowns оновлюються через setState в onChanged, тому тут не потрібно
+              // NEW: Update current avatar URL from cubit state as well
+              _currentAvatarUrl = profileFromCubit.profilePictureUrl ?? _currentAvatarUrl;
+            } else if (state is ProfileSetupDataLoaded && _isEditingMode) {
+              // For editing mode, ensure currentAvatarUrl is also updated if it changes via cubit
+              _currentAvatarUrl = state.userProfile.profilePictureUrl ?? _currentAvatarUrl;
             }
 
 
@@ -272,6 +282,42 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
+                    // NEW: Avatar Picker
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundColor: Colors.grey.shade300,
+                            backgroundImage: _selectedAvatarImage != null
+                                ? FileImage(_selectedAvatarImage!)
+                                : (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty
+                                    ? NetworkImage(_currentAvatarUrl!)
+                                    : null) as ImageProvider?,
+                            child: (_selectedAvatarImage == null && (_currentAvatarUrl == null || _currentAvatarUrl!.isEmpty))
+                                ? const Icon(Icons.person, size: 60, color: Colors.white70)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Material( // For InkWell ripple effect
+                              color: Theme.of(context).colorScheme.secondary,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                onTap: _pickAvatarImage,
+                                borderRadius: BorderRadius.circular(20),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.edit, color: Colors.white, size: 20),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     _buildTextField(
                       controller: _usernameController,
                       label: 'Username',
@@ -317,10 +363,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       controller: _heightController,
                       label: 'Height (cm)',
                       isOptional: true,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), // Зроблено цілочисельним
+                      keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
                       validator: (value) {
                         if (value == null || value.isEmpty) return null;
-                        final n = int.tryParse(value); // Парсимо як int
+                        final n = int.tryParse(value);
                         if (n == null || n <= 0 || n > 300) return 'Invalid height (1-300 cm)';
                         return null;
                       },

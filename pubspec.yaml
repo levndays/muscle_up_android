@@ -1,12 +1,9 @@
 name: muscle_up
 description: "Next-gen Fitness App. New height, New companions."
-# Запобігає випадковій публікації в pub.dev
 publish_to: 'none' 
-version: 0.1.0 # Поточна версія додатку
+version: 0.7.0
 
 environment:
-  # Вказує мінімальну версію Dart SDK, необхідну для проєкту.
-  # Переконайтесь, що вона відповідає вашій встановленій версії.
   sdk: ^3.8.0 
 
 dependencies:
@@ -14,96 +11,72 @@ dependencies:
     sdk: flutter
   
   # Firebase SDK
-  firebase_core: ^3.13.1 # Базовий пакет для ініціалізації Firebase
-  firebase_auth: ^5.5.4 # Для автентифікації користувачів
-  google_sign_in: ^6.2.1 # Для автентифікації через Google
-  cloud_firestore: ^5.6.8 # Для роботи з NoSQL базою даних Firestore
-  
-  # Управління станом (State Management)
-  flutter_bloc: ^9.1.1 # Популярний пакет для реалізації BLoC патерну
-  bloc: ^9.0.0 # Основний пакет BLoC (може йти як транзитивна залежність)
-  
-  # Утиліти
-  equatable: ^2.0.5 # Для спрощення порівняння об'єктів (особливо в BLoC states/events)
-  intl: ^0.19.0 # Для інтернаціоналізації та форматування дат/часу
-  
-  # Графіка та Анімації
-  flutter_svg: ^2.0.10+1 # Для відображення SVG графіки (наприклад, карти м'язів)
-  animated_background: ^2.0.0 # Для анімованого фону на LoginPage
-  confetti: ^0.7.0 # Для ефекту конфетті (наприклад, на WorkoutCompleteScreen)
-  lottie: ^3.1.2 # Для відтворення Lottie анімацій (наприклад, трофею)
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
+  google_sign_in: ^6.2.1
+  cloud_firestore: ^5.6.8
+  firebase_storage: ^12.1.0 # NEW: For file uploads
 
-  # Інші пакети (якщо потрібні для специфічних функцій)
-  # collection: ^1.18.0 # Якщо використовуються розширені утиліти для колекцій (часто не потрібен, якщо є в SDK)
+  # State Management
+  flutter_bloc: ^9.1.1
+  bloc: ^9.0.0
+  
+  # Utilities
+  equatable: ^2.0.5
+  intl: ^0.19.0
+  image_picker: ^1.1.2 # NEW: For picking images from gallery/camera
+  
+  # Graphics & Animations
+  flutter_svg: ^2.0.10+1
+  animated_background: ^2.0.0
+  confetti: ^0.7.0
+  lottie: ^3.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  # Лінтери та аналізатори коду
-  flutter_lints: ^5.0.0 # Набір рекомендованих правил лінтингу для Flutter проєктів
-  
-  # Генерація іконок додатку
-  flutter_launcher_icons: ^0.13.1 # Пакет для автоматичної генерації іконок для різних платформ
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
-# Конфігурація для flutter_launcher_icons
-# Дозволяє автоматично генерувати іконки додатку з одного зображення
 flutter_launcher_icons:
-  android: "launcher_icon" # Використовувати адаптивні іконки для Android (true або назва файлу)
-  ios: true # Генерувати іконки для iOS
-  image_path: "assets/images/app_icon.png" # Шлях до основного зображення для іконки
-  min_sdk_android: 23 # Мінімальна версія Android SDK для генерації адаптивних іконок
-  # Приклади для інших платформ (закоментовано, можна активувати за потреби)
-  # web:
-  #   generate: true
-  #   image_path: "assets/images/app_icon_web.png" # Окреме зображення для вебу
-  #   background_color: "#ED5D1A" # Колір фону для веб-іконки
-  #   theme_color: "#ED5D1A"     # Колір теми для веб-іконки
-  # windows:
-  #   generate: true
-  #   image_path: "assets/images/app_icon_windows.png"
-  #   icon_size: 48 # Розмір іконки для Windows
-  # macos:
-  #   generate: true
-  #   image_path: "assets/images/app_icon_macos.png"
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 23
 
 flutter:
-  # Вказує, що проєкт використовує Material Design
   uses-material-design: true
 
-  # Ресурси (асети), які використовуються в додатку
   assets:
-    - assets/images/ # Загальна папка для зображень
-    # Якщо ви додаєте SVG для жіночого тіла, переконайтеся, що вони тут вказані
-    # або вся папка assets/images/ вже покриває їх.
+    - assets/images/
     - assets/images/male_front.svg 
     - assets/images/male_back.svg
-    - assets/images/female_front.svg # Новий асет
-    - assets/images/female_back.svg  # Новий асет
-    - assets/fonts/    # Папка для шрифтів
-    - assets/animations/ # Папка для Lottie анімацій
+    - assets/images/female_front.svg
+    - assets/images/female_back.svg
+    - assets/fonts/
+    - assets/animations/
 
-  # Конфігурація шрифтів
   fonts:
-    - family: Inter # Назва сімейства шрифтів
+    - family: Inter
       fonts:
-        - asset: assets/fonts/Inter_18pt-Regular.ttf # Звичайний
-        - asset: assets/fonts/Inter_18pt-Italic.ttf  # Курсив
+        - asset: assets/fonts/Inter_18pt-Regular.ttf
+        - asset: assets/fonts/Inter_18pt-Italic.ttf
           style: italic
-        - asset: assets/fonts/Inter_18pt-Light.ttf   # Світлий
+        - asset: assets/fonts/Inter_18pt-Light.ttf
           weight: 300
-        - asset: assets/fonts/Inter_18pt-Medium.ttf  # Середній
+        - asset: assets/fonts/Inter_18pt-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Inter_18pt-SemiBold.ttf # Напівжирний
+        - asset: assets/fonts/Inter_18pt-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Inter_18pt-Bold.ttf    # Жирний
+        - asset: assets/fonts/Inter_18pt-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Inter_18pt-ExtraBold.ttf # Дуже жирний
+        - asset: assets/fonts/Inter_18pt-ExtraBold.ttf
           weight: 800
-        - asset: assets/fonts/Inter_18pt-Black.ttf   # "Чорний" (найжирніший)
+        - asset: assets/fonts/Inter_18pt-Black.ttf
           weight: 900
           
-    - family: IBMPlexMono # Інше сімейство шрифтів
+    - family: IBMPlexMono
       fonts:
         - asset: assets/fonts/IBMPlexMono-Regular.ttf
         - asset: assets/fonts/IBMPlexMono-Bold.ttf

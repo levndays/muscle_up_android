@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/comment.dart';
-import '../../../../core/domain/entities/vote_type.dart'; // <-- NEW IMPORT
+import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import 'dart:developer' as developer;
 
@@ -21,16 +21,16 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<void> createPost(Post post) async {
     try {
-      final docRef = _postsCollection.doc();
-      final postWithId = post.copyWith(
-        id: docRef.id,
-      );
-      Map<String, dynamic> postData = postWithId.toMap();
+      final docRef = _postsCollection.doc(); // Firestore generates ID
+      
+      final postWithFinalId = post.copyWith(id: docRef.id);
+      
+      Map<String, dynamic> postData = postWithFinalId.toMap();
       postData['timestamp'] = FieldValue.serverTimestamp();
-      postData['updatedAt'] = FieldValue.serverTimestamp(); // Also set updatedAt on creation
+      postData['updatedAt'] = FieldValue.serverTimestamp();
 
       await docRef.set(postData);
-      developer.log('Post created with ID: ${docRef.id}', name: 'PostRepositoryImpl');
+      developer.log('Post created with ID: ${docRef.id}, mediaUrl: ${postData['mediaUrl']}', name: 'PostRepositoryImpl');
     } catch (e, s) {
       developer.log('Error creating post: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
       throw Exception('Failed to create post: ${e.toString()}');
@@ -51,6 +51,25 @@ class PostRepositoryImpl implements PostRepository {
           .toList();
     }).handleError((error, stackTrace) {
       developer.log('Error in all posts stream: $error', name: 'PostRepositoryImpl', error: error, stackTrace: stackTrace);
+      return <Post>[];
+    });
+  }
+
+  @override
+  Stream<List<Post>> getUserPostsStream(String userId, {int limit = 20}) { // <-- IMPLEMENTED
+    developer.log('Subscribing to user posts stream for userId: $userId (limit: $limit)', name: 'PostRepositoryImpl');
+    return _postsCollection
+        .where('userId', isEqualTo: userId)
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) {
+      developer.log('Received ${snapshot.docs.length} posts for user $userId from stream', name: 'PostRepositoryImpl');
+      return snapshot.docs
+          .map((doc) => Post.fromFirestore(doc))
+          .toList();
+    }).handleError((error, stackTrace) {
+      developer.log('Error in user posts stream for $userId: $error', name: 'PostRepositoryImpl', error: error, stackTrace: stackTrace);
       return <Post>[];
     });
   }
@@ -129,11 +148,10 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final commentDocRef = _commentsCollection(comment.postId).doc();
       final commentWithIdMap = comment.toMap()
-        ..['id'] = commentDocRef.id
+        ..['id'] = commentDocRef.id 
         ..['timestamp'] = FieldValue.serverTimestamp();
 
       await commentDocRef.set(commentWithIdMap);
-      await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
       developer.log('Comment added to post ${comment.postId} by user ${comment.userId}. commentsCount will be updated by Cloud Function.', name: 'PostRepositoryImpl');
     } catch (e, s) {
       developer.log('Error adding comment to post ${comment.postId}: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
@@ -163,7 +181,7 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final Map<String, dynamic> updateData = {
         'text': comment.text,
-        'timestamp': FieldValue.serverTimestamp(), // Update timestamp on edit
+        'timestamp': FieldValue.serverTimestamp(),
       };
       await _commentsCollection(comment.postId).doc(comment.id).update(updateData);
       await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
@@ -181,7 +199,6 @@ class PostRepositoryImpl implements PostRepository {
     }
     try {
       await _commentsCollection(postId).doc(commentId).delete();
-      await _postsCollection.doc(postId).update({'updatedAt': FieldValue.serverTimestamp()});
       developer.log('Comment $commentId on post $postId deleted.', name: 'PostRepositoryImpl');
     } catch (e, s) {
       developer.log('Error deleting comment $commentId on post $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
@@ -189,12 +206,11 @@ class PostRepositoryImpl implements PostRepository {
     }
   }
 
-  // NEW IMPLEMENTATION for Record Claim Votes
   @override
   Future<void> castVote(String postId, String userId, VoteType voteType) async {
     try {
       await _postsCollection.doc(postId).update({
-        'verificationVotes.$userId': voteTypeToString(voteType), // "verificationVotes.userId"
+        'verificationVotes.$userId': voteTypeToString(voteType),
         'updatedAt': FieldValue.serverTimestamp(),
       });
       developer.log('User $userId cast vote "${voteTypeToString(voteType)}" for post $postId', name: 'PostRepositoryImpl');
@@ -208,7 +224,7 @@ class PostRepositoryImpl implements PostRepository {
   Future<void> retractVote(String postId, String userId) async {
     try {
       await _postsCollection.doc(postId).update({
-        'verificationVotes.$userId': FieldValue.delete(), // Remove the user's vote field
+        'verificationVotes.$userId': FieldValue.delete(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
       developer.log('User $userId retracted vote for post $postId', name: 'PostRepositoryImpl');

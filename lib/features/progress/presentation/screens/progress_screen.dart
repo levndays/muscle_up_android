@@ -13,10 +13,10 @@ import '../cubit/progress_cubit.dart';
 import '../widgets/league_title_widget.dart';
 import '../widgets/xp_progress_bar_widget.dart';
 import '../widgets/muscle_map_widget.dart';
-// Імпорти для сповіщень
 import '../../../../core/domain/entities/app_notification.dart';
 import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../../notifications/presentation/widgets/notification_list_item.dart';
+import '../../../leagues/presentation/screens/league_screen.dart'; 
 
 
 class ProgressScreen extends StatelessWidget {
@@ -24,10 +24,6 @@ class ProgressScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // NotificationsCubit вже надається HomePage, тому ми можемо отримати його тут,
-    // якщо ProgressScreen є його нащадком.
-    // Якщо ні, його потрібно буде надати вище в дереві або тут.
-    // Для простоти, припустимо, що він доступний через context.watch або context.read.
     return BlocProvider(
       create: (context) => ProgressCubit(
         RepositoryProvider.of<UserProfileRepository>(context),
@@ -178,9 +174,8 @@ class _ProgressView extends StatelessWidget {
                       level: userProfile.level,
                       gradientColors: currentLeague.gradientColors,
                       onLeagueTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Tapped on ${currentLeague.name} - League screen TBD')),
-                        );
+                        Navigator.of(context).push(LeagueScreen.route(currentLeague: currentLeague));
+                        developer.log("Tapped on League: ${currentLeague.name}", name: "ProgressScreen.LeagueTap");
                       },
                     ),
                     const SizedBox(height: 12),
@@ -385,7 +380,7 @@ class _ProgressView extends StatelessWidget {
                         if (notificationsState is NotificationsLoaded) {
                           final adviceNotifications = notificationsState.notifications
                               .where((n) => n.type == NotificationType.advice)
-                              .take(3) // Показуємо останні 3 поради
+                              .take(3) 
                               .toList();
                           if (adviceNotifications.isEmpty) {
                             return Container(
@@ -402,7 +397,6 @@ class _ProgressView extends StatelessWidget {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: adviceNotifications.length,
                             itemBuilder: (ctx, index) {
-                              // Використовуємо існуючий NotificationListItem для відображення поради
                               return NotificationListItem(notification: adviceNotifications[index]);
                             },
                           );
@@ -415,7 +409,6 @@ class _ProgressView extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 10),
-                     // ================== ТИМЧАСОВА ТЕСТОВА КНОПКА (початок) ==================
                     Padding(
                       padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                       child: ElevatedButton.icon(
@@ -428,7 +421,6 @@ class _ProgressView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // ================== ТИМЧАСОВА ТЕСТОВА КНОПКА (кінець) ==================
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -512,17 +504,16 @@ class _SparklinePainter extends CustomPainter {
 
     double paddingY = (maxVal - minVal) * 0.15;
     if (paddingY < 0.5 && maxVal > 0) paddingY = 0.5;
-     // Якщо всі значення однакові (або майже однакові), забезпечуємо мінімальний діапазон для візуалізації
-    if (maxVal - minVal < 1.0) { // Наприклад, якщо різниця менше 1
-        minVal = minVal - 0.5; // Трохи розширюємо діапазон
+    if (maxVal - minVal < 1.0) { 
+        minVal = minVal - 0.5; 
         maxVal = maxVal + 0.5;
-    } else { // Якщо діапазон достатній, додаємо невеликий відступ
-        paddingY = (maxVal - minVal) * 0.1; // 10% від діапазону
+    } else { 
+        paddingY = (maxVal - minVal) * 0.1; 
         minVal -= paddingY;
         maxVal += paddingY;
     }
-    if (minVal == maxVal) { // Якщо після всіх маніпуляцій вони все ще рівні
-        minVal -= 0.5; // Гарантуємо, що діапазон не нульовий
+    if (minVal == maxVal) { 
+        minVal -= 0.5; 
         maxVal += 0.5;
     }
 

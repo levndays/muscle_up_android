@@ -8,7 +8,7 @@ import '../../../../core/domain/entities/comment.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/post_interaction_cubit.dart';
-import '../widgets/comment_list_item.dart';
+import '../widgets/comment_list_item.dart'; // Імпорт на місці
 import '../widgets/post_card_content_widget.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import 'dart:developer' as developer;
@@ -116,7 +116,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             List<Comment> comments = [];
             bool isLoadingPostDetails = state is PostInteractionLoading;
             bool isLoadingComments = false;
-            VoteType? currentUserVote; // Для PostCardContentWidget
+            VoteType? currentUserVote; 
 
             if (state is PostCommentsLoaded) {
               comments = state.comments;
@@ -124,7 +124,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             } else if (state is PostUpdated) {
               currentUserVote = state.currentUserVote;
             }
-            // Якщо коментарі ще не завантажені, але пост є
             else if (post != null && state is! PostInteractionFailure && state is! PostCommentsLoaded){
               isLoadingComments = true;
             }
@@ -176,22 +175,41 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              if(post.textContent.isNotEmpty) // Завжди показуємо текст, якщо він є
+                              if(post.textContent.isNotEmpty) 
                                 Text(post.textContent, style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.45)),
                               
-                              // ВИКОРИСТОВУЄМО PostCardContentWidget ДЛЯ СПЕЦІАЛЬНИХ КАРТОК
                               if (post.type != PostType.standard)
                                 PostCardContentWidget(
                                   post: post,
                                   currentUserVote: currentUserVote,
-                                  isDetailedView: true, // Вказуємо, що це детальний перегляд
+                                  isDetailedView: true, 
                                 ),
                               
-                              if (post.mediaUrl != null && post.type == PostType.standard) ...[ // Медіа для стандартного поста
+                              if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty && post.type == PostType.standard) ...[ 
                                 const SizedBox(height: 12),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: AspectRatio(aspectRatio: 16 / 9, child: Image.network(post.mediaUrl!, fit: BoxFit.cover)),
+                                  child: AspectRatio(
+                                    aspectRatio: 16 / 9, 
+                                    child: Image.network(
+                                      post.mediaUrl!, 
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: Colors.grey[300],
+                                        child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                      ),
+                                    )
+                                  ),
                                 ),
                               ],
                               const SizedBox(height: 16),

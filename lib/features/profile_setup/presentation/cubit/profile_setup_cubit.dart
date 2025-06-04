@@ -1,8 +1,10 @@
 // lib/features/profile_setup/presentation/cubit/profile_setup_cubit.dart
+import 'dart:io'; // NEW: For File type
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:firebase_storage/firebase_storage.dart' as fb_storage; // NEW
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import 'dart:developer' as developer; 
@@ -18,24 +20,23 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
   ProfileSetupCubit(
     this._userProfileRepository,
     this._firebaseAuth, {
-    UserProfile? initialProfile, // Приймаємо initialProfile
-  })  : _currentUserProfile = initialProfile ?? // Використовуємо initialProfile або створюємо новий
+    UserProfile? initialProfile, 
+  })  : _currentUserProfile = initialProfile ?? 
             UserProfile(
               uid: _firebaseAuth.currentUser?.uid ?? '',
               email: _firebaseAuth.currentUser?.email,
-              // Не заповнюємо displayName з FirebaseAuth тут, це робиться в _loadInitialData або UI
               displayName: null, 
               profilePictureUrl: _firebaseAuth.currentUser?.photoURL,
               xp: 0,
               level: 1,
-              profileSetupComplete: false, // За замовчуванням false для нового
-              createdAt: Timestamp.now(), // Попереднє значення
-              updatedAt: Timestamp.now(), // Попереднє значення
+              profileSetupComplete: false, 
+              createdAt: Timestamp.now(), 
+              updatedAt: Timestamp.now(), 
             ),
-        _isEditingMode = initialProfile != null, // Режим редагування, якщо initialProfile наданий
+        _isEditingMode = initialProfile != null, 
         super(initialProfile != null 
-              ? ProfileSetupDataLoaded(initialProfile) // Якщо редагування, починаємо з завантажених даних
-              : ProfileSetupInitial( // Інакше, початковий стан з базовим профілем
+              ? ProfileSetupDataLoaded(initialProfile) 
+              : ProfileSetupInitial( 
                   UserProfile(
                     uid: _firebaseAuth.currentUser?.uid ?? '',
                     email: _firebaseAuth.currentUser?.email,
@@ -54,7 +55,7 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
   }
 
   UserProfile get currentProfileSnapshot => _currentUserProfile;
-  bool get isEditing => _isEditingMode; // Геттер для UI
+  bool get isEditing => _isEditingMode; 
 
   Future<void> _loadInitialData() async {
     final userId = _firebaseAuth.currentUser?.uid;
@@ -65,7 +66,6 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
     }
     developer.log("ProfileSetupCubit: Loading initial data for user $userId. IsEditing: $_isEditingMode", name: "ProfileSetupCubit");
     
-    // Не емітуємо Loading, якщо вже є initialProfile (для редагування), щоб уникнути мерехтіння
     if (!_isEditingMode && state is! ProfileSetupLoading) {
         if(!isClosed) emit(ProfileSetupLoading());
     }
@@ -75,13 +75,10 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
       if (profileFromRepo != null) {
         developer.log("ProfileSetupCubit: Profile found in repo, using it as base.", name: "ProfileSetupCubit");
         _currentUserProfile = profileFromRepo;
-        // Якщо це режим редагування, profileSetupComplete вже має бути true
         if (_isEditingMode) {
            _currentUserProfile = _currentUserProfile.copyWith(profileSetupComplete: true);
         }
       } else if (!_isEditingMode) {
-        // Новий профіль, ще не в Firestore (або якась помилка функції).
-        // Заповнюємо displayName з FirebaseAuth, якщо він порожній.
         final currentUser = _firebaseAuth.currentUser;
          String? initialDisplayName = _currentUserProfile.displayName;
         if (initialDisplayName == null || initialDisplayName.trim().isEmpty) {
@@ -93,12 +90,11 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
         }
         _currentUserProfile = _currentUserProfile.copyWith(
           displayName: initialDisplayName != null ? () => initialDisplayName : null,
-          // uid, email, photoURL вже встановлені в конструкторі для _currentUserProfile
-          profileSetupComplete: false, // Явно для нового
+          profilePictureUrl: () => currentUser?.photoURL, // NEW: Use photoURL from FirebaseAuth for new users
+          profileSetupComplete: false, 
         );
-        developer.log("ProfileSetupCubit: Profile NOT in repo (new user). Base from FirebaseAuth: displayName='${_currentUserProfile.displayName}'", name: "ProfileSetupCubit");
+        developer.log("ProfileSetupCubit: Profile NOT in repo (new user). Base from FirebaseAuth: displayName='${_currentUserProfile.displayName}', avatar='${_currentUserProfile.profilePictureUrl}'", name: "ProfileSetupCubit");
       } else {
-         // Режим редагування, але профіль не знайдено в репо - це помилка
          developer.log("ProfileSetupCubit: ERROR - Editing mode, but profile not found in repo for user $userId.", name: "ProfileSetupCubit");
          if(!isClosed) emit(const ProfileSetupFailure("Profile to edit not found. Please try again."));
          return;
@@ -120,23 +116,47 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
     double? weightKg,
     String? fitnessGoal,
     String? activityLevel,
+    String? profilePictureUrl, // NEW: For updating avatar URL after upload
   }) {
     _currentUserProfile = _currentUserProfile.copyWith(
       username: username != null ? () => username.trim() : null,
-      displayName: displayName != null ? () => displayName.trim().isNotEmpty ? displayName.trim() : null : null, // Дозволяємо очистити displayName
+      displayName: displayName != null ? () => displayName.trim().isNotEmpty ? displayName.trim() : null : null,
       gender: gender != null ? () => gender : null,
       dateOfBirth: dateOfBirth != null ? () => dateOfBirth : null,
       heightCm: heightCm != null ? () => heightCm : null,
       weightKg: weightKg != null ? () => weightKg : null,
       fitnessGoal: fitnessGoal != null ? () => fitnessGoal : null,
       activityLevel: activityLevel != null ? () => activityLevel : null,
+      profilePictureUrl: profilePictureUrl != null ? () => profilePictureUrl : null, // NEW
     );
     
     if (!isClosed) emit(ProfileSetupDataLoaded(_currentUserProfile));
     developer.log("ProfileSetupCubit: Field updated. Current profile: $_currentUserProfile", name: "ProfileSetupCubit");
   }
 
-  Future<void> saveProfile() async {
+  // NEW: Method to upload image to Firebase Storage
+  Future<String?> _uploadAvatarImage(String userId, File imageFile) async {
+    try {
+      final storageRef = fb_storage.FirebaseStorage.instance
+          .ref()
+          .child('user_avatars')
+          .child('$userId.jpg'); // Or use a unique ID for each image
+      
+      final uploadTask = storageRef.putFile(
+          imageFile, 
+          fb_storage.SettableMetadata(contentType: 'image/jpeg') // Ensure correct content type
+      );
+      final snapshot = await uploadTask.whenComplete(() => {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      developer.log("ProfileSetupCubit: Avatar uploaded successfully: $downloadUrl", name: "ProfileSetupCubit");
+      return downloadUrl;
+    } catch (e, s) {
+      developer.log("ProfileSetupCubit: Error uploading avatar: $e", name: "ProfileSetupCubit", error: e, stackTrace: s);
+      return null;
+    }
+  }
+
+  Future<void> saveProfile({File? avatarImageFile /* NEW: Pass avatar file */}) async {
     final userId = _firebaseAuth.currentUser?.uid;
     if (userId == null) {
       developer.log("ProfileSetupCubit: Save failed - User not logged in.", name: "ProfileSetupCubit");
@@ -153,23 +173,30 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
       }
       return;
     }
-    // Додаткова перевірка для displayName: якщо він порожній, можна встановити username
     String finalDisplayName = _currentUserProfile.displayName?.trim() ?? '';
     if (finalDisplayName.isEmpty) {
-      finalDisplayName = currentUsername; // Використовуємо username, якщо displayName порожній
+      finalDisplayName = currentUsername;
     }
-
 
     if (!isClosed) emit(ProfileSetupLoading());
     developer.log("ProfileSetupCubit: Attempting to save profile for user $userId. IsEditing: $_isEditingMode", name: "ProfileSetupCubit");
 
     try {
+      String? uploadedAvatarUrl = _currentUserProfile.profilePictureUrl;
+      if (avatarImageFile != null) {
+        // Upload new avatar if provided
+        uploadedAvatarUrl = await _uploadAvatarImage(userId, avatarImageFile);
+        if (uploadedAvatarUrl == null && !isClosed) {
+          emit(const ProfileSetupFailure("Failed to upload avatar image. Profile not saved."));
+          return; // Stop if avatar upload failed
+        }
+      }
+
       final profileToSave = _currentUserProfile.copyWith(
         uid: userId, 
-        displayName: () => finalDisplayName, // Оновлений displayName
-        profileSetupComplete: true, // Завжди true при успішному збереженні з цього екрану
-        // createdAt НЕ оновлюємо, якщо _isEditingMode. Репозиторій має впоратися з цим.
-        // updatedAt буде встановлено в репозиторії.
+        displayName: () => finalDisplayName, 
+        profilePictureUrl: () => uploadedAvatarUrl, // NEW: Set the (potentially new) avatar URL
+        profileSetupComplete: true, 
       );
 
       await _userProfileRepository.updateUserProfile(profileToSave);
