@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/domain/entities/logged_exercise.dart';
 import '../../../../core/domain/entities/logged_set.dart';
-import '../cubit/active_workout_cubit.dart'; // Для виклику методів
+import '../cubit/active_workout_cubit.dart'; 
 import 'dart:math' as math;
 
 // --- RpeSlider Widget ---
@@ -153,18 +153,28 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   }
 
   void _initializeSetData(LoggedSet set, LoggedExercise exercise, int currentSetIndex) {
-    double? initialWeight = set.weightKg;
+    double? weightForTextField;
 
-    if (currentSetIndex > 0 && exercise.completedSets.length > currentSetIndex - 1) {
-      final previousSet = exercise.completedSets[currentSetIndex - 1];
-      if (previousSet.isCompleted && previousSet.weightKg != null && previousSet.weightKg! > 0) {
-        initialWeight = previousSet.weightKg;
-      }
+    // 1. Якщо сет вже має вагу (попередньо заповнену кубітом або введену користувачем)
+    if (set.weightKg != null && set.weightKg! > 0) {
+        weightForTextField = set.weightKg;
+    } 
+    // 2. Якщо це НЕ перший сет І поточний сет порожній, копіюємо з попереднього
+    else if (currentSetIndex > 0) { 
+        if (exercise.completedSets.length > currentSetIndex - 1) {
+            final previousSet = exercise.completedSets[currentSetIndex - 1];
+            if (previousSet.isCompleted && previousSet.weightKg != null && previousSet.weightKg! > 0) {
+                weightForTextField = previousSet.weightKg; 
+            }
+        }
     }
-    
-    _weightController = TextEditingController(text: initialWeight?.toStringAsFixed(initialWeight % 1 == 0 ? 0 : 1) ?? '0');
+    // Якщо weightForTextField все ще null (наприклад, перший сет без попереднього заповнення,
+    // або попередній сет був порожній/не завершений),
+    // TextEditingController отримає '0'.
+
+    _weightController = TextEditingController(text: weightForTextField?.toStringAsFixed(weightForTextField != null && weightForTextField % 1 == 0 ? 0 : 1) ?? '0');
     _repsCount = set.reps ?? 8;
-    _rpePerRep = List.filled(20, 0); // Max 20 reps for RPE sliders
+    _rpePerRep = List.filled(20, 0); 
     final rpeData = _parseRpeNotes(set.notes);
     if (rpeData != null) {
       for (int i = 0; i < rpeData.length; i++) {
@@ -172,7 +182,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
       }
     } else {
       for (int i = 0; i < _repsCount; i++) {
-         if (i < _rpePerRep.length) _rpePerRep[i] = 5; // Default RPE 5 for new repetitions
+         if (i < _rpePerRep.length) _rpePerRep[i] = 5;
       }
     }
   }
@@ -257,7 +267,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
     bool isLastExercise = totalExercises > 0 && widget.exerciseIndex == totalExercises - 1;
     bool isLastSetOverall = isLastExercise && isLastSetOfCurrentExercise;
     
-    final double currentWeightValue = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
+    // final double currentWeightValue = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0; // This line is not used
 
     return SingleChildScrollView(
       child: Padding(
@@ -275,7 +285,6 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                   children: [
                     RichText(text: TextSpan(style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.w900), children: [ const TextSpan(text: 'SET ', style: TextStyle(color: textBlackColor)), TextSpan(text: '${widget.setIndex + 1}', style: const TextStyle(color: primaryOrange))])),
                     const Spacer(),
-                    // --- Вага та кнопки +/- ---
                     _buildWeightControlButton(Icons.remove, () {
                       double currentWeight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
                       currentWeight = (currentWeight - 1.0).clamp(0.0, 999.0);

@@ -11,10 +11,9 @@ import '../cubit/post_interaction_cubit.dart';
 import '../screens/post_detail_screen.dart';
 import 'dart:developer' as developer;
 
-import 'post_card_content_widget.dart'; 
-// NEW IMPORT for navigating to other user's profile
+import 'post_card_content_widget.dart';
 import '../screens/view_user_profile_screen.dart';
-
+import '../screens/create_post_screen.dart'; // NEW: Для навігації на редагування
 
 class PostListItem extends StatelessWidget {
   final Post post;
@@ -23,14 +22,16 @@ class PostListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Надаємо PostInteractionCubit для кожного елемента списку,
+    // щоб керувати станом саме цього поста (лайки, коментарі, видалення, редагування).
     return BlocProvider(
-      key: ValueKey(post.id),
+      key: ValueKey(post.id), // Унікальний ключ для кожного кубіта
       create: (context) => PostInteractionCubit(
         RepositoryProvider.of<PostRepository>(context),
         RepositoryProvider.of<UserProfileRepository>(context),
         RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
         post.id,
-        post,
+        post, // Передаємо початковий стан поста
       ),
       child: _PostListItemContent(),
     );
@@ -41,47 +42,63 @@ class _PostListItemContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return BlocBuilder<PostInteractionCubit, PostInteractionState>(
+    // Слухаємо зміни стану конкретного поста
+    return BlocConsumer<PostInteractionCubit, PostInteractionState>(
+      listener: (context, state) {
+        if (state is PostInteractionFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+          );
+        } else if (state is PostDeletedSuccessfully) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Post "${state.postId}" deleted.'), backgroundColor: Colors.orangeAccent),
+          );
+          // Тут не потрібно нічого робити для оновлення UI стрічки,
+          // оскільки основний Cubit стрічки (ExploreFeedCubit або UserPostsFeedCubit)
+          // має слухати загальний потік постів і автоматично оновиться.
+          // Якщо цей PostListItem є частиною екрану, де він єдиний (наприклад, PostDetailScreen, хоча це малоймовірно),
+          // то потрібно було б закрити екран.
+        }
+      },
+      buildWhen: (previous, current) {
+        // Перебудовувати тільки якщо це не просто зміна коментарів (якщо вони не відображаються тут)
+        // або якщо це не тимчасовий стан завантаження/видалення, який не змінює дані самого поста.
+        if (current is PostDeleting || current is PostUpdating) return false; // Не перебудовувати під час цих дій
+        return true;
+      },
       builder: (context, state) {
         Post currentPost;
         VoteType? currentUserVote;
 
-        if (state is PostInteractionInitial) {
-          currentPost = state.post;
-          currentUserVote = null;
-        } else if (state is PostUpdated) {
-          currentPost = state.post;
-          currentUserVote = state.currentUserVote;
-        } else if (state is PostCommentsLoaded) {
-          currentPost = state.post;
-          currentUserVote = state.currentUserVote;
-        } else if (state is PostInteractionLoading) {
-          currentPost = state.post;
-           currentUserVote = null;
-        } else if (state is PostInteractionFailure && state.post != null) {
-           currentPost = state.post!;
-           currentUserVote = null;
-        } else {
-          final initialPostFromCubitState = context.read<PostInteractionCubit>().state;
-          if (initialPostFromCubitState is PostInteractionInitial) {
-             currentPost = initialPostFromCubitState.post;
-             currentUserVote = null;
-          } else {
-             developer.log('PostListItem: Unexpected state or post not available: $state', name: 'PostListItem');
-             return Card(
-               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-               child: const Padding(
-                 padding: EdgeInsets.all(16.0),
-                 child: Text("Error loading post content."),
-               ),
-             );
-          }
+        // Визначаємо поточний пост для відображення
+        if (state is PostInteractionInitial) currentPost = state.post;
+        else if (state is PostUpdated) currentPost = state.post;
+        else if (state is PostCommentsLoaded) currentPost = state.post;
+        else if (state is PostInteractionLoading) currentPost = state.post;
+        else if (state is PostInteractionFailure && state.post != null) currentPost = state.post!;
+        else { // Якщо стан непередбачений або пост недоступний, отримуємо його з контексту Cubit напряму
+            final cubitInitialState = context.read<PostInteractionCubit>().state;
+            if (cubitInitialState is PostInteractionInitial) currentPost = cubitInitialState.post;
+            else if (cubitInitialState is PostUpdated) currentPost = cubitInitialState.post;
+            else if (cubitInitialState is PostCommentsLoaded) currentPost = cubitInitialState.post;
+            else if (cubitInitialState is PostInteractionLoading) currentPost = cubitInitialState.post;
+            else if (cubitInitialState is PostInteractionFailure && cubitInitialState.post != null) currentPost = cubitInitialState.post!;
+            else {
+              developer.log('PostListItem: Critical - Could not determine post from state: $state', name: 'PostListItem');
+              return Card( margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), child: const Padding( padding: EdgeInsets.all(16.0), child: Text("Error loading post content.")));
+            }
         }
+        
+        // Визначаємо currentUserVote зі стану, якщо він є
+        if (state is PostUpdated) currentUserVote = state.currentUserVote;
+        if (state is PostCommentsLoaded) currentUserVote = state.currentUserVote;
+
 
         final timeAgo = DateFormat.yMMMd('en_US').add_jm().format(currentPost.timestamp.toDate());
         final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
+        final bool isAuthorOfPost = currentAuthUserId == currentPost.userId;
         final bool isLikedByCurrentUser = currentAuthUserId != null && currentPost.likedBy.contains(currentAuthUserId);
-        final bool isDetailedView = false;
+        final bool isDetailedView = false; // Для PostCardContentWidget
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -103,9 +120,9 @@ class _PostListItemContent extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      GestureDetector( // Make avatar tappable
+                      GestureDetector(
                         onTap: () {
-                           if (currentPost.userId != currentAuthUserId) { // Prevent navigating to own profile this way
+                           if (currentPost.userId != currentAuthUserId) {
                             Navigator.of(context).push(ViewUserProfileScreen.route(currentPost.userId));
                           }
                         },
@@ -125,7 +142,7 @@ class _PostListItemContent extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                             GestureDetector( // Make username tappable
+                             GestureDetector(
                               onTap: () {
                                 if (currentPost.userId != currentAuthUserId) {
                                   Navigator.of(context).push(ViewUserProfileScreen.route(currentPost.userId));
@@ -143,6 +160,46 @@ class _PostListItemContent extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (isAuthorOfPost) // NEW: Кнопка меню для автора
+                        PopupMenuButton<String>(
+                          icon: Icon(Icons.more_vert, color: Colors.grey.shade700),
+                          tooltip: "Post options",
+                          onSelected: (String value) async {
+                            if (value == 'edit') {
+                              final bool? result = await Navigator.of(context).push<bool>(
+                                CreatePostScreen.route(postToEdit: currentPost),
+                              );
+                              if (result == true && context.mounted) {
+                                // Оновлення не потрібне тут, бо PostInteractionCubit слухає стрім
+                                // context.read<PostInteractionCubit>()._subscribeToPostUpdates(); // Можна викликати для примусового оновлення, але не обов'язково
+                              }
+                            } else if (value == 'delete') {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Delete Post?'),
+                                  content: Text('Are you sure you want to delete this post? This action cannot be undone.'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+                                    TextButton(
+                                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                      child: const Text('Delete'),
+                                      onPressed: () => Navigator.of(ctx).pop(true),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true && context.mounted) {
+                                context.read<PostInteractionCubit>().deletePost();
+                              }
+                            }
+                          },
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            if (currentPost.type == PostType.standard) // Редагувати можна тільки стандартні пости (поки що)
+                              const PopupMenuItem<String>(value: 'edit', child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Edit Post'))),
+                            const PopupMenuItem<String>(value: 'delete', child: ListTile(leading: Icon(Icons.delete_outline, color: Colors.redAccent), title: Text('Delete Post', style: TextStyle(color: Colors.redAccent)))),
+                          ],
+                        ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -150,8 +207,8 @@ class _PostListItemContent extends StatelessWidget {
                     Text(
                       currentPost.textContent,
                       style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
-                       maxLines: 5,
-                       overflow: TextOverflow.ellipsis,
+                       maxLines: isDetailedView ? null : 5, // У списку обмежуємо
+                       overflow: isDetailedView ? null : TextOverflow.ellipsis,
                     ),
                   if (currentPost.textContent.isNotEmpty && (currentPost.type == PostType.routineShare || currentPost.type == PostType.recordClaim))
                      Padding(
@@ -159,21 +216,29 @@ class _PostListItemContent extends StatelessWidget {
                        child: Text(
                          currentPost.textContent,
                          style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15, height: 1.4),
-                         maxLines: 3,
-                         overflow: TextOverflow.ellipsis,
+                         maxLines: isDetailedView ? null : 3,
+                         overflow: isDetailedView ? null : TextOverflow.ellipsis,
                        ),
                      ),
-                  if (currentPost.mediaUrl != null && currentPost.type == PostType.standard) ...[
+                  if (currentPost.mediaUrl != null && currentPost.mediaUrl!.isNotEmpty && currentPost.type == PostType.standard) ...[
                     const SizedBox(height: 10),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: AspectRatio(
                         aspectRatio: 16 / 9,
-                        child: Image.network(currentPost.mediaUrl!, fit: BoxFit.cover),
+                        child: Image.network(
+                          currentPost.mediaUrl!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null));
+                          },
+                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image, color: Colors.grey, size: 40)),
+                        ),
                       ),
                     ),
                   ],
-                  PostCardContentWidget(
+                  PostCardContentWidget( // Відображення специфічного контенту для routineShare/recordClaim
                     post: currentPost,
                     currentUserVote: currentUserVote,
                     isDetailedView: isDetailedView,
@@ -183,39 +248,15 @@ class _PostListItemContent extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       TextButton.icon(
-                        icon: Icon(
-                          isLikedByCurrentUser ? Icons.thumb_up_alt : Icons.thumb_up_alt_outlined,
-                          color: isLikedByCurrentUser ? theme.colorScheme.primary : Colors.grey.shade700,
-                          size: 20,
-                        ),
-                        label: Text(
-                          currentPost.likesCount.toString(),
-                          style: TextStyle(
-                            color: isLikedByCurrentUser ? theme.colorScheme.primary : Colors.grey.shade700,
-                            fontSize: 14,
-                            fontWeight: isLikedByCurrentUser ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                        onPressed: () {
-                          context.read<PostInteractionCubit>().toggleLike();
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: const Size(0,0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
+                        icon: Icon(isLikedByCurrentUser ? Icons.thumb_up_alt : Icons.thumb_up_alt_outlined, color: isLikedByCurrentUser ? theme.colorScheme.primary : Colors.grey.shade700, size: 20),
+                        label: Text(currentPost.likesCount.toString(), style: TextStyle(color: isLikedByCurrentUser ? theme.colorScheme.primary : Colors.grey.shade700, fontSize: 14, fontWeight: isLikedByCurrentUser ? FontWeight.bold : FontWeight.normal)),
+                        onPressed: () => context.read<PostInteractionCubit>().toggleLike(),
+                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), minimumSize: const Size(0,0), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                       ),
                       const SizedBox(width: 16),
                       TextButton.icon(
-                        icon: Icon(
-                          currentPost.isCommentsEnabled ? Icons.chat_bubble_outline : Icons.chat_bubble_outline_rounded,
-                          color: Colors.grey.shade700,
-                          size: 20,
-                        ),
-                        label: Text(
-                          currentPost.commentsCount.toString(),
-                          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                        ),
+                        icon: Icon(currentPost.isCommentsEnabled ? Icons.chat_bubble_outline : Icons.chat_bubble_outline_rounded, color: Colors.grey.shade700, size: 20),
+                        label: Text(currentPost.commentsCount.toString(), style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
                         onPressed: () {
                            Navigator.of(context).push(
                             MaterialPageRoute(
@@ -223,11 +264,7 @@ class _PostListItemContent extends StatelessWidget {
                             ),
                           );
                         },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: const Size(0,0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
+                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), minimumSize: const Size(0,0), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                       ),
                     ],
                   )

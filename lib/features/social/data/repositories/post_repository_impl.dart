@@ -21,7 +21,7 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<void> createPost(Post post) async {
     try {
-      final docRef = _postsCollection.doc(); // Firestore generates ID
+      final docRef = _postsCollection.doc();
       
       final postWithFinalId = post.copyWith(id: docRef.id);
       
@@ -36,6 +36,45 @@ class PostRepositoryImpl implements PostRepository {
       throw Exception('Failed to create post: ${e.toString()}');
     }
   }
+
+  @override
+  Future<void> updatePost(Post post) async { // NEW Implementation
+    if (post.id.isEmpty) throw ArgumentError("Post ID cannot be empty for update.");
+    try {
+      final Map<String, dynamic> updateData = {
+        'textContent': post.textContent,
+        'updatedAt': FieldValue.serverTimestamp(),
+        // Якщо редагування медіа буде, його теж сюди
+        // 'mediaUrl': post.mediaUrl, // Обережно з цим, якщо медіа не змінювалося
+      };
+      if (post.mediaUrl != null) { // Якщо ми хочемо оновити/встановити mediaUrl
+          updateData['mediaUrl'] = post.mediaUrl;
+      } else if (post.toMap().containsKey('mediaUrl') && post.mediaUrl == null) { // Якщо ми хочемо видалити mediaUrl
+          updateData['mediaUrl'] = FieldValue.delete();
+      }
+
+      await _postsCollection.doc(post.id).update(updateData);
+      developer.log('Post ${post.id} updated.', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error updating post ${post.id}: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to update post: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deletePost(String postId) async { // NEW Implementation
+    if (postId.isEmpty) throw ArgumentError("Post ID cannot be empty for deletion.");
+    try {
+      // Firebase Function 'onPostDeleted' буде відповідати за видалення коментарів та медіа.
+      // Тому тут ми просто видаляємо основний документ поста.
+      await _postsCollection.doc(postId).delete();
+      developer.log('Post $postId deleted. Associated data will be cleaned up by Cloud Function.', name: 'PostRepositoryImpl');
+    } catch (e, s) {
+      developer.log('Error deleting post $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
+      throw Exception('Failed to delete post: ${e.toString()}');
+    }
+  }
+
 
   @override
   Stream<List<Post>> getAllPostsStream({int limit = 20}) {
@@ -56,7 +95,7 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
-  Stream<List<Post>> getUserPostsStream(String userId, {int limit = 20}) { // <-- IMPLEMENTED
+  Stream<List<Post>> getUserPostsStream(String userId, {int limit = 20}) {
     developer.log('Subscribing to user posts stream for userId: $userId (limit: $limit)', name: 'PostRepositoryImpl');
     return _postsCollection
         .where('userId', isEqualTo: userId)
@@ -162,7 +201,7 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Stream<List<Comment>> getCommentsStream(String postId, {int limit = 20}) {
     return _commentsCollection(postId)
-        .orderBy('timestamp', descending: false)
+        .orderBy('timestamp', descending: false) // Зазвичай коментарі сортують від старіших до новіших
         .limit(limit)
         .snapshots()
         .map((snapshot) {
@@ -181,9 +220,10 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final Map<String, dynamic> updateData = {
         'text': comment.text,
-        'timestamp': FieldValue.serverTimestamp(),
+        'timestamp': FieldValue.serverTimestamp(), // Оновлюємо час редагування
       };
       await _commentsCollection(comment.postId).doc(comment.id).update(updateData);
+      // Також оновимо 'updatedAt' самого поста, оскільки відбулася зміна в його "екосистемі"
       await _postsCollection.doc(comment.postId).update({'updatedAt': FieldValue.serverTimestamp()});
       developer.log('Comment ${comment.id} on post ${comment.postId} updated.', name: 'PostRepositoryImpl');
     } catch (e, s) {
@@ -199,13 +239,14 @@ class PostRepositoryImpl implements PostRepository {
     }
     try {
       await _commentsCollection(postId).doc(commentId).delete();
+      // Оновлення 'updatedAt' поста та `commentsCount` обробляється Cloud Function.
       developer.log('Comment $commentId on post $postId deleted.', name: 'PostRepositoryImpl');
     } catch (e, s) {
       developer.log('Error deleting comment $commentId on post $postId: $e', name: 'PostRepositoryImpl', error: e, stackTrace: s);
       throw Exception('Failed to delete comment: ${e.toString()}');
     }
   }
-
+  
   @override
   Future<void> castVote(String postId, String userId, VoteType voteType) async {
     try {

@@ -15,4 +15,7 @@ abstract class WorkoutLogRepository {
     int? limit,
   });
   Stream<WorkoutSession?> getActiveWorkoutSessionStream(String userId);
+
+  // NEW METHOD
+  Future<double?> getAverageWorkingWeightForExercise(String userId, String predefinedExerciseId, {int lookbackLimit = 10});
 }

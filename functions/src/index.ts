@@ -12,7 +12,8 @@ import {
   QueryDocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import { DocumentSnapshot, Timestamp, FieldValue } from "firebase-admin/firestore";
+import { DocumentSnapshot, Timestamp, FieldValue, FieldPath } from "firebase-admin/firestore"; // <--- ДОДАНО FieldPath
+// import * as path from "path"; // For Storage path parsing - знадобиться якщо будемо видаляти медіа по URL
 
 try {
   admin.initializeApp();
@@ -26,10 +27,10 @@ enum AchievementId {
   PERSONAL_RECORD_SET = "personalRecordSet",
 }
 
-enum NotificationType { // Re-define for function context or import if shared
+enum NotificationType { 
   ACHIEVEMENT_UNLOCKED = "achievementUnlocked",
   WORKOUT_REMINDER = "workoutReminder",
-  NEW_FOLLOWER = "newFollower", // NEW
+  NEW_FOLLOWER = "newFollower", 
   ROUTINE_SHARED = "routineShared",
   SYSTEM_MESSAGE = "systemMessage",
   ADVICE = "advice",
@@ -272,6 +273,58 @@ export const onCommentDeleted = onDocumentDeleted(
   }
 );
 
+export const onPostDeleted = onDocumentDeleted(
+  { document: "posts/{postId}", region: defaultRegion, memory: "256MiB" },
+  async (event: FirestoreEvent<QueryDocumentSnapshot | undefined, { postId: string }>) => {
+    const { postId } = event.params;
+    const deletedPostData = event.data?.data();
+    logger.info(`Post ${postId} deleted. Cleaning up associated data.`, { postId });
+
+    const db = admin.firestore();
+    const batchSize = 500;
+    const commentsRef = db.collection("posts").doc(postId).collection("comments");
+
+    let query = commentsRef.orderBy(FieldPath.documentId()).limit(batchSize);
+    let snapshot = await query.get();
+    while (snapshot.size > 0) {
+      const batch = db.batch();
+      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      logger.info(`Deleted ${snapshot.size} comments for post ${postId}.`);
+      if (snapshot.size < batchSize) break;
+      const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+      query = commentsRef.orderBy(FieldPath.documentId()).startAfter(lastVisible).limit(batchSize);
+      snapshot = await query.get();
+    }
+    logger.info(`All comments for post ${postId} deleted.`);
+
+    if (deletedPostData && deletedPostData.mediaUrl) {
+      const mediaUrl = deletedPostData.mediaUrl as string;
+      try {
+        const defaultBucket = admin.storage().bucket();
+        const urlParts = mediaUrl.split("/o/");
+        if (urlParts.length > 1) {
+          const encodedPath = urlParts[1].split("?")[0];
+          const filePath = decodeURIComponent(encodedPath);
+          if (filePath.startsWith("post_media/")) {
+            const file = defaultBucket.file(filePath);
+            await file.delete();
+            logger.info(`Deleted media for post ${postId} from Storage: ${filePath}`);
+          } else {
+            logger.warn(`Skipping deletion for mediaUrl with unexpected path format for post ${postId}: ${filePath}`);
+          }
+        } else {
+          logger.warn(`Could not parse Storage path from mediaUrl for post ${postId}: ${mediaUrl}`);
+        }
+      } catch (error) {
+        logger.error(`Error deleting media for post ${postId} from Storage: ${mediaUrl}`, error);
+      }
+    }
+    return null;
+  }
+);
+
+
 export const onRecordClaimPostCreated = onDocumentCreated(
   { document: "posts/{postId}", region: defaultRegion },
   async (event: FirestoreEvent<QueryDocumentSnapshot | undefined, { postId: string }>) => {
@@ -491,7 +544,7 @@ export const handleUserFollowListUpdate = onDocumentWritten(
     const db = admin.firestore();
     const batch = db.batch();
     let operationsInBatch = 0;
-    const MAX_BATCH_OPERATIONS = 480; // Leave more room for notifications
+    const MAX_BATCH_OPERATIONS = 480;
 
     const followedUserIds = followingAfter.filter((id) => !followingBefore.includes(id));
     for (const targetUserId of followedUserIds) {
@@ -501,13 +554,12 @@ export const handleUserFollowListUpdate = onDocumentWritten(
       operationsInBatch++;
       logger.info(`User ${currentUserId} followed ${targetUserId}. Incremented ${targetUserId}'s followersCount.`);
 
-      // Create notification for the target user
       const notificationRef = targetUserRef.collection("notifications").doc();
       batch.set(notificationRef, {
-        type: NotificationType.NEW_FOLLOWER.toString(), // Use enum string value
+        type: NotificationType.NEW_FOLLOWER.toString(),
         title: "New Follower!",
         message: `${afterData.username ?? afterData.displayName ?? "Someone"} started following you.`,
-        senderUserId: currentUserId, // Include sender ID for potential navigation
+        senderUserId: currentUserId,
         senderUsername: afterData.username ?? afterData.displayName ?? "A user",
         senderProfilePicUrl: afterData.profilePictureUrl ?? null,
         timestamp: FieldValue.serverTimestamp(),

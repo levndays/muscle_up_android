@@ -6,11 +6,13 @@ import '../entities/vote_type.dart';
 abstract class PostRepository {
   Future<void> createPost(Post post);
   Stream<List<Post>> getAllPostsStream({int limit = 20});
-  Stream<List<Post>> getUserPostsStream(String userId, {int limit = 20}); // <-- MODIFIED/ADDED
+  Stream<List<Post>> getUserPostsStream(String userId, {int limit = 20});
   Future<Post?> getPostById(String postId);
   Stream<Post?> getPostStreamById(String postId);
   Future<void> updatePostSettings(String postId, {required bool isCommentsEnabled});
-  // Future<void> deletePost(String postId);
+  
+  Future<void> updatePost(Post post); 
+  Future<void> deletePost(String postId);
 
   // Likes
   Future<void> addLike(String postId, String userId);

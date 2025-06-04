@@ -1,650 +1,548 @@
-# MuscleUP: Всеосяжна Технічна Документація
+# MuscleUP! - Next-gen Fitness App
 
-**Девіз:** Піднімай Свої Ваги, Об'єднуй Команду, Досягай Цілей. Будуй Свою Силу, Разом.
+**Mission:** To be a next-generation fitness application that helps users reach new heights in their fitness journey, accompanied by a supportive community.
 
-**Версія додатку (згідно `pubspec.yaml`):** `0.1.0`
-**Стан проєкту (згідно `README.md` та аналізу коду):** Фаза Розширених Соціальних Функцій (включаючи типи постів та базовий соціальний граф) реалізована або в активній розробці.
+**Version:** 0.7.0 (as per `pubspec.yaml`)
 
-## Зміст
+## Table of Contents
 
-1.  [Вступ](#1-вступ)
-2.  [Поточний Стан Проєкту та Реалізовані Функції](#2-поточний-стан-проекту-та-реалізовані-функції)
-3.  [Ключові Архітектурні Принципи](#3-ключові-архітектурні-принципи)
-4.  [Технологічний Стек](#4-технологічний-стек)
-5.  [Структура Проєкту](#5-структура-проекту)
-6.  [Налаштування Проєкту та Конфігураційні Файли](#6-налаштування-проекту-та-конфігураційні-файли)
-    *   [6.1. Firebase Конфігурація](#61-firebase-конфігурація)
-    *   [6.2. `pubspec.yaml` – Залежності та Ресурси](#62-pubspecyaml--залежності-та-ресурси)
-    *   [6.3. Інші Конфігурації](#63-інші-конфігурації)
-7.  [Глибоке Занурення в Ключові Компоненти та UX](#7-глибоке-занурення-в-ключові-компоненти-та-ux)
-    *   [7.1. Автентифікація та Налаштування Профілю](#71-автентифікація-та-налаштування-профілю)
-    *   [7.2. Основна Навігація: `HomePage` та `DashboardScreen`](#72-основна-навігація-homepage-та-dashboardscreen)
-    *   [7.3. Соціальні Функції (`lib/features/social`)](#73-соціальні-функції-libfeaturessocial)
-    *   [7.4. Система Сповіщень](#74-система-сповіщень)
-    *   [7.5. Бібліотека Вправ](#75-бібліотека-вправ)
-    *   [7.6. Управління Тренувальними Рутинами](#76-управління-тренувальними-рутинами)
-    *   [7.7. Відстеження Тренувань](#77-відстеження-тренувань)
-    *   [7.8. Відстеження Прогресу](#78-відстеження-прогресу)
-    *   [7.9. Система Досягнень](#79-система-досягнень)
-    *   [7.10. Деталі UI/UX та Загальні Віджети](#710-деталі-uiux-та-загальні-віджети)
-8.  [Бекенд: Структура Firebase Cloud Firestore](#8-бекенд-структура-firebase-cloud-firestore)
-9.  [Логіка Firebase Cloud Functions (`functions/src/index.ts`)](#9-логіка-firebase-cloud-functions-functionssrcindexts)
-10. [Налаштування та Запуск Проєкту](#10-налаштування-та-запуск-проекту)
-11. [Дорожня Карта та Майбутній Розвиток](#11-дорожня-карта-та-майбутній-розвиток)
+1.  [Key Features](#key-features)
+2.  [Tech Stack](#tech-stack)
+3.  [Project Structure](#project-structure)
+    *   [Root Directory](#root-directory)
+    *   [Flutter Application (`lib/`)](#flutter-application-lib)
+    *   [Firebase Functions (`functions/`)](#firebase-functions-functions)
+    *   [Platform Specific (`android/`, `ios/`)](#platform-specific-android-ios)
+    *   [Assets (`assets/`)](#assets-assets)
+4.  [Core Logic & Architecture](#core-logic--architecture)
+    *   [State Management (BLoC/Cubit)](#state-management-bloccubit)
+    *   [Authentication Flow](#authentication-flow)
+    *   [Data Flow](#data-flow)
+    *   [Entities](#entities)
+    *   [Repositories](#repositories)
+5.  [Firebase Backend Integration](#firebase-backend-integration)
+    *   [Firebase Services Used](#firebase-services-used)
+    *   [Cloud Functions (`functions/src/index.ts`)](#cloud-functions-functionssrcindexts)
+        *   [Auth Triggers](#auth-triggers)
+        *   [Firestore Triggers](#firestore-triggers)
+        *   [Scheduled Functions](#scheduled-functions)
+    *   [Firestore Database Structure (Inferred)](#firestore-database-structure-inferred)
+    *   [Firebase Storage Structure](#firebase-storage-structure)
+6.  [Detailed Feature Breakdown](#detailed-feature-breakdown)
+    *   [User Authentication](#user-authentication)
+    *   [Profile Setup](#profile-setup)
+    *   [User Profile Viewing](#user-profile-viewing)
+    *   [Dashboard](#dashboard)
+    *   [Routines Management](#routines-management)
+    *   [Workout Tracking](#workout-tracking)
+    *   [Exercise Explorer](#exercise-explorer)
+    *   [Social Feed (Explore)](#social-feed-explore)
+    *   [Post Creation & Interaction](#post-creation--interaction)
+    *   [Record Claims & Voting](#record-claims--voting)
+    *   [Following System](#following-system)
+    *   [Progress Tracking & Leagues](#progress-tracking--leagues)
+    *   [Notifications](#notifications)
+    *   [Achievements](#achievements)
+7.  [UI/UX Highlights](#uiux-highlights)
+8.  [Setup & Running the Project](#setup--running-the-project)
+9.  [Potential Future Enhancements](#potential-future-enhancements)
 
----
+## Key Features
 
-## 1. Вступ
+*   **User Authentication:** Secure sign-up/sign-in with Email/Password and Google Sign-In.
+*   **Profile Management:** Comprehensive user profiles with personal details, fitness stats, and avatar uploads.
+*   **Personalized Dashboard:** Overview of stats, upcoming workouts, and recent notifications.
+*   **Workout Routines:** Create, manage, and schedule custom workout routines.
+*   **Active Workout Tracking:** Log sets, reps, weight, and RPE during workouts.
+*   **Social Feed:** Share progress, routines, and record claims. Interact with posts via likes and comments.
+*   **Record Claim System:** Users can claim personal records, which are then verified or disputed by the community through a voting system.
+*   **Following System:** Users can follow/unfollow each other to build a fitness community.
+*   **Progress Tracking:**
+    *   XP and Leveling system.
+    *   Workout streaks.
+    *   Volume tracking per muscle group (visualized on a muscle map).
+    *   RPE (Rate of Perceived Exertion) and working weight trends.
+*   **Leagues & Leaderboards:** Users are placed in leagues based on their level, with leaderboards for friendly competition.
+*   **Achievements:** Unlockable badges for various milestones.
+*   **Notifications:** In-app notifications for achievements, new followers, workout reminders, shared routines, and system messages.
+*   **Exercise Explorer:** A library of predefined exercises.
+*   **Image Picker:** For uploading profile pictures and post media.
 
-MuscleUP — це інноваційний мобільний фітнес-додаток, розроблений для революціонізації вашого підходу до тренувань. Як зазначено в `pubspec.yaml`, це "Next-gen Fitness App. New height, New companions." Наша місія — створити високомотивуюче, соціально інтерактивне та гейміфіковане середовище, яке не тільки допомагає користувачам досягати своїх фітнес-цілей, але й робить процес приємним, сприяючи довгостроковій залученості. MuscleUP дозволяє детальне відстеження тренувань, персоналізоване встановлення цілей, аналіз прогресу за допомогою унікальних метрик (таких як RPE для кожного повторення), підтримку спільноти через обмін досягненнями, рутинами, рекордами та соціальну взаємодію через різні типи постів та систему підписок.
+## Tech Stack
 
-Цей документ надає всебічний огляд проєкту MuscleUP, деталізуючи його поточні функції, основну бізнес-логіку, програмну архітектуру, дизайн бекенду з Firebase та функціональність його компонентів. Він наголошує на модульності, масштабованості та легкості підтримки.
+*   **Frontend:** Flutter (Dart)
+*   **Backend:** Firebase
+    *   Firebase Authentication
+    *   Cloud Firestore (NoSQL Database)
+    *   Firebase Storage (File Uploads)
+    *   Cloud Functions for Firebase (Serverless Backend Logic - TypeScript)
+*   **State Management:** flutter_bloc / bloc
+*   **UI:**
+    *   Material Design 3
+    *   Custom animations and graphics (`flutter_svg`, `lottie`, `animated_background`, `confetti`)
+*   **Utilities:**
+    *   `equatable`: For value equality.
+    *   `intl`: For date/number formatting.
+    *   `image_picker`: For selecting images from gallery/camera.
+    *   `google_sign_in`: For Google authentication.
 
-## 2. Поточний Стан Проєкту та Реалізовані Функції
+## Project Structure
 
-MuscleUP інкорпорував надійний набір ключових фітнес-функцій і активно розширює соціальні можливості. Реалізовано створення різноманітних типів постів (стандартні, поширення рутин, заявки на рекорди), система лайків, коментарів, голосування за рекорди та базовий соціальний граф (підписки).
+### Root Directory
 
-**Ключові Реалізовані Функції:**
+*   `.firebaserc`: Configures Firebase project aliases (default: `muscle-up-8c275`).
+*   `firebase.json`: Configures Firebase services, including Firestore rules (not present in snapshot but typical) and Cloud Functions deployment. Specifies `google-services.json` output.
+*   `.gitignore`: Specifies intentionally untracked files that Git should ignore.
+*   `pubspec.yaml`: Flutter project manifest; declares dependencies, assets, fonts, and app version.
+*   `analysis_options.yaml`: Configures Dart static analysis (uses `flutter_lints`).
+*   `assets/`: Contains static assets like images, fonts, and Lottie animations.
+*   `functions/`: Directory for Firebase Cloud Functions (Node.js/TypeScript).
+*   `lib/`: Main Dart application code.
+*   `android/`, `ios/`, `web/`: Platform-specific project files.
 
-*   **Автентифікація та Профіль Користувача:**
-    *   Безпечний вхід/реєстрація за допомогою Email/Пароль та Google Sign-In (пакети `firebase_auth`, `google_sign_in`). Логіка в `lib/login_page.dart`.
-    *   Автоматичне створення початкового профілю (`profileSetupComplete: false`) через Firebase Function `createUserProfile`.
-    *   Екран налаштування профілю `ProfileSetupScreen` (`lib/features/profile_setup/`) для введення деталей користувача (ім'я користувача, стать, цілі тощо), керований `ProfileSetupCubit`.
-    *   Оновлення профілю користувача в реальному часі через `UserProfileCubit` (`lib/features/profile/`).
-    *   Нагородження досягненням "Early Bird" після завершення налаштування профілю (Firebase Function `checkProfileSetupCompletionAchievements`).
+### Flutter Application (`lib/`)
 
-*   **Основна Навігація та Панель Інструментів (`HomePage` та `DashboardScreen`):**
-    *   `HomePage` (`lib/home_page.dart`) з динамічним AppBar та `BottomNavigationBar` (Рутини, Explore, Прогрес, Профіль).
-    *   `DashboardScreen` (`lib/features/dashboard/`) з персоналізованим привітанням, статистикою, графіком об'єму, сповіщеннями та розкладом (`UpcomingScheduleWidget`).
-    *   FloatingActionButton "START WORKOUT" з інтелектуальною навігацією (відновлення сесії, список рутин, створення рутини).
+The `lib/` directory is structured following a feature-first approach combined with layers (domain, data, presentation).
 
-*   **Соціальні Функції (`lib/features/social/`):**
-    *   **Система Постів:**
-        *   Сутність `Post` (`lib/core/domain/entities/post.dart`) з типами `standard`, `recordClaim`, `routineShare`. Включає деталі автора, контент, лайки, коментарі, деталі рутини/рекорду.
-        *   Колекція Firestore `posts`. `PostRepository` для CRUD.
-        *   **Створення Постів (`CreatePostScreen`):**
-            *   Стандартні текстові пости.
-            *   **Поширення Рутини:** Вибір рутини, автоматичне заповнення, `routineSnapshot`.
-            *   **Заявка на Рекорд:** Вибір вправи, введення ваги/повторень, URL відео, `recordDetails`.
-            *   `CreatePostCubit` керує створенням.
-    *   **Стрічка "Explore" (`ExploreScreen`):**
-        *   Відображення постів усіх користувачів (сортування за новизною). `ExploreFeedCubit`.
-        *   `PostListItem` з динамічним контентом `PostCardContentWidget` для різних типів постів.
-    *   **Взаємодія з Постами (Лайки, Коментарі, Голосування):**
-        *   **Лайки:** Керуються `PostInteractionCubit`.
-        *   **Коментарі (`PostDetailScreen`):** Сутність `Comment`, підколекція `comments`. Додавання, перегляд, керування видимістю. Cloud Functions `onCommentCreated`/`onCommentDeleted` оновлюють `commentsCount`.
-        *   **Додавання Спільної Рутини:** Кнопка "Add to My Routines" на постах `routineShare`, використовує `RoutineRepository.copyRoutineFromSnapshot`.
-        *   **Голосування за Рекорди:** UI для голосування "Validate"/"Dispute" на `PostDetailScreen`. Логіка в `PostInteractionCubit`. Cloud Functions `onRecordClaimVoteCasted` (XP за голос) та `processRecordClaimDeadlines` (обробка дедлайнів, верифікація, нарахування XP/досягнень автору).
-    *   **Соціальний Граф (Підписки):**
-        *   Сутність `UserProfile` (`lib/core/domain/entities/user_profile.dart`) містить список `following` та лічильники `followersCount`, `followingCount`.
-        *   `UserProfileRepository` (`lib/features/profile_setup/data/repositories/user_profile_repository_impl.dart`) реалізує методи `followUser`, `unfollowUser`, `getFollowingList`, `getFollowersList`.
-        *   `UserInteractionCubit` (`lib/features/social/presentation/cubit/user_interaction_cubit.dart`) керує логікою підписки/відписки на екрані `ViewUserProfileScreen`.
-        *   Firebase Function `handleUserFollowListUpdate` (`functions/src/index.ts`) автоматично оновлює лічильники `followersCount`, `followingCount` та надсилає сповіщення про нового підписника.
-        *   Екран `FollowListScreen` для перегляду списків підписників/підписок.
+*   **`main.dart`**: Entry point of the application. Initializes Firebase, sets up `RepositoryProvider`s for dependency injection, configures `MaterialApp` and global theme.
+*   **`auth_gate.dart`**: Handles authentication state. Redirects users to `LoginPage`, `ProfileSetupScreen`, or `HomePage` based on auth status and profile completion.
+*   **`login_page.dart`**: UI for user sign-in and sign-up.
+*   **`home_page.dart`**: Main screen after login, containing a `BottomNavigationBar` to switch between Dashboard, Routines, Explore (Social Feed), Progress, and Profile.
 
-*   **Бібліотека Вправ (`ExerciseExplorerScreen`):**
-    *   Перегляд стандартизованих вправ (`PredefinedExercise`) з Firestore (`predefinedExercises`). `ExerciseExplorerCubit`.
-    *   HTTPS-тригер `seedPredefinedExercises` для наповнення бази.
+*   **`core/`**: Shared code used across multiple features.
+    *   `domain/entities/`: Plain Dart objects representing core data structures (e.g., `UserProfile`, `UserRoutine`, `Post`, `AppNotification`, `PredefinedExercise`, `WorkoutSession`, `LoggedExercise`, `LoggedSet`, `LeagueInfo`, `Comment`, `VoteType`).
+    *   `domain/repositories/`: Abstract contracts (interfaces) for data operations (e.g., `UserProfileRepository`, `RoutineRepository`).
+    *   `services/`: Utility services (e.g., `ImagePickerService`).
 
-*   **Управління Тренувальними Рутинами (`lib/features/routines/`):**
-    *   `UserRoutinesScreen` для CRUD операцій та спільного доступу. Сутність `UserRoutine`.
-    *   `CreateEditRoutineScreen` для створення/редагування рутин. `ManageRoutineCubit`.
+*   **`features/`**: Contains individual feature modules. Each feature typically has:
+    *   `data/repositories/`: Concrete implementations of the repository interfaces defined in `core/domain/repositories/` or feature-specific domain layers. These interact directly with Firebase.
+        *   e.g., `features/profile_setup/data/repositories/user_profile_repository_impl.dart`
+    *   `presentation/cubit/`: BLoC/Cubit classes for managing the state of the feature.
+        *   e.g., `features/profile/presentation/cubit/user_profile_cubit.dart`
+    *   `presentation/screens/`: UI screens for the feature.
+        *   e.g., `features/profile/presentation/screens/profile_screen.dart`
+    *   `presentation/widgets/`: Reusable UI components specific to the feature.
+        *   e.g., `features/progress/presentation/widgets/league_title_widget.dart`
 
-*   **Відстеження Тренувань (`lib/features/workout_tracking/`):**
-    *   `ActiveWorkoutScreen` для логування сетів, ваги, повторень, RPE. Відновлення незавершених сесій. `ActiveWorkoutCubit`.
-    *   Firebase Function `calculateAndAwardXpAndStreak` для нарахування XP, оновлення серії, нагородження досягненням "First Workout".
+    **List of Features (sub-directories):**
+    *   `dashboard/`: Main landing screen content.
+    *   `exercise_explorer/`: Browsing predefined exercises.
+    *   `leagues/`: Displaying league information and leaderboards (part of Progress).
+    *   `notifications/`: Managing and displaying user notifications.
+    *   `profile/`: User profile display.
+    *   `profile_setup/`: Initial user profile configuration.
+    *   `progress/`: Visualizing user progress, stats, and leagues.
+    *   `routines/`: Managing workout routines.
+    *   `social/`: Social feed, post creation, interactions.
+    *   `workout_tracking/`: Active workout logging and completion screens.
 
-*   **Завершення Тренування (`WorkoutCompleteScreen`):**
-    *   Святковий екран з анімацією Lottie (`assets/animations/trophy_animation.json`) та конфетті.
+*   **`widgets/`**: General reusable UI widgets not specific to any single feature.
+    *   `lava_lamp_background.dart`: Animated background for the login page.
 
-*   **Відстеження Прогресу (`lib/features/progress/`):**
-    *   `ProgressScreen` та `ProgressCubit`.
-    *   Система Ліг (`LeagueInfo`), XP та рівні (`XPProgressBarWidget`).
-    *   Карта М'язів (`MuscleMapWidget`) з SVG для чоловічої/жіночої статі (`assets/images/male_*.svg`, `assets/images/female_*.svg`).
-    *   Статистика тренувань: тренди RPE та робочої ваги.
+*   **`firebase_options.dart`**: Auto-generated Firebase configuration for different platforms.
+*   **`utils/`**: Utility functions like `duration_formatter.dart`.
 
-*   **Система Сповіщень (`lib/features/notifications/`):**
-    *   Модель `AppNotification`, `NotificationType`. `NotificationsCubit` для оновлень в реальному часі, сповіщень в додатку (досягнення, поради, нові підписники).
+### Firebase Functions (`functions/`)
 
-*   **Система Досягнень:**
-    *   Реалізовано "Early Bird", "First Workout", "Personal Record Set". Фреймворк для додавання нових.
+Contains backend logic written in TypeScript, deployed to Cloud Functions for Firebase.
 
-## 3. Ключові Архітектурні Принципи
+*   `package.json`: Defines Node.js dependencies (`firebase-admin`, `firebase-functions`, linters, TypeScript).
+*   `tsconfig.json`: TypeScript compiler options.
+*   `src/index.ts`: Main file containing all Cloud Functions.
+    *   Handles user creation, workout completion logic (XP, streaks), achievement unlocking, post interaction side-effects (comment counts, media deletion), record claim deadline processing, and follower/following count management.
 
-Проєкт MuscleUP дотримується сучасних найкращих практик розробки програмного забезпечення:
+### Platform Specific (`android/`, `ios/`)
 
-*   **Модульність (Feature-First):** Організація коду за функціональними модулями в `lib/features/` (наприклад, `social`, `routines`, `profile`).
-*   **Чиста Архітектура (Багатошаровий підхід):** Концептуальне розділення на шари:
-    *   **Презентація (UI):** Віджети Flutter, Екрани, Cubits/Blocs.
-    *   **Домен (Domain):** Сутності (моделі даних, наприклад, `UserProfile`), абстрактні Репозиторії (інтерфейси).
-    *   **Дані (Data):** Реалізації Репозиторіїв, джерела даних (Firebase).
-*   **Управління Станом (BLoC/Cubit):** Використання `flutter_bloc` для управління станом UI та бізнес-логікою.
-*   **Впровадження Залежностей (DI):** `RepositoryProvider` для надання екземплярів репозиторіїв.
-*   **Абстракція Даних (Репозиторії):** Абстрагування джерел даних від доменного та презентаційного шарів.
-*   **Масштабованість та Легкість Підтримки:** Забезпечується модульністю та чітким розділенням відповідальностей.
+*   Contain native project files for Android and iOS.
+*   **`android/app/build.gradle.kts`**: Android build configuration, dependencies (e.g., `google-services`).
+*   **`android/app/src/main/AndroidManifest.xml`**: Android app manifest (permissions, activities).
+*   **`android/app/google-services.json`**: Firebase configuration for Android.
+*   **`ios/Runner/Info.plist`**: iOS app manifest (permissions, bundle ID).
+*   **`ios/Runner/AppDelegate.swift`**: iOS application delegate.
+*   **`ios/Runner/GoogleService-Info.plist`**: (Expected, though not explicitly in snapshot, but `firebase.json` implies its generation for iOS).
 
-## 4. Технологічний Стек
+### Assets (`assets/`)
 
-*   **Фронтенд:**
-    *   **Фреймворк:** Flutter (SDK `^3.8.0`)
-    *   **Мова:** Dart (SDK `^3.8.0`)
-    *   **Управління Станом:** `flutter_bloc: ^9.1.1`, `bloc: ^9.0.0`
-    *   **Утиліти:** `equatable: ^2.0.5`, `intl: ^0.19.0`
-    *   **Графіка та UI:** `flutter_svg: ^2.0.10+1`, `animated_background: ^2.0.0`, `confetti: ^0.7.0`, `lottie: ^3.1.2`
-*   **Бекенд (Firebase):**
-    *   **Ядро:** `firebase_core: ^3.13.1`
-    *   **Автентифікація:** `firebase_auth: ^5.5.4`, `google_sign_in: ^6.2.1`
-    *   **База Даних:** `cloud_firestore: ^5.6.8`
-    *   **Безсерверні Функції:** Firebase Cloud Functions (TypeScript, Node.js v20)
-*   **Розробка та Інструменти:**
-    *   **Лінтери:** `flutter_lints: ^5.0.0` (конфігурація в `analysis_options.yaml`)
-    *   **Іконки Додатку:** `flutter_launcher_icons: ^0.13.1` (конфігурація в `pubspec.yaml`)
-    *   **Логування:** `dart:developer`
-    *   **Firebase Project ID:** `muscle-up-8c275`
+*   `images/`: App icons, logos, SVG body models (`male_front.svg`, `male_back.svg`, etc.).
+*   `fonts/`: Custom fonts (`Inter`, `IBMPlexMono`).
+*   `animations/`: Lottie animation files (e.g., `trophy_animation.json`).
 
-## 5. Структура Проєкту
+## Core Logic & Architecture
 
-Проєкт дотримується структури каталогів "feature-first" всередині папки `lib`.
+### State Management (BLoC/Cubit)
 
-muscle_up/
-├── android/                            # Файли, специфічні для Android
-├── assets/                             # Ресурси додатку
-│   ├── animations/                     # Анімації Lottie (trophy_animation.json)
-│   ├── fonts/                          # Шрифти (Inter, IBMPlexMono)
-│   └── images/                         # Зображення (app_icon.png, SVG м'язів, google_logo.png)
-├── functions/                          # Firebase Cloud Functions (TypeScript)
-│   ├── src/index.ts                    # Основний файл Cloud Functions
-│   └── package.json                    # Залежності функцій
-├── ios/                                # Файли, специфічні для iOS
-├── lib/
-│   ├── auth_gate.dart                  # Керування станом автентифікації
-│   ├── firebase_options.dart           # Згенерована конфігурація Firebase
-│   ├── home_page.dart                  # Головний екран з навігацією
-│   ├── login_page.dart                 # Екран входу/реєстрації
-│   ├── main.dart                       # Точка входу, налаштування теми та репозиторіїв
-│   │
-│   ├── core/                           # Основні сутності, репозиторії, use cases
-│   │   └── domain/
-│   │       ├── entities/               # Моделі даних (UserProfile, Post, UserRoutine тощо)
-│   │       └── repositories/           # Абстрактні інтерфейси репозиторіїв
-│   │
-│   ├── features/                       # Модулі за функціоналом
-│   │   ├── dashboard/                  # Панель інструментів
-│   │   ├── exercise_explorer/          # Перегляд вправ
-│   │   ├── notifications/              # Сповіщення
-│   │   ├── profile/                    # Перегляд профілю користувача
-│   │   ├── profile_setup/              # Створення/редагування профілю
-│   │   ├── progress/                   # Відстеження прогресу
-│   │   ├── routines/                   # Управління рутинами
-│   │   ├── social/                     # Соціальні функції (пости, коментарі, підписки)
-│   │   └── workout_tracking/           # Відстеження тренувань
-│   │
-│   ├── utils/                          # Утилітні функції (наприклад, duration_formatter.dart)
-│   └── widgets/                        # Загальні віджети (наприклад, lava_lamp_background.dart)
-│
-├── pubspec.yaml                        # Залежності та ресурси Flutter
-├── README.md                           # Цей файл документації
-└── ...                                 # Інші конфігураційні файли
+The application uses the BLoC (Business Logic Component) pattern, specifically Cubits, for state management.
+*   **Cubits** (`_cubit.dart` files) are responsible for managing the state of a feature or a part of it. They receive events (method calls) and emit new states.
+*   **States** (`_state.dart` files) represent the UI state. Widgets listen to state changes and rebuild accordingly. `Equatable` is used for efficient state comparison.
+*   **UI Widgets** (`_screen.dart`, `_widget.dart` files) use `BlocBuilder`, `BlocListener`, or `BlocConsumer` to interact with Cubits and react to state changes. `RepositoryProvider` and `BlocProvider` are used for dependency injection.
 
-## 6. Налаштування Проєкту та Конфігураційні Файли
+### Authentication Flow
 
-### 6.1. Firebase Конфігурація
+1.  **`AuthGate` (`lib/auth_gate.dart`)**:
+    *   Listens to `FirebaseAuth.instance.authStateChanges()`.
+    *   If user is not authenticated, navigates to `LoginPage`.
+    *   If user is authenticated, it uses a `_ProfileCheckGate`.
+2.  **`_ProfileCheckGate`**:
+    *   Takes `userId` of the authenticated user.
+    *   Streams the `UserProfile` from `UserProfileRepository`.
+    *   If profile stream is waiting or returns null (profile not yet synced after creation by backend function), shows a loading indicator.
+    *   If profile exists:
+        *   If `profileSetupComplete` is `false`, navigates to `ProfileSetupScreen`.
+        *   If `profileSetupComplete` is `true`, navigates to `HomePage` (providing `UserProfileCubit`).
+3.  **`LoginPage` (`lib/login_page.dart`)**:
+    *   Provides UI for email/password sign-in/sign-up and Google Sign-In.
+    *   Uses `FirebaseAuth` for authentication.
+    *   Cloud Function (`createUserProfile` in `functions/src/index.ts`) automatically creates a basic user document in Firestore upon new Firebase Auth user creation.
+4.  **`ProfileSetupScreen` (`lib/features/profile_setup/presentation/screens/profile_setup_screen.dart`)**:
+    *   Allows new users to complete their profile (username, display name, gender, DOB, etc.).
+    *   Uses `ProfileSetupCubit` to manage form state and save data via `UserProfileRepository`.
+    *   Supports avatar image picking and upload to Firebase Storage.
+    *   Upon successful save, sets `profileSetupComplete` to `true` and navigates to `HomePage`.
 
-*   **`.firebaserc`**: Визначає стандартний проєкт Firebase для CLI.
-    ```json
-    {
-      "projects": {
-        "default": "muscle-up-8c275"
-      }
-    }
+### Data Flow
+
+A typical data flow for features is:
+
+1.  **Firebase (Firestore/Storage)**: Raw data source.
+2.  **Repository Implementation** (e.g., `UserProfileRepositoryImpl` in `features/profile_setup/data/repositories/`):
+    *   Fetches data from Firebase.
+    *   Transforms Firestore `DocumentSnapshot`s or Storage URLs into domain Entities.
+3.  **Repository Interface** (e.g., `UserProfileRepository` in `core/domain/repositories/`):
+    *   Abstract contract defining data operations.
+4.  **Cubit** (e.g., `UserProfileCubit` in `features/profile/presentation/cubit/`):
+    *   Uses the repository interface to fetch/manage data.
+    *   Holds the current state of the feature.
+    *   Emits new states to the UI.
+5.  **UI (Screens/Widgets)**:
+    *   Uses `BlocBuilder` or `BlocListener` to react to Cubit state changes and display data.
+    *   Dispatches events (calls Cubit methods) based on user interactions.
+
+### Entities
+
+Located in `lib/core/domain/entities/`, these are plain Dart objects representing the data models:
+
+*   `UserProfile`: User details, stats, achievements.
+*   `UserRoutine`: Workout routine structure, exercises, schedule.
+*   `RoutineExercise`: An exercise within a routine (ID, name snapshot, sets).
+*   `WorkoutSession`: A logged workout, including start/end times, status, and logged exercises.
+*   `LoggedExercise`: An exercise performed during a workout session.
+*   `LoggedSet`: A single set within a `LoggedExercise` (weight, reps, RPE).
+*   `PredefinedExercise`: Details of an exercise from the global library.
+*   `Post`: Social feed item (standard, routine share, record claim).
+*   `Comment`: A comment on a post.
+*   `VoteType`: Enum for `verify`/`dispute` votes on record claims.
+*   `AppNotification`: Structure for in-app notifications.
+*   `LeagueInfo`: Details about a competitive league.
+*   `Achievement`: Definition of an achievement/reward.
+
+### Repositories
+
+Interfaces in `lib/core/domain/repositories/` define contracts for data sources. Implementations in `features/.../data/repositories/` handle the actual data fetching/storage, primarily with Firebase.
+
+## Firebase Backend Integration
+
+### Firebase Services Used
+
+*   **Firebase Authentication**: Manages user sign-up, sign-in (Email/Password, Google).
+*   **Cloud Firestore**: NoSQL database for storing user profiles, routines, workout logs, posts, comments, notifications, leagues, predefined exercises.
+*   **Firebase Storage**: Stores user-uploaded media (profile avatars via `user_avatars/`, post media via `post_media/`).
+*   **Cloud Functions for Firebase**: Serverless functions (TypeScript) for backend logic triggered by Auth events, Firestore writes, or schedules.
+
+### Cloud Functions (`functions/src/index.ts`)
+
+These server-side functions handle logic that shouldn't be client-authoritative or requires elevated privileges.
+
+#### Auth Triggers
+
+*   **`createUserProfile` (v1 `onAuthUserCreate`)**:
+    *   Triggered when a new Firebase Auth user is created.
+    *   Creates a corresponding user document in the `users` collection in Firestore with initial default values (UID, email, XP, level, timestamps, etc.).
+
+#### Firestore Triggers
+
+*   **`calculateAndAwardXpAndStreak` (`onDocumentUpdated` for `users/{userId}/workoutLogs/{sessionId}`)**:
+    *   Triggered when a workout log's status changes to `completed`.
+    *   Calculates XP based on duration and volume.
+    *   Updates user's XP, level.
+    *   Calculates and updates current and longest workout streaks based on scheduled routine adherence.
+    *   Awards `firstWorkout` achievement and sends a notification.
+*   **`checkProfileSetupCompletionAchievements` (`onDocumentWritten` for `users/{userId}`)**:
+    *   Triggered when a user document is created or updated.
+    *   If `profileSetupComplete` changes from `false` to `true`, awards the `earlyBird` achievement and sends a notification.
+*   **`onCommentCreated` (`onDocumentCreated` for `posts/{postId}/comments/{commentId}`)**:
+    *   Increments `commentsCount` on the parent post document.
+    *   Updates `updatedAt` on the parent post.
+*   **`onCommentDeleted` (`onDocumentDeleted` for `posts/{postId}/comments/{commentId}`)**:
+    *   Decrements `commentsCount` on the parent post document.
+    *   Updates `updatedAt` on the parent post.
+*   **`onPostDeleted` (`onDocumentDeleted` for `posts/{postId}`)**:
+    *   Deletes all associated comments from the `posts/{postId}/comments` subcollection in batches.
+    *   If the post had a `mediaUrl` in `post_media/`, deletes the corresponding file from Firebase Storage.
+*   **`onRecordClaimPostCreated` (`onDocumentCreated` for `posts/{postId}`)**:
+    *   If the post type is `recordClaim`, sets a `recordVerificationDeadline` (24 hours from creation) and initial `recordVerificationStatus` to `pending`.
+*   **`onRecordClaimVoteCasted` (`onDocumentUpdated` for `posts/{postId}`)**:
+    *   Triggered when `verificationVotes` field on a `recordClaim` post changes.
+    *   If a user votes and hasn't been rewarded for voting on this post yet:
+        *   Awards `XP_FOR_VOTING` (15 XP) to the voter.
+        *   Adds voter's ID to `votedAndRewardedUserIds` on the post.
+        *   Sends a system notification to the voter about the XP reward.
+*   **`handleUserFollowListUpdate` (`onDocumentWritten` for `users/{userId}`)**:
+    *   Triggered when a user's document (specifically their `following` array) is updated.
+    *   If a user A starts following user B:
+        *   Increments `followersCount` on user B's profile.
+        *   Sends a `newFollower` notification to user B.
+    *   If user A unfollows user B:
+        *   Decrements `followersCount` on user B's profile.
+    *   Updates `followingCount` on user A's profile based on the new length of their `following` array.
+
+#### Scheduled Functions
+
+*   **`processRecordClaimDeadlines` (v2 `onSchedule`, every 1 hour)**:
+    *   Queries for `recordClaim` posts where `recordVerificationStatus` is `pending` and `recordVerificationDeadline` has passed.
+    *   For each such post:
+        *   Calculates vote counts (verify vs. dispute).
+        *   If `verifyRatio >= MIN_VOTE_PERCENTAGE_FOR_VERIFICATION` (0.55):
+            *   Sets status to `verified`.
+            *   Awards `XP_FOR_RECORD_BASE` + volume-based XP to the post author.
+            *   Awards `personalRecordSet` achievement to the author.
+            *   Sends "Record Verified!" and "Achievement Unlocked" notifications to the author.
+        *   Else if total votes > 0:
+            *   Sets status to `rejected`.
+            *   Sends "Record Claim Denied" notification to the author.
+        *   Else (no votes):
+            *   Sets status to `expired`.
+            *   Sends "Record Claim Expired" notification to the author.
+        *   Updates `isRecordVerified` and `updatedAt` on the post.
+
+### Firestore Database Structure (Inferred)
+
+*   **`users/{userId}`**: Stores `UserProfile` data.
+    *   `notifications/{notificationId}`: Subcollection for `AppNotification`.
+    *   `workoutLogs/{sessionId}`: Subcollection for `WorkoutSession`.
+*   **`predefinedExercises/{exerciseId}`**: Stores `PredefinedExercise` data.
+*   **`userRoutines/{routineId}`**: Stores `UserRoutine` data.
+*   **`posts/{postId}`**: Stores `Post` data.
+    *   `comments/{commentId}`: Subcollection for `Comment`.
+*   **`leagues/{leagueId}`**: Stores `LeagueInfo` data.
+
+### Firebase Storage Structure
+
+*   **`user_avatars/{userId}.jpg`**: Stores user profile pictures.
+*   **`post_media/{userId}/{postId}.jpg`**: Stores media attached to posts.
+
+## Detailed Feature Breakdown
+
+### User Authentication
+
+*   **Screens**: `LoginPage` (`login_page.dart`), `AuthGate` (`auth_gate.dart`).
+*   **Logic**: Uses `FirebaseAuth` for email/password and Google Sign-In. `AuthGate` manages routing based on auth state.
+*   **Backend**: Firebase Authentication. `createUserProfile` Cloud Function initializes Firestore user document.
+
+### Profile Setup
+
+*   **Screen**: `ProfileSetupScreen` (`features/profile_setup/presentation/screens/profile_setup_screen.dart`).
+*   **Cubit**: `ProfileSetupCubit`.
+*   **Logic**: Collects initial user details (username, display name, DOB, gender, fitness goals, activity level, avatar).
+*   **Backend**: Saves data to the user's document in Firestore via `UserProfileRepository`. Avatar images are uploaded to Firebase Storage. Cloud Function `checkProfileSetupCompletionAchievements` awards `earlyBird` achievement.
+
+### User Profile Viewing
+
+*   **Screens**:
+    *   `ProfileScreen` (`features/profile/presentation/screens/profile_screen.dart`): For the authenticated user's own profile.
+    *   `ViewUserProfileScreen` (`features/social/presentation/screens/view_user_profile_screen.dart`): For viewing other users' profiles.
+*   **Cubits**:
+    *   `UserProfileCubit` (global, for authenticated user).
+    *   `UserInteractionCubit` (for `ViewUserProfileScreen`, handles follow/unfollow logic for the viewed profile).
+    *   `UserPostsFeedCubit` (for displaying posts by the user whose profile is being viewed).
+*   **Logic**: Displays user information, stats (level, XP, streak, weight), achievements, and posts. Allows following/unfollowing (for other users).
+*   **Backend**: Fetches data from `/users/{userId}`.
+
+### Dashboard
+
+*   **Screen**: `DashboardScreen` (`features/dashboard/presentation/screens/dashboard_screen.dart`).
+*   **Cubits**:
+    *   `DashboardStatsCubit`: Fetches and provides data for volume trend chart and adherence percentage.
+    *   `UpcomingScheduleCubit`: Fetches and displays the user's workout schedule for the next 7 days.
+    *   `UserProfileCubit` (global): Provides user's name, streak for display.
+    *   `NotificationsCubit` (global): Provides recent notifications.
+*   **Logic**: Shows a welcome message, quick stats (weight, streak), volume trend chart, adherence, upcoming schedule, and recent notifications. Provides navigation to Profile and Progress screens.
+*   **Backend**: Aggregates data from `users/{userId}`, `userRoutines`, and `workoutLogs`.
+
+### Routines Management
+
+*   **Screens**:
+    *   `UserRoutinesScreen` (`features/routines/presentation/screens/user_routines_screen.dart`): Lists user's routines, allows starting a workout or creating a new routine. Can also be used in "selection mode" to pick a routine.
+    *   `CreateEditRoutineScreen` (`features/routines/presentation/screens/create_edit_routine_screen.dart`): UI for creating or editing a `UserRoutine`.
+*   **Cubits**:
+    *   `UserRoutinesCubit`: Manages the list of user's routines.
+    *   `ManageRoutineCubit`: Handles the state and logic for creating/editing a single routine.
+*   **Logic**: Users can create routines with multiple exercises, set target sets, add notes, and schedule them for specific days of the week.
+*   **Backend**: Stores routines in `userRoutines` collection.
+
+### Workout Tracking
+
+*   **Screens**:
+    *   `ActiveWorkoutScreen` (`features/workout_tracking/presentation/screens/active_workout_screen.dart`): UI for an ongoing workout. Displays current exercise/set, allows inputting weight/reps, RPE per rep.
+    *   `WorkoutCompleteScreen` (`features/workout_tracking/presentation/screens/workout_complete_screen.dart`): Summary screen shown after completing a workout, displaying XP gained, level up animations.
+*   **Cubit**: `ActiveWorkoutCubit`.
+*   **Logic**:
+    *   Starts a new `WorkoutSession` (optionally based on a `UserRoutine`).
+    *   Tracks duration.
+    *   Allows users to log `LoggedSet` data (weight, reps, RPE via notes like "RPE_DATA:7,8,9").
+    *   Handles completion or cancellation of workouts.
+*   **Backend**:
+    *   Stores workout sessions in `users/{userId}/workoutLogs`.
+    *   `calculateAndAwardXpAndStreak` Cloud Function processes completed workouts.
+
+### Exercise Explorer
+
+*   **Screen**: `ExerciseExplorerScreen` (`features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart`).
+*   **Cubit**: `ExerciseExplorerCubit`.
+*   **Logic**: Displays a list of `PredefinedExercise`s. Can be used for browsing or selecting an exercise to add to a routine or log a record claim.
+*   **Backend**: Fetches data from `predefinedExercises` collection.
+
+### Social Feed (Explore)
+
+*   **Screen**: `ExploreScreen` (`features/social/presentation/screens/explore_screen.dart`). (Replaced old Exercise Explorer tab).
+*   **Cubit**: `ExploreFeedCubit`.
+*   **Logic**: Displays a feed of all public posts (standard, routine shares, record claims) in reverse chronological order. Allows pull-to-refresh.
+*   **Backend**: Streams posts from the `posts` collection.
+
+### Post Creation & Interaction
+
+*   **Screens**:
+    *   `CreatePostScreen` (`features/social/presentation/screens/create_post_screen.dart`): UI for creating/editing posts. Supports text, image upload, routine sharing, and record claims.
+    *   `PostDetailScreen` (`features/social/presentation/screens/post_detail_screen.dart`): Displays a single post with its comments.
+*   **Cubits**:
+    *   `CreatePostCubit`: Manages state for post creation/editing.
+    *   `PostInteractionCubit`: Manages state for a single post (likes, comments, votes, editing, deletion).
+*   **Widgets**: `PostListItem`, `CommentListItem`, `PostCardContentWidget`.
+*   **Logic**:
+    *   Users can create standard posts with text and/or image.
+    *   Share routines as posts.
+    *   Submit record claims as posts.
+    *   Like/unlike posts.
+    *   Add, edit, delete comments on posts (if enabled by author).
+    *   Authors can edit/delete their posts and toggle comment enabling.
+*   **Backend**:
+    *   Posts stored in `posts` collection.
+    *   Comments in `posts/{postId}/comments` subcollection.
+    *   Media uploaded to Firebase Storage (`post_media/`).
+    *   Cloud Functions handle `commentsCount` updates and media deletion on post delete.
+
+### Record Claims & Voting
+
+*   **Part of**: `CreatePostScreen`, `PostCardContentWidget`, `PostDetailScreen`.
+*   **Cubit**: `PostInteractionCubit` (handles vote casting).
+*   **Logic**:
+    *   Users create `recordClaim` type posts with exercise details (name, weight, reps, optional video URL).
+    *   Other users can vote to `verify` or `dispute` the claim.
+    *   Visual progress bar shows vote distribution.
+    *   Users cannot vote on their own claims.
+*   **Backend**:
+    *   `onRecordClaimPostCreated` function sets a 24-hour voting deadline.
+    *   `onRecordClaimVoteCasted` function awards XP to voters.
+    *   `processRecordClaimDeadlines` scheduled function evaluates votes after deadline, updates post status, awards XP/achievements to claim author if verified.
+
+### Following System
+
+*   **Screens**: `ViewUserProfileScreen`, `FollowListScreen`.
+*   **Cubits**: `UserInteractionCubit` (for follow/unfollow actions on a viewed profile), `FollowListCubit` (for displaying follower/following lists).
+*   **Logic**: Users can follow and unfollow other users. Profile screens display follower/following counts.
+*   **Backend**:
+    *   `UserProfile.following` array stores IDs of users the current user is following.
+    *   `handleUserFollowListUpdate` Cloud Function updates `followersCount` on the target user's profile and `followingCount` on the current user's profile, and sends a `newFollower` notification.
+
+### Progress Tracking & Leagues
+
+*   **Screen**: `ProgressScreen` (`features/progress/presentation/screens/progress_screen.dart`).
+*   **Cubits**: `ProgressCubit`.
+*   **Widgets**: `LeagueTitleWidget`, `XPProgressBarWidget`, `MuscleMapWidget`, `ValueSparkline`.
+*   **Logic**:
+    *   Displays current level, XP progress to next level.
+    *   Shows current league and allows navigation to `LeagueScreen`.
+    *   Visualizes workout volume per muscle group (sets) for the last 7 days on an SVG muscle map.
+    *   Shows RPE trend (avg RPE per exercise over last N workouts).
+    *   Shows working weight trend (avg weight per exercise over last N workouts).
+    *   Displays recent "Advice" type notifications.
+*   **Backend**:
+    *   XP, level, streaks are updated by `calculateAndAwardXpAndStreak` Cloud Function.
+    *   League data fetched from `leagues` collection. Leaderboards fetched by querying `users` collection based on league criteria (level, XP).
+
+### Notifications
+
+*   **Part of**: `DashboardScreen`, `NotificationDetailScreen`.
+*   **Cubit**: `NotificationsCubit` (global, provided in `HomePage`).
+*   **Widgets**: `NotificationListItem`.
+*   **Logic**:
+    *   Fetches and displays user-specific notifications (achievements, new followers, system messages, advice, etc.).
+    *   Shows unread count.
+    *   Allows marking as read or deleting notifications.
+    *   Real-time updates for new notifications.
+    *   Special pop-up alerts for new achievements and advice.
+*   **Backend**: Notifications stored in `users/{userId}/notifications`. Cloud Functions create most notifications.
+
+### Achievements
+
+*   **Entities**: `Achievement`, `AchievementId` enum (`lib/core/domain/entities/achievement.dart`).
+*   **Logic**:
+    *   Defined in `allAchievements` map.
+    *   Conditions checked/awarded by Cloud Functions (e.g., `earlyBird`, `firstWorkout`, `personalRecordSet`).
+    *   `achievedRewardIds` array in `UserProfile` stores IDs of unlocked achievements.
+    *   Displayed on the user's `ProfileScreen`.
+
+## UI/UX Highlights
+
+*   **Custom Animated Backgrounds**:
+    *   `LavaLampBackground` on `LoginPage` for a visually appealing entry.
+    *   `AnimatedSpotlightBackground` on `LeagueScreen` for a dynamic and engaging leaderboard view.
+*   **Visual Feedback**:
+    *   `Confetti` and `Lottie` (`trophy_animation.json`) animations on `WorkoutCompleteScreen` to celebrate user achievements.
+    *   Animated `XPProgressBarWidget` to show progress towards the next level.
+*   **Data Visualization**:
+    *   `MuscleMapWidget`: Dynamically colors SVG body parts based on workout volume, providing a quick overview of muscle engagement.
+    *   `VolumeTrendChartWidget` (on Dashboard): Shows recent workout volume trends with a gradient line.
+    *   `ValueSparkline` (on ProgressScreen): Compact line charts for RPE and weight trends per exercise.
+*   **Theming**: Consistent Material 3 theming with a primary orange accent, custom fonts (`Inter`, `IBMPlexMono`), and styled components (buttons, cards, input fields).
+*   **User Experience**:
+    *   Pull-to-refresh on lists.
+    *   Loading indicators and error messages.
+    *   Intuitive navigation with `BottomNavigationBar` and context-specific actions.
+    *   Dialogs for confirmations (delete, logout) and input (edit comment, set weight).
+
+## Setup & Running the Project
+
+1.  **Prerequisites**:
+    *   Flutter SDK installed (version compatible with `^3.8.0` Dart SDK).
+    *   Firebase CLI installed and configured.
+    *   A Firebase project created with Authentication, Firestore, and Storage enabled.
+2.  **Firebase Configuration**:
+    *   Place your Android `google-services.json` in `android/app/`.
+    *   Place your iOS `GoogleService-Info.plist` in `ios/Runner/`.
+    *   Ensure the Firebase project ID in `.firebaserc` (`muscle-up-8c275`) matches your project.
+3.  **Flutter Dependencies**:
+    ```bash
+    flutter pub get
     ```
-*   **`firebase.json`**: Детальна конфігурація Firebase для різних платформ та сервісів.
-    *   Визначає `projectId` (`muscle-up-8c275`), `appId` для Android, шляхи до `google-services.json`.
-    *   Конфігурує генерацію `lib/firebase_options.dart` для Dart, вказуючи конфігурації для Android, iOS, macOS, Web, Windows.
-    *   Налаштовує Firebase Functions: джерело (`functions`), ігноровані файли, та команди `predeploy`.
-*   **`android/app/google-services.json`**: Специфічний для Android файл конфігурації Firebase, містить `project_id`, `mobilesdk_app_id`, OAuth клієнти та API ключі.
-*   **`lib/firebase_options.dart`**: Згенерований файл `flutterfire configure`, містить константи для ініціалізації Firebase на різних платформах.
-
-### 6.2. `pubspec.yaml` – Залежності та Ресурси
-
-Файл `pubspec.yaml` є ключовим для управління залежностями та ресурсами проєкту.
-
-*   **`name`**: `muscle_up`
-*   **`description`**: "Next-gen Fitness App. New height, New companions."
-*   **`publish_to: 'none'`**: Запобігає випадковій публікації в pub.dev.
-*   **`version`**: `0.1.0` (Поточна версія додатку).
-*   **`environment.sdk`**: `^3.8.0` (Dart SDK).
-
-*   **`dependencies`**:
-    *   **Flutter SDK**: `flutter: sdk: flutter`
-    *   **Firebase**:
-        *   `firebase_core: ^3.13.1`: Базовий пакет для Firebase.
-        *   `firebase_auth: ^5.5.4`: Автентифікація.
-        *   `google_sign_in: ^6.2.1`: Вхід через Google.
-        *   `cloud_firestore: ^5.6.8`: База даних Firestore.
-    *   **State Management**:
-        *   `flutter_bloc: ^9.1.1`, `bloc: ^9.0.0`: Для BLoC/Cubit патерну.
-    *   **Utilities**:
-        *   `equatable: ^2.0.5`: Для порівняння об'єктів.
-        *   `intl: ^0.19.0`: Для інтернаціоналізації та форматування.
-    *   **Graphics & Animations**:
-        *   `flutter_svg: ^2.0.10+1`: Для SVG (карти м'язів).
-        *   `animated_background: ^2.0.0`: Анімований фон для `LoginPage`.
-        *   `confetti: ^0.7.0`: Ефект конфетті.
-        *   `lottie: ^3.1.2`: Анімації Lottie (трофей).
-
-*   **`dev_dependencies`**:
-    *   `flutter_test: sdk: flutter`
-    *   `flutter_lints: ^5.0.0`: Правила лінтингу.
-    *   `flutter_launcher_icons: ^0.13.1`: Генерація іконок додатку.
-
-*   **`flutter_launcher_icons` (Конфігурація)**:
-    *   Використовує `assets/images/app_icon.png` для генерації іконок для Android (адаптивні) та iOS.
-    *   `min_sdk_android: 23`.
-
-*   **`flutter.uses-material-design: true`**
-
-*   **`flutter.assets`**:
-    *   `assets/images/` (включаючи `app_icon.png`, `male_front.svg`, `male_back.svg`, `female_front.svg`, `female_back.svg`)
-    *   `assets/fonts/`
-    *   `assets/animations/` (включаючи `trophy_animation.json`)
-
-*   **`flutter.fonts`**:
-    *   Сімейство `Inter` з різними накресленнями (Regular, Italic, Light, Medium, SemiBold, Bold, ExtraBold, Black) з файлів `.ttf`.
-    *   Сімейство `IBMPlexMono` (Regular, Bold).
-
-### 6.3. Інші Конфігурації
-
-*   **`.gitignore`**: Стандартний набір ігнорованих файлів для Flutter/Dart/IntelliJ/Android проєктів. Важливо, що `.vscode/` закоментовано, дозволяючи версіонувати налаштування VS Code.
-*   **`.metadata`**: Відстежує властивості проєкту Flutter, такі як `revision` та `channel` Flutter SDK, з яким проєкт було створено або оновлено. Також містить інформацію про міграцію платформ та список `unmanaged_files`.
-*   **`analysis_options.yaml`**: Включає стандартний набір правил лінтингу `package:flutter_lints/flutter.yaml`.
-*   **`devtools_options.yaml`**: Зберігає налаштування для Dart & Flutter DevTools, наразі без специфічних розширень.
-*   **Android Build System (`android/` директорія):**
-    *   `android/build.gradle.kts`: Конфігурація Gradle для всіх підпроєктів, встановлює кастомну `buildDirectory`.
-    *   `android/gradle.properties`: Налаштування JVM для Gradle, ввімкнення AndroidX та Jetifier.
-    *   `android/settings.gradle.kts`: Підключає Flutter SDK Gradle плагін, визначає версії плагінів `com.android.application` та `com.google.gms.google-services`.
-    *   `android/app/build.gradle.kts`: Специфічна конфігурація для Android додатку, включає `namespace`, `compileSdk`, `minSdk`, `targetSdk`, `versionCode`, `versionName`.
-    *   `android/app/src/main/AndroidManifest.xml`: Маніфест Android додатку, визначає `android:label` (`MuscleUP!`), іконку (`@mipmap/launcher_icon`), основну Activity та необхідні дозволи/запити.
-*   **iOS Project Setup (`ios/` директорія):**
-    *   `ios/Runner.xcodeproj/project.pbxproj`: Основний файл конфігурації проєкту Xcode. Визначає структуру проєкту, налаштування збірки, цілі (targets) та зв'язки між файлами. Містить посилання на Flutter Frameworks, конфігураційні файли `.xcconfig`, файли ресурсів та вихідного коду.
-    *   `ios/Runner/Info.plist`: Список властивостей для iOS додатку, включаючи `CFBundleDisplayName` (`Muscle Up`), `CFBundleIdentifier`, версії, підтримувані орієнтації та інше.
-    *   `ios/Runner/AppDelegate.swift`: Точка входу для iOS додатку, реєструє плагіни Flutter.
-
-## 7. Глибоке Занурення в Ключові Компоненти та UX
-
-(Цей розділ значно розширює відповідний розділ з `README.md`, додаючи деталі з файлів коду та пов'язуючи компоненти).
-
-### 7.1. Автентифікація та Налаштування Профілю
-
-*   **Вхід/Реєстрація (`lib/login_page.dart`):**
-    *   Надає UI для входу/реєстрації через Email/Пароль та Google Sign-In.
-    *   Використовує анімований фон `LavaLampBackground` (`lib/widgets/lava_lamp_background.dart`).
-    *   Керує станом завантаження (`_isLoading`) та відображенням помилок (`_errorMessage`).
-    *   Методи `_submitForm()` для Email/Password та `_signInWithGoogle()` для Google.
-    *   **Важливо:** Логіка створення профілю користувача перенесена в Cloud Function `createUserProfile`, яка спрацьовує автоматично при створенні нового Firebase Auth користувача. `LoginPage` більше не викликає `_createInitialUserProfile`.
-
-*   **Шлюз Автентифікації (`lib/auth_gate.dart`):**
-    *   Прослуховує `FirebaseAuth.instance.authStateChanges()`.
-    *   Якщо користувач не автентифікований, перенаправляє на `LoginPage`.
-    *   Якщо автентифікований:
-        *   Використовує `_ProfileCheckGate` для отримання `UserProfile` з Firestore через `UserProfileRepository.getUserProfileStream(userId)`.
-        *   Якщо профіль ще не існує (після спрацювання `createUserProfile` може бути невелика затримка) або `profileSetupComplete == false`, перенаправляє на `ProfileSetupScreen`. Показує індикатор завантаження під час очікування синхронізації профілю.
-        *   Якщо `profileSetupComplete == true`, перенаправляє на `HomePage` та надає `UserProfileCubit`.
-
-*   **Створення Профілю Користувача (Firebase Function `createUserProfile`):**
-    *   Тригер: `onAuthUserCreate` (створення нового Firebase Auth користувача).
-    *   Створює документ в `users/{userId}` з полями за замовчуванням: `uid`, `email`, `profilePictureUrl` (з Auth, якщо є), `profileSetupComplete: false`, `xp: 0`, `level: 1`, `followersCount: 0`, `followingCount: 0`, `achievedRewardIds: []`, `following: []`, `createdAt`, `updatedAt`.
-
-*   **Налаштування Профілю (`lib/features/profile_setup/presentation/screens/profile_setup_screen.dart`):**
-    *   Дозволяє користувачам вводити/редагувати деталі профілю: ім'я користувача, відображуване ім'я, стать, дата народження, зріст, вага, фітнес-цілі, рівень активності.
-    *   Керується `ProfileSetupCubit`.
-    *   При збереженні встановлює `profileSetupComplete: true`.
-    *   Може бути викликаний для редагування існуючого профілю, передаючи `userProfileToEdit`.
-
-*   **Керування Профілем Користувача (`UserProfileCubit`):**
-    *   Надає `UserProfile` для UI.
-    *   Підписується на `UserProfileRepository.getUserProfileStream()` для оновлень в реальному часі.
-
-*   **Нагорода за Налаштування Профілю (Firebase Function `checkProfileSetupCompletionAchievements`):**
-    *   Тригер: `onDocumentWritten` на `users/{userId}`.
-    *   Якщо `profileSetupComplete` змінюється на `true` і досягнення "Early Bird" ще не отримане, нагороджує ним та надсилає сповіщення.
-
-### 7.2. Основна Навігація: `HomePage` та `DashboardScreen`
-
-*   **`HomePage` (`lib/home_page.dart`):**
-    *   Головний екран після входу та налаштування профілю. Надає `NotificationsCubit`.
-    *   **AppBar:** Динамічний заголовок. Натискання на "MuscleUP" веде на `DashboardScreen`.
-    *   **`BottomNavigationBar`:**
-        1.  **Routines:** `UserRoutinesScreen`
-        2.  **Explore:** `ExploreScreen` (соціальна стрічка)
-        3.  **Progress:** `ProgressScreen`
-        4.  **Profile:** `ProfileScreen`
-    *   **FloatingActionButton ("START WORKOUT"):**
-        *   З'являється тільки на `DashboardScreen`.
-        *   Логіка:
-            1.  Перевіряє активну сесію (`WorkoutLogRepository.getActiveWorkoutSessionStream()`). Якщо є, відновлює в `ActiveWorkoutScreen`.
-            2.  Якщо немає, перевіряє наявність рутин (`RoutineRepository.getUserRoutines()`). Якщо є, переходить на вкладку "Routines".
-            3.  Якщо рутин немає, переходить на `CreateEditRoutineScreen`.
-
-*   **`DashboardScreen` (`lib/features/dashboard/presentation/screens/dashboard_screen.dart`):**
-    *   Привітання користувача (з `UserProfileCubit`).
-    *   Іконка та лічильник серії тренувань.
-    *   Картки статистики: вага, серія, дотримання графіку (з `DashboardStatsCubit`).
-    *   Графік тренду об'єму (`VolumeTrendChartWidget`) за останні 7 тренувань.
-    *   Розклад на 7 днів (`UpcomingScheduleWidget`, дані з `UpcomingScheduleCubit`).
-    *   Секція сповіщень (останні непрочитані з `NotificationsCubit`).
-
-### 7.3. Соціальні Функції (`lib/features/social`)
-
-Цей модуль зазнав значних оновлень і включає розширену функціональність постів та систему підписок.
-
-*   **Сутності:**
-    *   **`Post` (`lib/core/domain/entities/post.dart`):**
-        *   `id`, `userId`, `authorUsername`, `authorProfilePicUrl`, `timestamp`, `updatedAt`.
-        *   `type`: `PostType` (enum: `standard`, `recordClaim`, `routineShare`).
-        *   `textContent`, `mediaUrl` (для майбутнього).
-        *   `likedBy` (List<String>), `commentsCount` (int), `isCommentsEnabled` (bool).
-        *   **Для `routineShare`**: `relatedRoutineId`, `routineSnapshot` (Map<String, dynamic>).
-        *   **Для `recordClaim`**: `recordDetails` (Map: `exerciseId`, `exerciseName`, `weightKg`, `reps`, `videoUrl`), `recordVerificationStatus` (`RecordVerificationStatus` enum: `pending`, `verified`, `rejected`, `expired`), `recordVerificationDeadline` (Timestamp), `isRecordVerified` (bool), `verificationVotes` (Map<String, String> типу `userId: voteTypeString`), `votedAndRewardedUserIds` (List<String>).
-    *   **`Comment` (`lib/core/domain/entities/comment.dart`):** `id`, `postId`, `userId`, `authorUsername`, `authorProfilePicUrl`, `text`, `timestamp`.
-    *   **`VoteType` (`lib/core/domain/entities/vote_type.dart`):** enum `verify`, `dispute`.
-
-*   **Репозиторії:**
-    *   **`PostRepository` (`lib/core/domain/repositories/post_repository.dart`):** Інтерфейс для операцій з постами, лайками, коментарями, голосами.
-    *   **`PostRepositoryImpl` (`lib/features/social/data/repositories/post_repository_impl.dart`):** Реалізація з Firestore.
-        *   `createPost`, `getAllPostsStream`, `getPostById`, `getPostStreamById`.
-        *   `updatePostSettings` (для `isCommentsEnabled`).
-        *   `addLike`, `removeLike`.
-        *   `addComment`, `getCommentsStream`, `updateComment`, `deleteComment`.
-        *   `castVote`, `retractVote` для заявок на рекорд.
-    *   **`UserProfileRepository` (оновлено в `lib/features/profile_setup/data/repositories/user_profile_repository_impl.dart`):**
-        *   Методи `followUser(currentUserId, targetUserId)` та `unfollowUser(currentUserId, targetUserId)`: оновлюють список `following` у поточного користувача.
-        *   Методи `getFollowingList(userId)` та `getFollowersList(userId)` для отримання списків користувачів (з пагінацією).
-
-*   **Кубіти:**
-    *   **`CreatePostCubit` (`lib/features/social/presentation/cubit/create_post_cubit.dart`):**
-        *   Керує станом створення поста.
-        *   Метод `submitPost` приймає `textContent`, `mediaUrl`, `type`, `isCommentsEnabled`, `routineSnapshot`, `relatedRoutineId`, `recordDetails`.
-        *   Отримує профіль користувача для заповнення даних автора.
-    *   **`ExploreFeedCubit` (`lib/features/social/presentation/cubit/explore_feed_cubit.dart`):**
-        *   Завантажує стрічку постів (`_postRepository.getAllPostsStream()`).
-    *   **`PostInteractionCubit` (`lib/features/social/presentation/cubit/post_interaction_cubit.dart`):**
-        *   Керує станом одного поста (лайки, коментарі, налаштування, статус голосування).
-        *   Методи: `toggleLike()`, `castVote(VoteType)`, `addComment()`, `fetchComments()`, `updateComment()`, `deleteComment()`, `toggleCommentsEnabled()`.
-    *   **`UserInteractionCubit` (`lib/features/social/presentation/cubit/user_interaction_cubit.dart`):**
-        *   Керує станом взаємодії з профілем іншого користувача (зокрема, підпискою).
-        *   Метод `toggleFollow()` для підписки/відписки.
-        *   Використовує `UserProfileRepository` для виконання дій та отримання оновлень.
-    *   **`FollowListCubit` (`lib/features/social/presentation/cubit/follow_list_cubit.dart`):**
-        *   Керує завантаженням та відображенням списків підписників/підписок з пагінацією.
-        *   Використовує `UserProfileRepository.getFollowersList` або `getFollowingList`.
-
-*   **Екрани та Віджети:**
-    *   **`ExploreScreen` (`lib/features/social/presentation/screens/explore_screen.dart`):**
-        *   Основна стрічка постів на вкладці "Explore". FAB для створення нового поста.
-    *   **`CreatePostScreen` (`lib/features/social/presentation/screens/create_post_screen.dart`):**
-        *   UI для створення постів.
-        *   **Вибір типу поста:** `SegmentedButton` для `standard`, `routineShare`, `recordClaim`.
-        *   **Routine Share:** Якщо `routineToShare` передано, поля заповнюються. Інакше, UI для вибору рутини (перехід на `UserRoutinesScreen` в режимі вибору).
-        *   **Record Claim:** Поля для вибору вправи (через `ExerciseExplorerScreen`), ваги, повторень, URL відео.
-        *   Перемикач `isCommentsEnabled`.
-    *   **`PostListItem` (`lib/features/social/presentation/widgets/post_list_item.dart`):**
-        *   Відображає окремий пост. Клікабельний для переходу на `PostDetailScreen`.
-        *   Аватар та ім'я автора клікабельні для переходу на `ViewUserProfileScreen` (якщо це не власний профіль).
-        *   **`PostCardContentWidget` (`lib/features/social/presentation/widgets/post_card_content_widget.dart`):** Динамічно відображає вміст картки залежно від `post.type`:
-            *   `standard`: текст, медіа (в майбутньому).
-            *   `routineShare`: деталі рутини, кнопка "Add to My Routines". При натисканні викликає `_addRoutineToMyRoutines`, яка використовує `RoutineRepository.copyRoutineFromSnapshot`.
-            *   `recordClaim`: деталі рекорду, статус верифікації (`_getRecordStatusText`, `_getRecordStatusColor`), `VoteProgressBarWidget`. Якщо `isDetailedView == true` (на `PostDetailScreen`) та голосування активне, відображає кнопки "Validate"/"Dispute".
-        *   Кнопки лайка та лічильник коментарів.
-    *   **`PostDetailScreen` (`lib/features/social/presentation/screens/post_detail_screen.dart`):**
-        *   Повний пост, список коментарів (`CommentListItem`).
-        *   Форма для додавання коментаря.
-        *   Автор поста може вмикати/вимикати коментарі.
-        *   Автори коментарів можуть редагувати/видаляти власні коментарі.
-        *   Для постів `recordClaim`: відображає кнопки голосування, якщо користувач може голосувати.
-    *   **`ViewUserProfileScreen` (`lib/features/social/presentation/screens/view_user_profile_screen.dart`):**
-        *   Відображає профіль іншого користувача.
-        *   Кнопка "Follow"/"Unfollow", керована `UserInteractionCubit`.
-        *   Посилання на списки підписників/підписок, що ведуть на `FollowListScreen`.
-    *   **`FollowListScreen` (`lib/features/social/presentation/screens/follow_list_screen.dart`):**
-        *   Відображає список підписників або тих, на кого підписаний користувач.
-        *   Використовує `FollowListCubit` та `FollowListItemWidget`.
-
-*   **Firebase Cloud Functions для Соціальних Функцій:**
-    *   `onCommentCreated`, `onCommentDeleted`: Оновлюють `commentsCount` та `updatedAt` на батьківському пості.
-    *   `onRecordClaimPostCreated`: Встановлює `recordVerificationDeadline`, `recordVerificationStatus` на `PENDING`.
-    *   `onRecordClaimVoteCasted`: Нараховує XP за голосування (`XP_FOR_VOTING`), якщо користувач ще не голосував/не був нагороджений за цей пост (перевіряє `votedAndRewardedUserIds`).
-    *   `processRecordClaimDeadlines` (запланована): Обробляє заявки на рекорд, що пройшли дедлайн. Визначає результат голосування (на основі `MIN_VOTE_PERCENTAGE_FOR_VERIFICATION`), оновлює `recordVerificationStatus`, `isRecordVerified`. Якщо верифіковано, нараховує XP (`XP_FOR_RECORD_BASE` + бонус) та видає досягнення `personalRecordSet`.
-    *   `handleUserFollowListUpdate` (тригер `onDocumentWritten` на `users/{userId}`):
-        *   Спрацьовує при зміні списку `following` користувача.
-        *   Якщо користувач А підписався на Б:
-            *   Збільшує `followersCount` у Б.
-            *   Надсилає сповіщення типу `newFollower` користувачеві Б.
-        *   Якщо користувач А відписався від Б:
-            *   Зменшує `followersCount` у Б.
-        *   Оновлює `followingCount` у користувача А.
-        *   Оновлює `updatedAt` для обох профілів.
-
-### 7.4. Система Сповіщень
-
-*   **`AppNotification` (`lib/core/domain/entities/app_notification.dart`):**
-    *   Структура: `id`, `type` (`NotificationType`), `title`, `message`, `timestamp`, `isRead`, `relatedEntityId`, `relatedEntityType`, `iconName`.
-    *   **Додано поля для `newFollower`:** `senderProfilePicUrl`, `senderUsername`.
-*   **`NotificationType` enum:** Включає `achievementUnlocked`, `workoutReminder`, `newFollower`, `routineShared`, `systemMessage`, `advice`, `custom`.
-*   **`NotificationRepository` та `NotificationRepositoryImpl`:** CRUD для сповіщень в `users/{userId}/notifications`. Включає `deleteNotification`.
-*   **`NotificationsCubit` (`lib/features/notifications/presentation/cubit/notifications_cubit.dart`):**
-    *   Керує списком сповіщень, лічильником непрочитаних.
-    *   Надає потоки для спливаючих сповіщень в додатку для досягнень (`achievementAlertStream`) та порад (`adviceAlertStream`). Використовує `_alerted...Ids` для уникнення повторних показів.
-*   **UI:** `NotificationListItem`, `NotificationDetailScreen`. Можливість "Mark all as read", видалення окремих сповіщень.
-
-### 7.5. Бібліотека Вправ
-
-*   **`PredefinedExercise` (`lib/core/domain/entities/predefined_exercise.dart`):** Стандартизовані дані (назва, групи м'язів, обладнання, опис, відео, складність, теги).
-*   **`PredefinedExerciseRepository` та `PredefinedExerciseRepositoryImpl`:** Отримує дані з колекції `predefinedExercises`.
-*   **Firebase Function `seedPredefinedExercises`:** HTTPS-тригер для наповнення бази.
-*   **`ExerciseExplorerScreen` (`lib/features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart`):**
-    *   Браузер вправ. Використовується в режимі вибору для додавання до рутин або для "Record Claim". `ExerciseExplorerCubit`.
-
-### 7.6. Управління Тренувальними Рутинами
-
-*   **Сутності (`lib/core/domain/entities/routine.dart`):**
-    *   `UserRoutine`: Назва, опис, список `RoutineExercise`, розклад, `isPublic`.
-    *   `RoutineExercise`: `predefinedExerciseId`, `exerciseNameSnapshot`, `numberOfSets`, `notes`.
-*   **`RoutineRepository` та `RoutineRepositoryImpl`:** CRUD для `userRoutines`. Метод `copyRoutineFromSnapshot` для копіювання спільних рутин.
-*   **Кубіти:** `UserRoutinesCubit` (список рутин), `ManageRoutineCubit` (створення/редагування).
-*   **UI:** `UserRoutinesScreen`, `CreateEditRoutineScreen`, `AddExerciseToRoutineDialog`.
-
-### 7.7. Відстеження Тренувань
-
-*   **Сутності:**
-    *   `WorkoutSession`: `routineId`, час, тривалість, список `LoggedExercise`, нотатки, статус, `totalVolume`.
-    *   `LoggedExercise`: `exerciseNameSnapshot`, `targetSets`, список `LoggedSet`.
-    *   `LoggedSet`: `setNumber`, `weightKg`, `reps`, `isCompleted`, `notes` (для RPE).
-*   **`WorkoutLogRepository` та `WorkoutLogRepositoryImpl`:** Керує даними в `users/{userId}/workoutLogs`.
-*   **`ActiveWorkoutCubit` (`lib/features/workout_tracking/presentation/cubit/active_workout_cubit.dart`):**
-    *   Керує поточною сесією.
-    *   Логування сетів, ваги, повторень, RPE через `CurrentSetDisplay`.
-    *   Обробляє завершення/скасування.
-*   **`WorkoutCompleteScreen` (`lib/features/workout_tracking/presentation/screens/workout_complete_screen.dart`):**
-    *   Святковий екран з анімацією Lottie (`assets/animations/trophy_animation.json`), ефектом `confetti`.
-    *   Зведення тренування, XP, інформація про підвищення рівня (з `UserProfile`, оновленого Firebase Function `calculateAndAwardXpAndStreak`).
-
-### 7.8. Відстеження Прогресу
-
-*   **`ProgressCubit` (`lib/features/progress/presentation/cubit/progress_cubit.dart`):**
-    *   Збирає дані для `ProgressScreen`.
-    *   Отримує дані про ліги (`LeagueRepository`), профіль користувача, історію тренувань.
-*   **Система Ліг:**
-    *   `LeagueInfo` (`lib/core/domain/entities/league_info.dart`): Назва, рівні, XP, кольори градієнту. Колекція `leagues`.
-    *   `LeagueTitleWidget`.
-*   **XP та Рівні:**
-    *   `XPProgressBarWidget` з анімацією заповнення.
-*   **Карта М'язів (`MuscleMapWidget`):**
-    *   Візуалізація об'єму тренувань (кількість сетів) на SVG м'язів (чоловіча/жіноча версії з `assets/images/`). Інтенсивність кольору залежить від даних за останні 7 днів.
-*   **Статистика Тренувань:**
-    *   Тренди RPE та Робочої Ваги для кожної вправи за останні N=15 тренувань (відображення через `ValueSparkline`).
-
-### 7.9. Система Досягнень
-
-*   **`AchievementId` enum та `Achievement` (`lib/core/domain/entities/achievement.dart`):** ID, назва, опис, іконка. `isPersonalized` для динамічних назв/описів (наприклад, "NEW RECORD: [Exercise Name]!").
-*   **Логіка Нагородження:** Firebase Cloud Functions (`checkProfileSetupCompletionAchievements`, `calculateAndAwardXpAndStreak`, `processRecordClaimDeadlines`).
-*   **Відображення:** На `ProfileScreen`.
-*   **Реалізовані:** "Early Bird", "First Workout", "Personal Record Set".
-
-### 7.10. Деталі UI/UX та Загальні Віджети
-
-*   **Анімований Фон:** `LavaLampBackground` (`lib/widgets/lava_lamp_background.dart`) на `LoginPage`.
-*   **Тема Додатку (`lib/main.dart`):**
-    *   Визначено `ThemeData` з основною палітрою кольорів (`primaryOrange = Color(0xFFED5D1A)`), шрифтами (`Inter`, `IBMPlexMono`).
-    *   Налаштування для `AppBar`, `BottomNavigationBar`, `Card`, `ElevatedButton`, `InputDecorationTheme` тощо для узгодженого вигляду.
-*   **RPE Слайдери:** Унікальний UI елемент в `CurrentSetDisplay` для детального логування зусиль кожного повторення.
-*   **Святкові Анімації:** `Confetti` та `Lottie` на `WorkoutCompleteScreen`.
-
-## 8. Бекенд: Структура Firebase Cloud Firestore
-
-*   **`users/{userId}`:** Профіль користувача (`UserProfile`).
-    *   `uid`, `email`, `displayName`, `username`, `gender`, `dateOfBirth`, `heightCm`, `weightKg`, `fitnessGoal`, `activityLevel`, `xp`, `level`, `currentStreak`, `longestStreak`, `lastWorkoutTimestamp`, `lastScheduledWorkoutCompletionTimestamp`, `lastScheduledWorkoutDayKey`, `profileSetupComplete`, `createdAt`, `updatedAt`.
-    *   **Нові/Оновлені поля:** `followersCount` (int), `followingCount` (int), `following` (List<String> ID користувачів, на яких підписаний).
-    *   **Підколекція `notifications/{notificationId}`:** Сповіщення (`AppNotification`).
-    *   **Підколекція `workoutLogs/{sessionId}`:** Логи тренувань (`WorkoutSession`).
-
-*   **`predefinedExercises/{exerciseId}`:** Бібліотека вправ (`PredefinedExercise`).
-
-*   **`userRoutines/{routineId}`:** Рутини користувачів (`UserRoutine`).
-
-*   **`leagues/{leagueId}`:** Інформація про ліги (`LeagueInfo`).
-
-*   **`posts/{postId}`:** Соціальні пости (`Post`).
-    *   `userId`, `authorUsername`, `authorProfilePicUrl`, `timestamp`, `updatedAt`, `type` (`standard`, `recordClaim`, `routineShare`), `textContent`, `mediaUrl`.
-    *   `likedBy` (List<String>), `commentsCount` (int), `isCommentsEnabled` (bool).
-    *   **`routineShare` specific**: `relatedRoutineId`, `routineSnapshot`.
-    *   **`recordClaim` specific**: `recordDetails` (Map), `recordVerificationStatus` (String), `recordVerificationDeadline` (Timestamp), `isRecordVerified` (bool), `verificationVotes` (Map<String, String>), `votedAndRewardedUserIds` (List<String>).
-    *   **Підколекція `comments/{commentId}`:** Коментарі до постів (`Comment`).
-
-## 9. Логіка Firebase Cloud Functions (`functions/src/index.ts`)
-
-Firebase Cloud Functions, написані на TypeScript (Node.js v20), обробляють серверну логіку. Регіон за замовчуванням: `us-central1`.
-
-*   **`createUserProfile`** (Auth Trigger - `v1.auth.user().onCreate()`):
-    *   Створює документ в `users` при реєстрації нового користувача. Ініціалізує профіль з `profileSetupComplete: false` та іншими полями за замовчуванням.
-
-*   **`calculateAndAwardXpAndStreak`** (Firestore Trigger - `v2.firestore.onDocumentUpdated("users/{userId}/workoutLogs/{sessionId}")`):
-    *   Спрацьовує при оновленні логу тренування, коли `status` стає `completed`.
-    *   Розраховує XP (50-200) на основі тривалості та об'єму.
-    *   Оновлює `xp`, `level`, `lastWorkoutTimestamp`.
-    *   Розраховує та оновлює `currentStreak` та `longestStreak` на основі запланованих днів рутини.
-    *   Нагороджує досягненням "First Workout" та надсилає сповіщення.
-
-*   **`checkProfileSetupCompletionAchievements`** (Firestore Trigger - `v2.firestore.onDocumentWritten("users/{userId}")`):
-    *   Спрацьовує при записі в профіль користувача.
-    *   Якщо `profileSetupComplete` змінюється на `true`, нагороджує досягненням "Early Bird" та надсилає сповіщення.
-
-*   **`seedPredefinedExercises`** (HTTPS Trigger - `v1.https.onCall` або `onRequest`):
-    *   Для початкового наповнення колекції `predefinedExercises` даними (використовується переважно для розробки).
-
-*   **`onCommentCreated`** (Firestore Trigger - `v2.firestore.onDocumentCreated("posts/{postId}/comments/{commentId}")`):
-    *   Збільшує `commentsCount` та оновлює `updatedAt` на батьківському пості.
-
-*   **`onCommentDeleted`** (Firestore Trigger - `v2.firestore.onDocumentDeleted("posts/{postId}/comments/{commentId}")`):
-    *   Зменшує `commentsCount` та оновлює `updatedAt` на батьківському пості.
-
-*   **`onRecordClaimPostCreated`** (Firestore Trigger - `v2.firestore.onDocumentCreated("posts/{postId}")`):
-    *   Якщо `type == "recordClaim"`, встановлює `recordVerificationDeadline` (поточний час + `RECORD_VOTE_DURATION_HOURS` = 24 години) та `recordVerificationStatus = PENDING`.
-
-*   **`onRecordClaimVoteCasted`** (Firestore Trigger - `v2.firestore.onDocumentUpdated("posts/{postId}")`):
-    *   Якщо пост `recordClaim` та `status == PENDING`.
-    *   Перевіряє зміни в `verificationVotes`.
-    *   Якщо виборець ще не був нагороджений за голос по цьому посту (перевірка `votedAndRewardedUserIds`), нараховує `XP_FOR_VOTING` (15 XP) та додає ID користувача до `votedAndRewardedUserIds`. Надсилає сповіщення.
-
-*   **`processRecordClaimDeadlines`** (Scheduled Function - `v2.scheduler.onSchedule("every 1 hours")`):
-    *   Запитує пости `recordClaim` зі статусом `PENDING`, де `recordVerificationDeadline` минув.
-    *   Підраховує голоси. Якщо співвідношення "verify" >= `MIN_VOTE_PERCENTAGE_FOR_VERIFICATION` (0.55), статус змінюється на `VERIFIED`, `isRecordVerified = true`. Автору нараховується XP (`XP_FOR_RECORD_BASE` + бонус за об'єм, макс. 1500 XP) та досягнення `personalRecordSet`.
-    *   Інакше статус `REJECTED` або `EXPIRED` (якщо голосів не було).
-    *   Надсилає відповідні сповіщення автору.
-
-*   **`handleUserFollowListUpdate`** (Firestore Trigger - `v2.firestore.onDocumentWritten("users/{userId}")`):
-    *   Спрацьовує при зміні документа користувача.
-    *   Аналізує зміни в полі `following`.
-    *   **При підписці:** Збільшує `followersCount` у цільового користувача (`targetUserId`) та надсилає йому сповіщення типу `newFollower` (з інформацією про того, хто підписався).
-    *   **При відписці:** Зменшує `followersCount` у цільового користувача.
-    *   Оновлює `followingCount` у поточного користувача (`currentUserId`).
-    *   Встановлює `updatedAt` для обох зачеплених профілів.
-
-## 10. Налаштування та Запуск Проєкту
-
-1.  **Flutter SDK:** Переконайтеся, що встановлено Flutter SDK (версія `^3.8.0` або сумісна).
-2.  **Firebase Проєкт:**
-    *   Створіть проєкт на [console.firebase.google.com](https://console.firebase.google.com/).
-    *   Додайте додатки Android/iOS. Завантажте `google-services.json` та `GoogleService-Info.plist`.
-    *   Увімкніть Firebase Authentication (Email/Password, Google), Firestore (Native mode), Cloud Functions, Firebase Storage (для майбутніх медіа).
-3.  **Firebase CLI:** Встановіть, увійдіть (`firebase login`), налаштуйте для Flutter (`flutterfire configure`). Ініціалізуйте Functions в папці `functions`.
-4.  **Залежності:** `flutter pub get` в корені, `npm install` в `functions/`.
-5.  **Іконки:** `flutter pub run flutter_launcher_icons`.
-6.  **Запуск:** `flutter run`.
-7.  **Розгортання Cloud Functions:** `cd functions && npm run build && firebase deploy --only functions`.
-8.  **Наповнення `predefinedExercises`:** Викличте функцію `seedPredefinedExercises`.
-9.  **Правила Безпеки Firestore:** Налаштуйте правила безпеки в консолі Firebase. Детальні правила наведені в оригінальному `README.md` (секція 9). Ці правила мають забезпечувати:
-    *   Приватність даних користувача (`users/{userId}` та підколекції).
-    *   Публічне читання/обмежений запис для спільних ресурсів (`predefinedExercises`, `leagues`).
-    *   Логіку доступу до рутин (`userRoutines`) – приватні/публічні.
-    *   Комплексні правила для постів (`posts`) та коментарів (`posts/{postId}/comments`), що враховують авторство, лайки, голосування, керування коментарями.
-
-## 11. Дорожня Карта та Майбутній Розвиток
-
-Нижче наведено оновлену дорожню карту, що враховує вже реалізовані функції.
-
-**Фаза 1: Базові Пости та Стрічка (Завершено)**
-*   [✔️] Модель `Post` та структура Firestore.
-*   [✔️] Створення стандартних текстових постів.
-*   [✔️] Базовий UI стрічки "Explore".
-*   [✔️] Вбудування профілю автора в пости.
-
-**Фаза 2: Взаємодія з Постами - Лайки та Коментарі (Завершено)**
-*   [✔️] Система лайків.
-*   [✔️] Система коментарів (створення, перегляд, редагування/видалення власних).
-*   [✔️] Cloud Functions для `commentsCount`.
-*   [✔️] Ввімкнення/вимкнення коментарів автором поста.
-
-**Фаза 3: Розширені Типи Постів (Завершено)**
-*   **Пост "Поділитися Рутиною" (`routineShare`):**
-    *   [✔️] Оновлена модель `Post`, UI для створення та відображення.
-    *   [✔️] Кнопка "Add to My Routines" та логіка копіювання.
-*   **Пост "Заявка на Рекорд" (`recordClaim`):**
-    *   [✔️] Розширена модель `Post`, UI для створення та відображення.
-    *   [✔️] Логіка голосування, зберігання голосів.
-    *   [✔️] Cloud Functions: `onRecordClaimPostCreated`, `onRecordClaimVoteCasted`, `processRecordClaimDeadlines`.
-
-**Фаза 4: Основний Соціальний Граф (Частково Реалізовано)**
-*   **Підписки Користувачів (Followers/Following):**
-    *   [✔️] Оновлена сутність `UserProfile` (`following`, `followersCount`, `followingCount`).
-    *   [✔️] `UserProfileRepository` з методами `followUser`, `unfollowUser`, `getFollowersList`, `getFollowingList`.
-    *   [✔️] UI для кнопок Follow/Unfollow на `ViewUserProfileScreen`, керований `UserInteractionCubit`.
-    *   [✔️] Екран `FollowListScreen` для перегляду списків.
-    *   [✔️] Cloud Function `handleUserFollowListUpdate` для оновлення лічильників та надсилання сповіщень.
-*   **Персоналізована Стрічка:**
-    *   [ ] Логіка для відображення постів переважно від підписаних користувачів (потребує розробки).
-
-**Фаза 5: Покращення та Шліфування (Планується)**
-*   **Медіа в Постах:**
-    *   [ ] Функціонал завантаження зображень/відео (Firebase Storage).
-    *   [ ] UI для додавання/відображення медіа.
-*   **Сповіщення для Соціальних Взаємодій:**
-    *   [ ] Новий лайк на вашому пості.
-    *   [ ] Новий коментар на вашому пості.
-    *   (Сповіщення про нового підписника вже є).
-*   **Покращення UI/UX для Соціальних Функцій:**
-    *   [ ] Меню опцій поста (редагувати/видалити, поскаржитися).
-    *   [ ] Фільтрація/сортування в стрічці "Explore".
-    *   [ ] Розширення сторінок профілів (стрічка активності).
-
-**Довгострокове Бачення (Поза поточним обсягом):**
-*   Прямі повідомлення.
-*   Публічні рекорди та таблиці лідерів.
-*   Розширена гейміфікація (виклики, сезонні ліги).
-*   Push-сповіщення через Firebase Cloud Messaging (FCM).
-*   Комплексний набір тестів.
-*   Адмін-панель.
-*   Інтеграція з носимими пристроями.
-*   Офлайн-підтримка.
-
----
+4.  **Firebase Functions Deployment**:
+    *   Navigate to the `functions/` directory.
+    *   Install Node.js dependencies: `npm install`
+    *   Build TypeScript: `npm run build`
+    *   Deploy functions: `firebase deploy --only functions` (or use `npm run deploy`)
+5.  **Run the App**:
+    ```bash
+    flutter run
+    ```
+    Select a connected device or emulator.
+
+## Potential Future Enhancements
+
+*   **Dark Mode**: Full dark mode support based on system settings or user preference.
+*   **Offline Support**: Cache data for offline access.
+*   **Detailed Exercise Instructions/Videos**: Integrate or allow users to add more detailed exercise guides.
+*   **Advanced Analytics**: More in-depth charts and progress reports.
+*   **Workout Planning**: Calendar view for planning future workouts.
+*   **Social Features**: Direct messaging, user groups, challenges.
+*   **Wearable Integration**: Sync workouts from fitness trackers.
+*   **Localization**: Support for multiple languages.
+*   **Admin Panel**: For managing predefined exercises, users, and content.

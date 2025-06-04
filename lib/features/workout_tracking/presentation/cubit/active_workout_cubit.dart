@@ -27,7 +27,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._workoutLogRepository,
     this._userProfileRepository,
     this._firebaseAuth,
-  ) : super(ActiveWorkoutInitial()) { // Створюємо екземпляр стану
+  ) : super(ActiveWorkoutInitial()) { 
     _subscribeToActiveSession();
   }
 
@@ -37,7 +37,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final userId = _currentUserId;
     if (userId == null) {
       developer.log('ActiveWorkoutCubit: No user logged in, cannot subscribe.', name: 'ActiveWorkoutCubit');
-      emit(ActiveWorkoutNone()); // Створюємо екземпляр стану
+      emit(ActiveWorkoutNone()); 
       return;
     }
 
@@ -53,7 +53,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           developer.log('ActiveWorkoutCubit: No active session found via stream.', name: 'ActiveWorkoutCubit');
           _durationTimer?.cancel();
           if (state is! ActiveWorkoutLoading || (state as ActiveWorkoutLoading).message?.contains('Starting new') == false ) {
-             emit(ActiveWorkoutNone()); // Створюємо екземпляр стану
+             emit(ActiveWorkoutNone()); 
           }
         }
       },
@@ -94,19 +94,31 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     try {
       List<LoggedExercise> initialExercises = [];
       if (fromRoutine != null) {
-        initialExercises = fromRoutine.exercises.map((re) {
+        for (final routineExercise in fromRoutine.exercises) {
+          double? suggestedWeight;
+          try {
+            suggestedWeight = await _workoutLogRepository.getAverageWorkingWeightForExercise(userId, routineExercise.predefinedExerciseId);
+            developer.log("Suggested weight for ${routineExercise.exerciseNameSnapshot}: $suggestedWeight kg", name: "ActiveWorkoutCubit.StartWorkout");
+          } catch (e) {
+            developer.log("Error getting suggested weight for ${routineExercise.exerciseNameSnapshot}: $e", name: "ActiveWorkoutCubit.StartWorkout");
+          }
+
           List<LoggedSet> sets = List.generate(
-            re.numberOfSets > 0 ? re.numberOfSets : 1,
-            (index) => LoggedSet(setNumber: index + 1),
+            routineExercise.numberOfSets > 0 ? routineExercise.numberOfSets : 1,
+            (index) => LoggedSet(
+              setNumber: index + 1,
+              // Pre-fill weight only for the first set if a suggestion exists
+              weightKg: (index == 0 && suggestedWeight != null) ? suggestedWeight : null, 
+            ),
           );
-          return LoggedExercise(
-            predefinedExerciseId: re.predefinedExerciseId,
-            exerciseNameSnapshot: re.exerciseNameSnapshot,
-            targetSets: re.numberOfSets,
+          initialExercises.add(LoggedExercise(
+            predefinedExerciseId: routineExercise.predefinedExerciseId,
+            exerciseNameSnapshot: routineExercise.exerciseNameSnapshot,
+            targetSets: routineExercise.numberOfSets,
             completedSets: sets,
-            notes: re.notes,
-          );
-        }).toList();
+            notes: routineExercise.notes,
+          ));
+        }
       }
 
       final newSession = WorkoutSession(
@@ -238,15 +250,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         totalVolume: totalVolume,
       );
 
-      // Викликаємо оновлення сесії, що ініціює Cloud Function
       await _workoutLogRepository.completeWorkoutSession(sessionToComplete);
       developer.log('ActiveWorkoutCubit: Workout ${sessionToComplete.id} marked as completed. Waiting for Cloud Function to update profile.', name: 'ActiveWorkoutCubit');
       
       _durationTimer?.cancel();
 
-      // Після того, як Cloud Function оновила профіль, зчитуємо його знову для UI
-      // Цей запит може бути швидшим, ніж оновлення через загальний стрім,
-      // оскільки ми явно запитуємо документ.
       UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
       
       if (userProfile == null) {
@@ -254,9 +262,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           return;
       }
 
-      // Для екрану завершення, нам все одно потрібно передати xpGained,
-      // оскільки Cloud Function не повертає його клієнту.
-      // XP GAINED ТУТ ЦЕ БУДЕ ОЦІНКА НА ОСНОВІ ТРИВАЛОСТІ/ОБ'ЄМУ, що збігається з функцією.
       int xpGainedEstimated = 50; 
       if (totalVolume > 0) xpGainedEstimated += (totalVolume / 100).round();
       if (duration > 0) xpGainedEstimated += (duration / (5 * 60)).round();
@@ -265,8 +270,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
       emit(ActiveWorkoutSuccessfullyCompleted(
           completedSession: sessionToComplete, 
-          xpGained: xpGainedEstimated, // Передаємо оцінене XP
-          updatedUserProfile: userProfile // Передаємо оновлений профіль
+          xpGained: xpGainedEstimated, 
+          updatedUserProfile: userProfile 
       ));
     } catch (e, s) {
       developer.log('ActiveWorkoutCubit: Error completing workout: $e', error:e, stackTrace:s, name: 'ActiveWorkoutCubit');

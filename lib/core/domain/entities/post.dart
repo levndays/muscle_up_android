@@ -9,13 +9,12 @@ enum PostType {
   routineShare,
 }
 
-// NEW: Enum for record claim verification status
 enum RecordVerificationStatus {
-  pending,    // Default state, awaiting votes/deadline
-  verified,   // Successfully verified
-  rejected,   // Rejected by votes or timeout without consensus
-  expired,    // Voting window closed without enough votes for consensus (can be merged with rejected)
-  contested,  // (Optional) If there's a strong dispute
+  pending,
+  verified,
+  rejected,
+  expired,
+  contested,
 }
 
 class Post extends Equatable {
@@ -24,6 +23,7 @@ class Post extends Equatable {
   final String authorUsername;
   final String? authorProfilePicUrl;
   final Timestamp timestamp;
+  final Timestamp? updatedAt; // Додамо, якщо його немає, або переконаємось, що є
   final PostType type;
   final String textContent;
   final String? mediaUrl;
@@ -32,14 +32,13 @@ class Post extends Equatable {
   final bool isCommentsEnabled;
   final String? relatedRoutineId;
   final Map<String, dynamic>? routineSnapshot;
-  final Map<String, dynamic>? recordDetails; // e.g., { exerciseId, exerciseName, weightKg, reps, videoUrl }
+  final Map<String, dynamic>? recordDetails;
 
-  // Fields for Record Claim Verification
-  final RecordVerificationStatus? recordVerificationStatus; // NEW
-  final Timestamp? recordVerificationDeadline; // NEW
-  final bool? isRecordVerified; // This will reflect the final outcome of recordVerificationStatus
+  final RecordVerificationStatus? recordVerificationStatus;
+  final Timestamp? recordVerificationDeadline;
+  final bool? isRecordVerified;
   final Map<String, String> verificationVotes;
-  final List<String> votedAndRewardedUserIds; // NEW: Users who got XP for voting on this post
+  final List<String> votedAndRewardedUserIds;
 
   const Post({
     required this.id,
@@ -47,6 +46,7 @@ class Post extends Equatable {
     required this.authorUsername,
     this.authorProfilePicUrl,
     required this.timestamp,
+    this.updatedAt, // Додамо
     required this.type,
     required this.textContent,
     this.mediaUrl,
@@ -58,9 +58,9 @@ class Post extends Equatable {
     this.recordDetails,
     this.isRecordVerified,
     this.verificationVotes = const {},
-    this.recordVerificationStatus, // NEW
-    this.recordVerificationDeadline, // NEW
-    this.votedAndRewardedUserIds = const [], // NEW
+    this.recordVerificationStatus,
+    this.recordVerificationDeadline,
+    this.votedAndRewardedUserIds = const [],
   });
 
   int get likesCount => likedBy.length;
@@ -81,7 +81,7 @@ class Post extends Equatable {
         try {
             recordStatus = RecordVerificationStatus.values.byName(data['recordVerificationStatus']);
         } catch (_) {
-            recordStatus = RecordVerificationStatus.pending; // Default or handle error
+            recordStatus = RecordVerificationStatus.pending;
         }
     }
 
@@ -91,6 +91,7 @@ class Post extends Equatable {
       authorUsername: data['authorUsername'] ?? 'Unknown User',
       authorProfilePicUrl: data['authorProfilePicUrl'] as String?,
       timestamp: data['timestamp'] ?? Timestamp.now(),
+      updatedAt: data['updatedAt'] as Timestamp?, // Додамо
       type: postType,
       textContent: data['textContent'] ?? '',
       mediaUrl: data['mediaUrl'] as String?,
@@ -102,9 +103,9 @@ class Post extends Equatable {
       recordDetails: data['recordDetails'] as Map<String, dynamic>?,
       isRecordVerified: data['isRecordVerified'] as bool?,
       verificationVotes: Map<String, String>.from(data['verificationVotes'] ?? {}),
-      recordVerificationStatus: recordStatus, // NEW
-      recordVerificationDeadline: data['recordVerificationDeadline'] as Timestamp?, // NEW
-      votedAndRewardedUserIds: List<String>.from(data['votedAndRewardedUserIds'] ?? []), // NEW
+      recordVerificationStatus: recordStatus,
+      recordVerificationDeadline: data['recordVerificationDeadline'] as Timestamp?,
+      votedAndRewardedUserIds: List<String>.from(data['votedAndRewardedUserIds'] ?? []),
     );
   }
 
@@ -113,7 +114,8 @@ class Post extends Equatable {
       'userId': userId,
       'authorUsername': authorUsername,
       'authorProfilePicUrl': authorProfilePicUrl,
-      'timestamp': timestamp, // Will be FieldValue.serverTimestamp() on create/update
+      'timestamp': timestamp, 
+      'updatedAt': updatedAt, // Додамо
       'type': type.name,
       'textContent': textContent,
       'mediaUrl': mediaUrl,
@@ -125,10 +127,9 @@ class Post extends Equatable {
       'recordDetails': recordDetails,
       'isRecordVerified': isRecordVerified,
       'verificationVotes': verificationVotes,
-      if (recordVerificationStatus != null) 'recordVerificationStatus': recordVerificationStatus!.name, // NEW
-      if (recordVerificationDeadline != null) 'recordVerificationDeadline': recordVerificationDeadline, // NEW
-      'votedAndRewardedUserIds': votedAndRewardedUserIds, // NEW
-      // 'updatedAt' should be handled by FieldValue.serverTimestamp() in repository
+      if (recordVerificationStatus != null) 'recordVerificationStatus': recordVerificationStatus!.name,
+      if (recordVerificationDeadline != null) 'recordVerificationDeadline': recordVerificationDeadline,
+      'votedAndRewardedUserIds': votedAndRewardedUserIds,
     };
   }
 
@@ -139,6 +140,8 @@ class Post extends Equatable {
     String? authorProfilePicUrl,
     bool allowNullAuthorProfilePicUrl = false,
     Timestamp? timestamp,
+    Timestamp? updatedAt, // Додамо
+    bool allowNullUpdatedAt = false, // Додамо
     PostType? type,
     String? textContent,
     String? mediaUrl,
@@ -155,11 +158,11 @@ class Post extends Equatable {
     bool? isRecordVerified,
     bool allowNullIsRecordVerified = false,
     Map<String, String>? verificationVotes,
-    RecordVerificationStatus? recordVerificationStatus, // NEW
-    bool allowNullRecordVerificationStatus = false, // NEW
-    Timestamp? recordVerificationDeadline, // NEW
-    bool allowNullRecordVerificationDeadline = false, // NEW
-    List<String>? votedAndRewardedUserIds, // NEW
+    RecordVerificationStatus? recordVerificationStatus,
+    bool allowNullRecordVerificationStatus = false,
+    Timestamp? recordVerificationDeadline,
+    bool allowNullRecordVerificationDeadline = false,
+    List<String>? votedAndRewardedUserIds,
   }) {
     return Post(
       id: id ?? this.id,
@@ -167,6 +170,7 @@ class Post extends Equatable {
       authorUsername: authorUsername ?? this.authorUsername,
       authorProfilePicUrl: allowNullAuthorProfilePicUrl ? authorProfilePicUrl : (authorProfilePicUrl ?? this.authorProfilePicUrl),
       timestamp: timestamp ?? this.timestamp,
+      updatedAt: allowNullUpdatedAt ? updatedAt : (updatedAt ?? this.updatedAt), // Додамо
       type: type ?? this.type,
       textContent: textContent ?? this.textContent,
       mediaUrl: allowNullMediaUrl ? mediaUrl : (mediaUrl ?? this.mediaUrl),
@@ -178,9 +182,9 @@ class Post extends Equatable {
       recordDetails: allowNullRecordDetails ? recordDetails : (recordDetails ?? this.recordDetails),
       isRecordVerified: allowNullIsRecordVerified ? isRecordVerified : (isRecordVerified ?? this.isRecordVerified),
       verificationVotes: verificationVotes ?? this.verificationVotes,
-      recordVerificationStatus: allowNullRecordVerificationStatus ? recordVerificationStatus : (recordVerificationStatus ?? this.recordVerificationStatus), // NEW
-      recordVerificationDeadline: allowNullRecordVerificationDeadline ? recordVerificationDeadline : (recordVerificationDeadline ?? this.recordVerificationDeadline), // NEW
-      votedAndRewardedUserIds: votedAndRewardedUserIds ?? this.votedAndRewardedUserIds, // NEW
+      recordVerificationStatus: allowNullRecordVerificationStatus ? recordVerificationStatus : (recordVerificationStatus ?? this.recordVerificationStatus),
+      recordVerificationDeadline: allowNullRecordVerificationDeadline ? recordVerificationDeadline : (recordVerificationDeadline ?? this.recordVerificationDeadline),
+      votedAndRewardedUserIds: votedAndRewardedUserIds ?? this.votedAndRewardedUserIds,
     );
   }
 
@@ -191,6 +195,7 @@ class Post extends Equatable {
         authorUsername,
         authorProfilePicUrl,
         timestamp,
+        updatedAt, // Додамо
         type,
         textContent,
         mediaUrl,
@@ -202,8 +207,8 @@ class Post extends Equatable {
         recordDetails,
         isRecordVerified,
         verificationVotes,
-        recordVerificationStatus, // NEW
-        recordVerificationDeadline, // NEW
-        votedAndRewardedUserIds, // NEW
+        recordVerificationStatus,
+        recordVerificationDeadline,
+        votedAndRewardedUserIds,
       ];
 }

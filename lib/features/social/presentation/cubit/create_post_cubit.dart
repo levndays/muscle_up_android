@@ -1,10 +1,10 @@
 // lib/features/social/presentation/cubit/create_post_cubit.dart
-import 'dart:io'; // NEW: For File type
+import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:firebase_storage/firebase_storage.dart' as fb_storage; // NEW
+import 'package:firebase_storage/firebase_storage.dart' as fb_storage;
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/entities/user_profile.dart';
@@ -17,26 +17,25 @@ class CreatePostCubit extends Cubit<CreatePostState> {
   final PostRepository _postRepository;
   final UserProfileRepository _userProfileRepository;
   final fb_auth.FirebaseAuth _firebaseAuth;
+  final Post? _initialPostToEdit; // Зберігаємо початковий пост для редагування
 
   CreatePostCubit(
     this._postRepository,
     this._userProfileRepository,
-    this._firebaseAuth,
-  ) : super(CreatePostInitial());
+    this._firebaseAuth, {
+    Post? postToEdit, // Передаємо пост для редагування
+  })  : _initialPostToEdit = postToEdit,
+        super(CreatePostInitial(postToEdit: postToEdit));
 
-  // NEW: Method to upload image to Firebase Storage
   Future<String?> _uploadPostMedia(String userId, String postId, File imageFile) async {
     try {
       final storageRef = fb_storage.FirebaseStorage.instance
           .ref()
           .child('post_media')
-          .child(userId) // Store user-specific post media
-          .child('$postId.jpg'); // Use post ID for image name
+          .child(userId)
+          .child('$postId.jpg');
       
-      final uploadTask = storageRef.putFile(
-          imageFile, 
-          fb_storage.SettableMetadata(contentType: 'image/jpeg')
-      );
+      final uploadTask = storageRef.putFile(imageFile, fb_storage.SettableMetadata(contentType: 'image/jpeg'));
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
       developer.log("CreatePostCubit: Post media uploaded successfully: $downloadUrl", name: "CreatePostCubit");
@@ -49,12 +48,13 @@ class CreatePostCubit extends Cubit<CreatePostState> {
 
   Future<void> submitPost({
     required String textContent,
-    File? mediaImageFile, // NEW: Changed from mediaUrl to File
+    File? mediaImageFile,
+    bool removeExistingMedia = false, // NEW: для видалення існуючого медіа при редагуванні
     PostType type = PostType.standard,
     bool isCommentsEnabled = true,
-    Map<String, dynamic>? routineSnapshot, 
-    String? relatedRoutineId,             
-    Map<String, dynamic>? recordDetails, 
+    Map<String, dynamic>? routineSnapshot,
+    String? relatedRoutineId,
+    Map<String, dynamic>? recordDetails,
   }) async {
     final userId = _firebaseAuth.currentUser?.uid;
     if (userId == null) {
@@ -62,65 +62,98 @@ class CreatePostCubit extends Cubit<CreatePostState> {
       return;
     }
 
-    if (textContent.trim().isEmpty && mediaImageFile == null && routineSnapshot == null && recordDetails == null) {
-      emit(const CreatePostFailure("Post content cannot be empty."));
+    if (textContent.trim().isEmpty &&
+        mediaImageFile == null &&
+        (_initialPostToEdit?.mediaUrl == null || removeExistingMedia) && // Перевірка для редагування
+        type == PostType.standard && // Для стандартних постів
+        routineSnapshot == null &&
+        recordDetails == null) {
+      emit(const CreatePostFailure("Post content cannot be empty for a standard post without media."));
       return;
     }
-
-    emit(CreatePostLoading());
+    
+    final bool isEditing = _initialPostToEdit != null;
+    emit(CreatePostLoading(loadingMessage: isEditing ? "Updating post..." : "Publishing post..."));
 
     try {
-      final UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
+      UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
       if (userProfile == null) {
-        emit(const CreatePostFailure("Could not fetch user profile to create post."));
+        emit(const CreatePostFailure("Could not fetch user profile."));
         return;
       }
 
-      // Generate a temporary ID for the post (Firebase will assign the final one)
-      // This is mainly if we need it for, e.g., naming the media file.
-      // If PostRepository.createPost handles ID generation and returns it, this can be simpler.
-      // For now, let's assume PostRepository might not return the ID or we need it for media path.
-      String tempPostIdForMedia = FirebaseFirestore.instance.collection('posts').doc().id;
+      String? finalMediaUrl = isEditing ? _initialPostToEdit!.mediaUrl : null;
 
-      String? finalMediaUrl;
-      if (mediaImageFile != null && type == PostType.standard) { // Only upload for standard posts for now
-        finalMediaUrl = await _uploadPostMedia(userId, tempPostIdForMedia, mediaImageFile);
+      if (mediaImageFile != null) {
+        // Завантажуємо нове медіа. postId потрібен для шляху.
+        // Якщо це новий пост, генеруємо ID. Якщо редагування, використовуємо існуючий.
+        final postIdForMedia = isEditing ? _initialPostToEdit!.id : _postRepository.toString(); // Тимчасовий ID або використовуйте Firestore-генератор
+        
+        final tempPostId = isEditing ? _initialPostToEdit!.id : FirebaseFirestore.instance.collection('posts').doc().id;
+
+        finalMediaUrl = await _uploadPostMedia(userId, tempPostId, mediaImageFile);
         if (finalMediaUrl == null) {
-          emit(const CreatePostFailure("Failed to upload media. Post not created."));
+          emit(const CreatePostFailure("Failed to upload media."));
           return;
         }
+      } else if (removeExistingMedia && isEditing) {
+        // Видаляємо старе медіа зі Storage, якщо потрібно
+        if (_initialPostToEdit!.mediaUrl != null) {
+          try {
+            final storageRef = fb_storage.FirebaseStorage.instance.refFromURL(_initialPostToEdit!.mediaUrl!);
+            await storageRef.delete();
+            developer.log('CreatePostCubit: Deleted existing media for post ${_initialPostToEdit!.id} during update.', name: 'CreatePostCubit');
+          } catch (e) {
+             developer.log('CreatePostCubit: Failed to delete existing media for post ${_initialPostToEdit!.id}: $e', name: 'CreatePostCubit');
+          }
+        }
+        finalMediaUrl = null;
       }
 
-      final newPost = Post(
-        id: '', // ID will be set by the repository or by `tempPostIdForMedia` if repository needs it
-        userId: userId,
-        authorUsername: userProfile.username ?? userProfile.displayName ?? 'Anonymous',
-        authorProfilePicUrl: userProfile.profilePictureUrl,
-        timestamp: Timestamp.now(), // This will be overridden by server timestamp in repo
-        type: type,
-        textContent: textContent.trim(),
-        mediaUrl: finalMediaUrl, // NEW: Use the uploaded URL
-        likedBy: [],
-        commentsCount: 0,
-        isCommentsEnabled: isCommentsEnabled,
-        routineSnapshot: routineSnapshot,
-        relatedRoutineId: relatedRoutineId,
-        recordDetails: recordDetails, 
-      );
 
-      // Pass the post with the (potentially) temporary ID if needed by repo for consistency,
-      // or let the repo handle ID creation entirely.
-      // For this example, let's assume `createPost` can take a Post object where ID might be empty
-      // and the repository/Firestore assigns the final ID.
-      await _postRepository.createPost(newPost); // The repo sets the final ID and server timestamps
-      
-      // For the success state, we might not have the *final* server-generated ID
-      // unless the repository returns the created Post object.
-      // If it doesn't, a "temp_id" is fine for client-side indication of success.
-      emit(CreatePostSuccess(newPost.copyWith(id: tempPostIdForMedia, mediaUrl: finalMediaUrl))); 
-      developer.log('Post submitted successfully by user: $userId, type: ${type.name}, comments enabled: $isCommentsEnabled, media: $finalMediaUrl', name: 'CreatePostCubit');
+      if (isEditing) {
+        final postToUpdate = _initialPostToEdit!.copyWith(
+          textContent: textContent.trim(),
+          mediaUrl: finalMediaUrl,
+          allowNullMediaUrl: true, // Дозволяємо встановлення null
+          isCommentsEnabled: isCommentsEnabled,
+          // Тип, routineSnapshot, recordDetails зазвичай не редагуються, але можна додати, якщо потрібно
+          // type: type, 
+          // routineSnapshot: routineSnapshot,
+          // relatedRoutineId: relatedRoutineId,
+          // recordDetails: recordDetails,
+          updatedAt: Timestamp.now(), // Firestore оновить це на серверний час
+        );
+        await _postRepository.updatePost(postToUpdate);
+        emit(CreatePostSuccess(postToUpdate, isUpdate: true));
+        developer.log('Post updated successfully: ${postToUpdate.id}', name: 'CreatePostCubit');
+      } else {
+        // Створення нового поста
+        // ID генерується в _postRepository.createPost
+        final newPost = Post(
+          id: '', // Буде встановлено репозиторієм
+          userId: userId,
+          authorUsername: userProfile.username ?? userProfile.displayName ?? 'Anonymous',
+          authorProfilePicUrl: userProfile.profilePictureUrl,
+          timestamp: Timestamp.now(), // Буде перезаписано серверним
+          updatedAt: Timestamp.now(), // Буде перезаписано серверним
+          type: type,
+          textContent: textContent.trim(),
+          mediaUrl: finalMediaUrl,
+          isCommentsEnabled: isCommentsEnabled,
+          routineSnapshot: routineSnapshot,
+          relatedRoutineId: relatedRoutineId,
+          recordDetails: recordDetails,
+        );
+        await _postRepository.createPost(newPost);
+        // Після успішного створення, ми не маємо фінального ID з Firestore тут,
+        // тому передаємо `newPost`, можливо з порожнім ID або тимчасовим.
+        // Стрічка оновиться через listener.
+        emit(CreatePostSuccess(newPost, isUpdate: false));
+        developer.log('New post submitted by user: $userId, type: ${type.name}', name: 'CreatePostCubit');
+      }
     } catch (e, s) {
-      developer.log('Error submitting post: $e', name: 'CreatePostCubit', error: e, stackTrace: s);
+      developer.log('Error submitting/updating post: $e', name: 'CreatePostCubit', error: e, stackTrace: s);
       emit(CreatePostFailure(e.toString().replaceFirst("Exception: ", "")));
     }
   }

@@ -1,9 +1,11 @@
 // lib/features/social/presentation/cubit/post_interaction_cubit.dart
 import 'dart:async';
+import 'dart:io'; // NEW: For File type in updatePost
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:firebase_storage/firebase_storage.dart' as fb_storage; // NEW
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/comment.dart';
 import '../../../../core/domain/entities/vote_type.dart';
@@ -104,7 +106,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
       newLikedBy.add(userId);
     }
     final optimisticPost = currentPost.copyWith(likedBy: newLikedBy);
-    _emitUpdatedStateWithPost(optimisticPost); // Use helper to emit correct state with vote info
+    _emitUpdatedStateWithPost(optimisticPost); 
 
     try {
       if (isLiked) {
@@ -115,7 +117,6 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
       developer.log('PostInteractionCubit: Like toggled for post $postId by user $userId', name: 'PostInteractionCubit');
     } catch (e, s) {
       developer.log('PostInteractionCubit: Error toggling like: $e', name: 'PostInteractionCubit', error: e, stackTrace: s);
-      // Revert optimistic update
       _emitUpdatedStateWithPost(currentPost);
       emit(PostInteractionFailure("Failed to update like: ${e.toString()}", post: currentPost));
     }
@@ -165,11 +166,109 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
       }
     } catch (e) {
       developer.log('Error casting/retracting vote: $e', name: 'PostInteractionCubit');
-      // Revert optimistic update on error
       _emitUpdatedStateWithPost(currentPost);
       emit(PostInteractionFailure("Failed to ${shouldRetract ? 'retract' : 'cast'} vote: ${e.toString()}", post: currentPost));
     }
   }
+
+  Future<String?> _uploadPostMedia(String userId, String postId, File imageFile) async {
+    try {
+      final storageRef = fb_storage.FirebaseStorage.instance
+          .ref()
+          .child('post_media')
+          .child(userId)
+          .child('$postId.jpg'); 
+      
+      final uploadTask = storageRef.putFile(imageFile, fb_storage.SettableMetadata(contentType: 'image/jpeg'));
+      final snapshot = await uploadTask.whenComplete(() => {});
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      developer.log("PostInteractionCubit: Error uploading post media during update: $e", name: "PostInteractionCubit");
+      return null;
+    }
+  }
+
+  Future<void> updatePostText(String newTextContent, {File? newMediaImageFile, bool removeExistingMedia = false}) async { // NEW METHOD
+    final userId = _currentUserId;
+    Post? currentPost = _getCurrentPostFromState();
+
+    if (userId == null || currentPost == null || currentPost.userId != userId) {
+      emit(PostInteractionFailure("Cannot update post: Not authorized or post not found.", post: currentPost));
+      return;
+    }
+    if (newTextContent.trim().isEmpty && newMediaImageFile == null && (currentPost.mediaUrl == null || removeExistingMedia) ) {
+      emit(PostInteractionFailure("Post content cannot be empty.", post: currentPost));
+      return;
+    }
+
+    emit(PostUpdating(currentPost));
+    developer.log('PostInteractionCubit: Attempting to update post $postId', name: 'PostInteractionCubit');
+
+    String? finalMediaUrl = currentPost.mediaUrl;
+
+    try {
+      if (newMediaImageFile != null) {
+        finalMediaUrl = await _uploadPostMedia(userId, postId, newMediaImageFile);
+        if (finalMediaUrl == null) {
+          emit(PostInteractionFailure("Failed to upload new media. Post not updated.", post: currentPost));
+          return;
+        }
+      } else if (removeExistingMedia) {
+        if (currentPost.mediaUrl != null) {
+          try {
+            final storageRef = fb_storage.FirebaseStorage.instance.refFromURL(currentPost.mediaUrl!);
+            await storageRef.delete();
+            developer.log('PostInteractionCubit: Deleted existing media for post $postId during update.', name: 'PostInteractionCubit');
+          } catch (e) {
+            developer.log('PostInteractionCubit: Failed to delete existing media for post $postId during update: $e', name: 'PostInteractionCubit');
+            // Можна продовжити, якщо видалення медіа не критичне, або повернути помилку
+          }
+        }
+        finalMediaUrl = null; // Явно встановлюємо null
+      }
+
+      final updatedPostData = currentPost.copyWith(
+        textContent: newTextContent.trim(),
+        mediaUrl: finalMediaUrl,
+        allowNullMediaUrl: true, // Дозволяємо встановлення null, якщо removeExistingMedia=true
+        updatedAt: Timestamp.now(), // Локально, сервер перезапише
+        allowNullUpdatedAt: false,
+      );
+
+      await _postRepository.updatePost(updatedPostData);
+      // Стрім автоматично оновить стан на PostUpdated/PostCommentsLoaded
+      developer.log('PostInteractionCubit: Post $postId updated successfully.', name: 'PostInteractionCubit');
+    } catch (e, s) {
+      developer.log('PostInteractionCubit: Error updating post $postId: $e', name: 'PostInteractionCubit', error: e, stackTrace: s);
+      emit(PostInteractionFailure("Failed to update post: ${e.toString()}", post: currentPost));
+    }
+  }
+
+  Future<void> deletePost() async { // NEW METHOD
+    final userId = _currentUserId;
+    Post? currentPost = _getCurrentPostFromState();
+
+    if (userId == null || currentPost == null || currentPost.userId != userId) {
+      emit(PostInteractionFailure("Cannot delete post: Not authorized or post not found.", post: currentPost));
+      return;
+    }
+
+    emit(PostDeleting(currentPost));
+    developer.log('PostInteractionCubit: Attempting to delete post $postId', name: 'PostInteractionCubit');
+
+    try {
+      await _postRepository.deletePost(postId);
+      // Firestore listener на колекції постів (в ExploreFeedCubit / UserPostsFeedCubit)
+      // має автоматично видалити цей пост зі списку.
+      // Тут ми просто повідомляємо, що видалення було успішним.
+      emit(PostDeletedSuccessfully(postId));
+      developer.log('PostInteractionCubit: Post $postId deleted successfully.', name: 'PostInteractionCubit');
+    } catch (e, s) {
+      developer.log('PostInteractionCubit: Error deleting post $postId: $e', name: 'PostInteractionCubit', error: e, stackTrace: s);
+      emit(PostInteractionFailure("Failed to delete post: ${e.toString()}", post: currentPost));
+    }
+  }
+
 
   void _emitUpdatedStateWithPost(Post post) {
     final currentUserVote = _getCurrentUserVote(post);
@@ -205,7 +304,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
         authorUsername: userProfile.username ?? userProfile.displayName ?? 'User',
         authorProfilePicUrl: userProfile.profilePictureUrl,
         text: text,
-        timestamp: Timestamp.now(), // Will be set by server
+        timestamp: Timestamp.now(),
       );
 
       try {
@@ -232,7 +331,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
     _commentsSubscription?.cancel();
     _commentsSubscription = _postRepository.getCommentsStream(postId).listen(
       (comments) {
-        Post? latestPost = _getCurrentPostFromState() ?? currentPost; // Ensure we use the most recent post
+        Post? latestPost = _getCurrentPostFromState() ?? currentPost; 
         final currentUserVote = _getCurrentUserVote(latestPost!);
         emit(PostCommentsLoaded(latestPost, comments, currentUserVote: currentUserVote));
         developer.log('PostInteractionCubit: Loaded ${comments.length} comments for post $postId', name: 'PostInteractionCubit');
@@ -273,7 +372,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
         authorUsername: originalComment.authorUsername,
         authorProfilePicUrl: originalComment.authorProfilePicUrl,
         text: newText,
-        timestamp: Timestamp.now(), // Will be set by server on update
+        timestamp: Timestamp.now(),
     );
 
     final optimisticComments = currentComments.map((c) => c.id == commentId ? updatedComment : c).toList();
@@ -338,7 +437,7 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
       developer.log('PostInteractionCubit: Comments for post $postId set to $newIsEnabled.', name: 'PostInteractionCubit');
     } catch (e) {
       developer.log('PostInteractionCubit: Error toggling comments enabled: $e', name: 'PostInteractionCubit');
-      _emitUpdatedStateWithPost(currentPost); // Revert optimistic update
+      _emitUpdatedStateWithPost(currentPost); 
       emit(PostInteractionFailure("Failed to update comment settings: ${e.toString()}", post: currentPost));
     }
   }
@@ -348,12 +447,13 @@ class PostInteractionCubit extends Cubit<PostInteractionState> {
     if (state is PostUpdated) return (state as PostUpdated).post;
     if (state is PostCommentsLoaded) return (state as PostCommentsLoaded).post;
     if (state is PostInteractionLoading) return (state as PostInteractionLoading).post;
+    if (state is PostDeleting) return (state as PostDeleting).postToDelete;
+    if (state is PostUpdating) return (state as PostUpdating).postToUpdate;
     if (state is PostInteractionFailure) {
         final failureState = state as PostInteractionFailure;
         if (failureState.post != null) return failureState.post;
     }
-    // Fallback for safety, though ideally one of the above should match.
-    final currentState = this.state; // Access instance's state
+    final currentState = this.state;
     if (currentState is PostInteractionInitial) {
       return currentState.post;
     }
