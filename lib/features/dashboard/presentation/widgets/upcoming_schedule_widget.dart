@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 import '../cubit/upcoming_schedule_cubit.dart';
 
@@ -12,8 +13,11 @@ class UpcomingScheduleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final DateFormat dayFormatter = DateFormat('EEE'); // Пн, Вт
-    final DateFormat dateFormatter = DateFormat('d MMM'); // 10 Січ
+    final loc = AppLocalizations.of(context)!;
+    // Явно вказуємо локаль для DateFormat
+    final String currentLocale = AppLocalizations.of(context)!.localeName;
+    final DateFormat dayFormatter = DateFormat('EEE', currentLocale);
+    final DateFormat dateFormatter = DateFormat('d MMM', currentLocale);
 
     return BlocBuilder<UpcomingScheduleCubit, UpcomingScheduleState>(
       builder: (context, state) {
@@ -33,7 +37,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
               border: Border.all(color: Colors.red.shade200)
             ),
             alignment: Alignment.center,
-            child: Text('Error: ${state.message}', style: TextStyle(color: Colors.red.shade700)),
+            child: Text(loc.upcomingScheduleError(state.message), style: TextStyle(color: Colors.red.shade700)),
           );
         } else if (state is UpcomingScheduleEmpty) {
            return Container(
@@ -45,7 +49,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
               border: Border.all(color: Colors.blueGrey.shade100)
             ),
             alignment: Alignment.center,
-            child: Text(state.message, textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey.shade700)),
+            child: Text(state.message, textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey.shade700)), // state.message тут вже локалізовано з Cubit, або має бути
           );
         } else if (state is UpcomingScheduleLoaded) {
           final scheduleEntries = state.schedule.entries.toList();
@@ -54,16 +58,16 @@ class UpcomingScheduleWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'UPCOMING SCHEDULE (NEXT 7 DAYS)',
+                loc.upcomingScheduleTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.textTheme.bodyLarge?.color, // Використовуємо колір тексту теми
+                      color: theme.textTheme.bodyLarge?.color, 
                       fontFamily: 'IBMPlexMono',
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: 110, // Адаптуйте висоту за потребою
+                height: 110, 
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: scheduleEntries.length,
@@ -86,7 +90,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
                         ),
                       ),
                       child: Container(
-                        width: 120, // Адаптуйте ширину
+                        width: 120, 
                         padding: const EdgeInsets.all(10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +115,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
                               child: routinesForDay.isEmpty
                                   ? Center(
                                       child: Text(
-                                      'Rest Day',
+                                      loc.upcomingScheduleRestDay,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 12,
@@ -119,7 +123,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
                                         color: Colors.grey.shade500,
                                       ),
                                     ))
-                                  : ListView( // Щоб вмістити кілька рутин, якщо потрібно
+                                  : ListView( 
                                       shrinkWrap: true,
                                       children: routinesForDay.map((routineName) => Text(
                                         routineName,
@@ -143,7 +147,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
             ],
           );
         }
-        return const SizedBox.shrink(); // Початковий стан або невизначений
+        return const SizedBox.shrink();
       },
     );
   }

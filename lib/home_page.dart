@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/routines/presentation/screens/user_routines_screen.dart';
@@ -15,8 +16,7 @@ import 'features/routines/presentation/screens/create_edit_routine_screen.dart';
 import 'features/workout_tracking/presentation/screens/active_workout_screen.dart';
 import 'core/domain/entities/workout_session.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
-// import 'features/exercise_explorer/presentation/screens/exercise_explorer_screen.dart'; // Замінено на ExploreScreen
-import 'features/social/presentation/screens/explore_screen.dart'; // <-- Новий імпорт для постів
+import 'features/social/presentation/screens/explore_screen.dart';
 import 'features/progress/presentation/screens/progress_screen.dart';
 
 class HomePage extends StatelessWidget {
@@ -47,14 +47,15 @@ class _HomePageContentState extends State<_HomePageContent> {
 
   static final List<Widget> _bottomNavScreens = <Widget>[
     const UserRoutinesScreen(),
-    const ExploreScreen(), // <-- ЗМІНЕНО: тепер це стрічка постів
+    const ExploreScreen(), 
     const ProgressScreen(),
     const ProfileScreen(),
   ];
 
-  static final List<String> _bottomNavScreenTitles = <String>[
+  // This list is now primarily for AppBar titles, labels are taken from AppLocalizations
+  static final List<String> _bottomNavScreenTitlesEnglishFallback = <String>[
     'My Routines',
-    'Explore Posts', // <-- ЗМІНЕНО: назва вкладки
+    'Explore Posts', 
     'My Progress',
     'Profile',
   ];
@@ -88,11 +89,12 @@ class _HomePageContentState extends State<_HomePageContent> {
   }
 
   Future<void> _handleFabPress() async {
+    final loc = AppLocalizations.of(context)!;
     final userId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please log in to start a workout.')),
+          SnackBar(content: Text(loc.startWorkoutFabErrorLogin)),
         );
       }
       return;
@@ -107,7 +109,7 @@ class _HomePageContentState extends State<_HomePageContent> {
       developer.log("Error checking active session for FAB: $e", name: "HomePage.FAB");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error checking active session: ${e.toString()}')),
+          SnackBar(content: Text(loc.startWorkoutFabErrorActiveSession(e.toString()))),
         );
       }
       return;
@@ -119,7 +121,6 @@ class _HomePageContentState extends State<_HomePageContent> {
       developer.log("Resuming active workout: ${activeSession.id}", name: "HomePage.FAB");
       Navigator.of(context).push(ActiveWorkoutScreen.route());
     } else {
-      // No active session, check for existing routines
       developer.log("No active workout. Checking for existing routines.", name: "HomePage.FAB");
       final routineRepository = RepositoryProvider.of<RoutineRepository>(context);
       List<UserRoutine> userRoutines = [];
@@ -130,7 +131,7 @@ class _HomePageContentState extends State<_HomePageContent> {
         developer.log("Error fetching routines for FAB: $e", name: "HomePage.FAB");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not load routines. Please try again. Error: ${e.toString()}')),
+            SnackBar(content: Text(loc.startWorkoutFabErrorLoadRoutines(e.toString()))),
           );
         }
         return;
@@ -139,13 +140,11 @@ class _HomePageContentState extends State<_HomePageContent> {
       if (!mounted) return;
 
       if (userRoutines.isNotEmpty) {
-        // Routines exist, navigate to UserRoutinesScreen tab
         developer.log("Routines exist (${userRoutines.length}). Navigating to UserRoutinesScreen tab.", name: "HomePage.FAB");
         setState(() {
-          _selectedIndex = 0; // 0 is the index for the "ROUTINES" tab
+          _selectedIndex = 0; 
         });
       } else {
-        // No routines, navigate to CreateEditRoutineScreen
         developer.log("No routines. Navigating to CreateEditRoutineScreen.", name: "HomePage.FAB");
         final routineWasCreated = await Navigator.of(context).push<bool>(
           MaterialPageRoute(
@@ -154,13 +153,12 @@ class _HomePageContentState extends State<_HomePageContent> {
         );
 
         if (routineWasCreated == true && mounted) {
-          // If a routine was created, navigate to the routines tab
           developer.log("Routine was created. Navigating to UserRoutinesScreen tab.", name: "HomePage.FAB");
           setState(() {
-            _selectedIndex = 0; // 0 is the index for the "ROUTINES" tab
+            _selectedIndex = 0; 
           });
            ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('New routine created! Select it from the list to start.')),
+            SnackBar(content: Text(loc.startWorkoutFabNewRoutineCreatedSnackbar)),
           );
         }
       }
@@ -171,6 +169,7 @@ class _HomePageContentState extends State<_HomePageContent> {
   @override
   Widget build(BuildContext context) {
     developer.log("HomePageContent building, _selectedIndex: $_selectedIndex", name: "HomePage");
+    final loc = AppLocalizations.of(context)!;
 
     Widget currentBody;
     bool showFab = false;
@@ -203,7 +202,25 @@ class _HomePageContentState extends State<_HomePageContent> {
       currentBody = _bottomNavScreens[_selectedIndex];
       showFab = false;
 
-      final screenTitleText = _bottomNavScreenTitles[_selectedIndex];
+      // Use AppLocalizations for screen titles, fallback to English if needed
+      String screenTitleText;
+      switch (_selectedIndex) {
+        case 0:
+          screenTitleText = loc.dashboardTabRoutines;
+          break;
+        case 1:
+          screenTitleText = loc.dashboardTabExplore;
+          break;
+        case 2:
+          screenTitleText = loc.dashboardTabProgress;
+          break;
+        case 3:
+          screenTitleText = loc.dashboardTabProfile;
+          break;
+        default:
+          screenTitleText = _bottomNavScreenTitlesEnglishFallback[_selectedIndex];
+      }
+      
 
       appBarTitle = Row(
         mainAxisSize: MainAxisSize.min,
@@ -231,7 +248,6 @@ class _HomePageContentState extends State<_HomePageContent> {
         ],
       );
     } else {
-      // Fallback case, should ideally not happen
       currentBody = DashboardScreen(
         onProfileTap: _navigateToProfileFromDashboard,
         onProgressTap: _navigateToProgressFromDashboard,
@@ -264,9 +280,9 @@ class _HomePageContentState extends State<_HomePageContent> {
              margin: const EdgeInsets.only(bottom: 12.0),
               child: FloatingActionButton.extended(
                 onPressed: _handleFabPress,
-                label: const Text(
-                  'START WORKOUT',
-                  style: TextStyle(
+                label: Text(
+                  loc.startWorkoutButton,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
@@ -280,26 +296,26 @@ class _HomePageContentState extends State<_HomePageContent> {
             )
           : null,
       bottomNavigationBar: BottomNavigationBar(
-         items: const <BottomNavigationBarItem>[
+         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center_outlined),
-            activeIcon: Icon(Icons.fitness_center),
-            label: 'ROUTINES',
+            icon: const Icon(Icons.fitness_center_outlined),
+            activeIcon: const Icon(Icons.fitness_center),
+            label: loc.dashboardTabRoutines,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.travel_explore_outlined), // <-- ЗМІНЕНО ІКОНКУ
-            activeIcon: Icon(Icons.travel_explore), // <-- ЗМІНЕНО ІКОНКУ
-            label: 'EXPLORE', // Назва може залишитися, якщо хочете, або змінити на 'FEED'
+            icon: const Icon(Icons.travel_explore_outlined),
+            activeIcon: const Icon(Icons.travel_explore),
+            label: loc.dashboardTabExplore,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events_outlined),
-            activeIcon: Icon(Icons.emoji_events),
-            label: 'PROGRESS',
+            icon: const Icon(Icons.emoji_events_outlined),
+            activeIcon: const Icon(Icons.emoji_events),
+            label: loc.dashboardTabProgress,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'PROFILE',
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: loc.dashboardTabProfile,
           ),
         ],
         currentIndex: (_selectedIndex >= 0 && _selectedIndex < _bottomNavScreens.length) ? _selectedIndex : 0,

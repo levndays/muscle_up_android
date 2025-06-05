@@ -1,0 +1,419 @@
+{
+  "@@locale": "en",
+  "appTitle": "Muscle UP!",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "loginPageSignInButton": "Sign In",
+  "@loginPageSignInButton": {
+    "description": "Label for the sign in button on the login page"
+  },
+  "loginPageTitleSignIn": "Sign In",
+  "@loginPageTitleSignIn": {
+    "description": "Title text on the login page when in sign-in mode"
+  },
+  "loginPageTitleSignUp": "Sign Up",
+  "@loginPageTitleSignUp": {
+    "description": "Title text on the login page when in sign-up mode"
+  },
+  "loginPageEmailHint": "Email",
+  "@loginPageEmailHint": {
+    "description": "Hint text for the email input field"
+  },
+  "loginPagePasswordHint": "Password",
+  "@loginPagePasswordHint": {
+    "description": "Hint text for the password input field"
+  },
+  "loginPageErrorEnterEmail": "Please enter your email",
+  "@loginPageErrorEnterEmail": {
+    "description": "Validation error if email is empty"
+  },
+  "loginPageErrorValidEmail": "Please enter a valid email",
+  "@loginPageErrorValidEmail": {
+    "description": "Validation error if email format is incorrect"
+  },
+  "loginPageErrorEnterPassword": "Please enter your password",
+  "@loginPageErrorEnterPassword": {
+    "description": "Validation error if password is empty"
+  },
+  "loginPageErrorPasswordLength": "Password must be at least 6 characters",
+  "@loginPageErrorPasswordLength": {
+    "description": "Validation error if password is too short during sign up"
+  },
+  "loginPageButtonCreateAccount": "Create Account",
+  "@loginPageButtonCreateAccount": {
+    "description": "Label for the create account button"
+  },
+  "loginPageButtonSignInWithGoogle": "Sign in with Google",
+  "@loginPageButtonSignInWithGoogle": {
+    "description": "Label for the Google sign-in button"
+  },
+  "loginPageToggleSignUp": "Don't have an account? Sign Up",
+  "@loginPageToggleSignUp": {
+    "description": "Text to toggle to the sign-up form"
+  },
+  "loginPageToggleSignIn": "Already have an account? Sign In",
+  "@loginPageToggleSignIn": {
+    "description": "Text to toggle to the sign-in form"
+  },
+  "loginPageErrorAuthDefault": "Authentication error occurred.",
+  "@loginPageErrorAuthDefault": {
+    "description": "Default authentication error message"
+  },
+  "loginPageErrorUnknownDefault": "An unknown error occurred: {errorDetails}",
+  "@loginPageErrorUnknownDefault": {
+    "description": "Default unknown error message",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Connection failed"
+      }
+    }
+  },
+  "loginPageErrorGoogleSignInDefault": "Google Sign-In error.",
+  "@loginPageErrorGoogleSignInDefault": {
+    "description": "Default Google Sign-In error message"
+  },
+  "loginPageErrorUnknownGoogleDefault": "Unknown Google Sign-In error: {errorDetails}",
+  "@loginPageErrorUnknownGoogleDefault": {
+    "description": "Default unknown Google Sign-In error message",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Network request failed"
+      }
+    }
+  },
+  "loginPageErrorInternalForm": "Internal form error. Please try again.",
+  "@loginPageErrorInternalForm": {
+    "description": "Snackbar message for internal form error"
+  },
+  "profileSetupAppBarTitleEdit": "Edit Profile",
+  "@profileSetupAppBarTitleEdit": {
+    "description": "App bar title when editing profile"
+  },
+  "profileSetupAppBarTitleCreate": "Complete Your Profile",
+  "@profileSetupAppBarTitleCreate": {
+    "description": "App bar title when creating a new profile"
+  },
+  "profileSetupUsernameLabel": "Username",
+  "@profileSetupUsernameLabel": {
+    "description": "Label for username input field"
+  },
+  "profileSetupUsernameErrorRequired": "Username is required",
+  "@profileSetupUsernameErrorRequired": {
+    "description": "Validation error if username is empty"
+  },
+  "profileSetupDisplayNameLabel": "Display Name",
+  "@profileSetupDisplayNameLabel": {
+    "description": "Label for display name input field"
+  },
+  "profileSetupGenderLabel": "Gender",
+  "@profileSetupGenderLabel": {
+    "description": "Label for gender selection"
+  },
+  "profileSetupGenderMale": "Male",
+  "@profileSetupGenderMale": {
+    "description": "Gender option: Male"
+  },
+  "profileSetupGenderFemale": "Female",
+  "@profileSetupGenderFemale": {
+    "description": "Gender option: Female"
+  },
+  "profileSetupGenderOther": "Other",
+  "@profileSetupGenderOther": {
+    "description": "Gender option: Other"
+  },
+  "profileSetupGenderPreferNotToSay": "Prefer not to say",
+  "@profileSetupGenderPreferNotToSay": {
+    "description": "Gender option: Prefer not to say"
+  },
+  "profileSetupDobLabel": "Date of Birth",
+  "@profileSetupDobLabel": {
+    "description": "Label for date of birth selection"
+  },
+  "profileSetupDobDatePickerHelpText": "Select your date of birth",
+  "@profileSetupDobDatePickerHelpText": {
+    "description": "Help text for date of birth picker"
+  },
+  "profileSetupHeightLabel": "Height (cm)",
+  "@profileSetupHeightLabel": {
+    "description": "Label for height input field"
+  },
+  "profileSetupHeightErrorInvalid": "Invalid height (1-300 cm)",
+  "@profileSetupHeightErrorInvalid": {
+    "description": "Validation error for height input"
+  },
+  "profileSetupWeightLabel": "Weight (kg)",
+  "@profileSetupWeightLabel": {
+    "description": "Label for weight input field"
+  },
+  "profileSetupWeightErrorInvalid": "Invalid weight (1-500 kg)",
+  "@profileSetupWeightErrorInvalid": {
+    "description": "Validation error for weight input"
+  },
+  "profileSetupFitnessGoalLabel": "Primary Fitness Goal",
+  "@profileSetupFitnessGoalLabel": {
+    "description": "Label for fitness goal selection"
+  },
+  "profileSetupFitnessGoalLoseWeight": "Lose Weight",
+  "@profileSetupFitnessGoalLoseWeight": {
+    "description": "Fitness goal option: Lose Weight"
+  },
+  "profileSetupFitnessGoalGainMuscle": "Gain Muscle",
+  "@profileSetupFitnessGoalGainMuscle": {
+    "description": "Fitness goal option: Gain Muscle"
+  },
+  "profileSetupFitnessGoalImproveStamina": "Improve Stamina",
+  "@profileSetupFitnessGoalImproveStamina": {
+    "description": "Fitness goal option: Improve Stamina"
+  },
+  "profileSetupFitnessGoalGeneralFitness": "General Fitness",
+  "@profileSetupFitnessGoalGeneralFitness": {
+    "description": "Fitness goal option: General Fitness"
+  },
+  "profileSetupFitnessGoalImproveStrength": "Improve Strength",
+  "@profileSetupFitnessGoalImproveStrength": {
+    "description": "Fitness goal option: Improve Strength"
+  },
+  "profileSetupActivityLevelLabel": "Activity Level",
+  "@profileSetupActivityLevelLabel": {
+    "description": "Label for activity level selection"
+  },
+  "profileSetupActivityLevelSedentary": "Sedentary (little or no exercise)",
+  "@profileSetupActivityLevelSedentary": {
+    "description": "Activity level option: Sedentary"
+  },
+  "profileSetupActivityLevelLight": "Light (exercise 1-3 days/week)",
+  "@profileSetupActivityLevelLight": {
+    "description": "Activity level option: Light"
+  },
+  "profileSetupActivityLevelModerate": "Moderate (exercise 3-5 days/week)",
+  "@profileSetupActivityLevelModerate": {
+    "description": "Activity level option: Moderate"
+  },
+  "profileSetupActivityLevelActive": "Active (exercise 6-7 days/week)",
+  "@profileSetupActivityLevelActive": {
+    "description": "Activity level option: Active"
+  },
+  "profileSetupActivityLevelVeryActive": "Very Active (hard exercise or physical job)",
+  "@profileSetupActivityLevelVeryActive": {
+    "description": "Activity level option: Very Active"
+  },
+  "profileSetupButtonSaveChanges": "Save Changes",
+  "@profileSetupButtonSaveChanges": {
+    "description": "Button text to save changes when editing profile"
+  },
+  "profileSetupButtonCompleteProfile": "Complete Profile",
+  "@profileSetupButtonCompleteProfile": {
+    "description": "Button text to complete profile when creating new"
+  },
+  "profileSetupErrorUserNotLoggedIn": "User not logged in.",
+  "@profileSetupErrorUserNotLoggedIn": {
+    "description": "Error message if user is not logged in"
+  },
+  "profileSetupErrorUsernameEmpty": "Username cannot be empty.",
+  "@profileSetupErrorUsernameEmpty": {
+    "description": "Error message if username is empty on save attempt"
+  },
+  "profileSetupErrorProfileNotFoundEdit": "Profile to edit not found. Please try again.",
+  "@profileSetupErrorProfileNotFoundEdit": {
+    "description": "Error message if profile to edit is not found"
+  },
+  "profileSetupErrorFailedToLoad": "Failed to load profile data: {errorDetails}",
+  "@profileSetupErrorFailedToLoad": {
+    "description": "Error message when failing to load profile data",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupErrorFailedAvatarUpload": "Failed to upload avatar image. Profile not saved.",
+  "@profileSetupErrorFailedAvatarUpload": {
+    "description": "Error message when avatar upload fails"
+  },
+  "profileSetupErrorFailedToSave": "Error: {errorDetails}",
+  "@profileSetupErrorFailedToSave": {
+    "description": "Generic error message on save failure",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupSuccessMessage": "Profile {status} successfully!",
+  "@profileSetupSuccessMessage": {
+    "description": "Success message after saving/updating profile",
+    "placeholders": {
+      "status": {
+        "type": "String",
+        "example": "saved"
+      }
+    }
+  },
+  "profileSetupStatusSaved": "saved",
+  "@profileSetupStatusSaved": {
+    "description": "Status part of success message: saved"
+  },
+  "profileSetupStatusUpdated": "updated",
+  "@profileSetupStatusUpdated": {
+    "description": "Status part of success message: updated"
+  },
+  "profileSetupCorrectFormErrorsSnackbar": "Please correct the errors in the form.",
+  "@profileSetupCorrectFormErrorsSnackbar": {
+    "description": "Snackbar message when form validation fails"
+  },
+  "profileSetupOptionalFieldSuffix": "(Optional)",
+  "@profileSetupOptionalFieldSuffix": {
+    "description": "Suffix for optional field labels"
+  },
+  "dashboardGreetingWelcome": "Welcome,",
+  "@dashboardGreetingWelcome": {
+    "description": "Greeting text on the dashboard, part 1. Name will be appended."
+  },
+  "dashboardSectionStats": "STATS",
+  "@dashboardSectionStats": {
+    "description": "Section title for user stats on the dashboard"
+  },
+  "dashboardStatsWeightLabel": "WEIGHT",
+  "@dashboardStatsWeightLabel": {
+    "description": "Label for the weight stat on the dashboard"
+  },
+  "dashboardStatsStreakLabel": "STREAK",
+  "@dashboardStatsStreakLabel": {
+    "description": "Label for the workout streak stat on the dashboard"
+  },
+  "dashboardStatsAdherenceLabel": "ADHERENCE",
+  "@dashboardStatsAdherenceLabel": {
+    "description": "Label for the workout adherence percentage on the dashboard"
+  },
+  "dashboardSectionNotifications": "NOTIFICATIONS",
+  "@dashboardSectionNotifications": {
+    "description": "Section title for notifications on the dashboard"
+  },
+  "dashboardNotificationsReadAll": "READ ALL",
+  "@dashboardNotificationsReadAll": {
+    "description": "Button text to mark all notifications as read"
+  },
+  "dashboardNotificationsEmpty": "No new notifications.",
+  "@dashboardNotificationsEmpty": {
+    "description": "Message shown when there are no notifications"
+  },
+  "dashboardNotificationsError": "Error loading notifications: {message}",
+  "@dashboardNotificationsError": {
+    "description": "Error message when notifications fail to load",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "dashboardNotificationsLoading": "Loading notifications...",
+  "@dashboardNotificationsLoading": {
+    "description": "Loading message for notifications"
+  },
+  "dashboardSnackbarAllNotificationsRead": "All notifications marked as read!",
+  "@dashboardSnackbarAllNotificationsRead": {
+    "description": "Snackbar message after marking all notifications as read"
+  },
+  "upcomingScheduleTitle": "UPCOMING SCHEDULE (NEXT 7 DAYS)",
+  "@upcomingScheduleTitle": {
+    "description": "Title for the upcoming schedule widget on the dashboard"
+  },
+  "upcomingScheduleRestDay": "Rest Day",
+  "@upcomingScheduleRestDay": {
+    "description": "Text displayed for a day with no scheduled workouts"
+  },
+  "upcomingScheduleError": "Error: {message}",
+  "@upcomingScheduleError": {
+    "description": "Error message in the upcoming schedule widget",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "upcomingScheduleEmpty": "No workouts scheduled for the next 7 days.",
+  "@upcomingScheduleEmpty": {
+    "description": "Message when no workouts are scheduled in the upcoming schedule widget"
+  },
+  "volumeTrendChartLogWorkouts": "Log workouts to see your volume trend.",
+  "@volumeTrendChartLogWorkouts": {
+    "description": "Message when no workout data for volume trend chart"
+  },
+  "volumeTrendChartLogMoreWorkouts": "Log at least two workouts to see the trend.",
+  "@volumeTrendChartLogMoreWorkouts": {
+    "description": "Message when only one workout is logged for volume trend"
+  },
+  "volumeTrendChartSingleWorkoutVolume": "Last workout volume: {volume} k kg.\nMore workouts needed for trend.",
+  "@volumeTrendChartSingleWorkoutVolume": {
+    "description": "Message displaying single workout volume and need for more data",
+    "placeholders": {
+      "volume": {
+        "type": "String",
+        "example": "12.5"
+      }
+    }
+  },
+  "volumeTrendChartLoading": "Loading volume data...",
+  "@volumeTrendChartLoading": {
+    "description": "Fallback loading message for volume chart"
+  },
+  "volumeTrendChartError": "Error loading volume: {message}",
+  "@volumeTrendChartError": {
+    "description": "Error message for volume chart loading failure",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "startWorkoutButton": "START WORKOUT",
+  "@startWorkoutButton": {
+    "description": "Text for the main floating action button to start a workout"
+  },
+   "startWorkoutFabErrorLogin": "Please log in to start a workout.",
+   "@startWorkoutFabErrorLogin": {
+    "description": "Error message if user tries to start workout without being logged in."
+  },
+  "startWorkoutFabErrorActiveSession": "Error checking active session: {errorDetails}",
+  "@startWorkoutFabErrorActiveSession": {
+    "description": "Error message when checking for an active workout session fails for FAB.",
+    "placeholders": {
+        "errorDetails": {
+            "type": "String"
+        }
+    }
+  },
+  "startWorkoutFabErrorLoadRoutines": "Could not load routines. Please try again. Error: {errorDetails}",
+  "@startWorkoutFabErrorLoadRoutines": {
+    "description": "Error message when fetching routines fails for FAB logic.",
+    "placeholders": {
+        "errorDetails": {
+            "type": "String"
+        }
+    }
+  },
+  "startWorkoutFabNewRoutineCreatedSnackbar": "New routine created! Select it from the list to start.",
+  "@startWorkoutFabNewRoutineCreatedSnackbar": {
+    "description": "Snackbar message after a new routine is created via the FAB flow."
+  },
+  "dashboardTabRoutines": "ROUTINES",
+  "@dashboardTabRoutines": {
+    "description": "Label for the Routines tab in the BottomNavigationBar"
+  },
+  "dashboardTabExplore": "EXPLORE",
+  "@dashboardTabExplore": {
+    "description": "Label for the Explore (social feed) tab in the BottomNavigationBar"
+  },
+  "dashboardTabProgress": "PROGRESS",
+  "@dashboardTabProgress": {
+    "description": "Label for the Progress tab in the BottomNavigationBar"
+  },
+  "dashboardTabProfile": "PROFILE",
+  "@dashboardTabProfile": {
+    "description": "Label for the Profile tab in the BottomNavigationBar"
+  }
+}

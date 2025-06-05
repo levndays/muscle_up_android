@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import '../../../../core/domain/entities/app_notification.dart';
 import '../../../profile/presentation/cubit/user_profile_cubit.dart';
 import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../../notifications/presentation/widgets/notification_list_item.dart';
 import '../../../../core/domain/repositories/workout_log_repository.dart';
-import '../../../../core/domain/repositories/routine_repository.dart'; 
+import '../../../../core/domain/repositories/routine_repository.dart';
 
 import '../cubit/dashboard_stats_cubit.dart';
 import '../widgets/volume_trend_chart_widget.dart';
-import '../cubit/upcoming_schedule_cubit.dart'; 
-import '../widgets/upcoming_schedule_widget.dart'; 
+import '../cubit/upcoming_schedule_cubit.dart';
+import '../widgets/upcoming_schedule_widget.dart';
 
 
 class DashboardScreen extends StatelessWidget {
@@ -69,17 +70,18 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     developer.log("DashboardScreen: Building UI", name: "DashboardScreen");
+    final loc = AppLocalizations.of(context)!;
 
-    return MultiBlocProvider( 
+    return MultiBlocProvider(
       providers: [
         BlocProvider(
           create: (cubitContext) => DashboardStatsCubit(
             RepositoryProvider.of<WorkoutLogRepository>(cubitContext),
-            RepositoryProvider.of<RoutineRepository>(cubitContext), // Added RoutineRepository
+            RepositoryProvider.of<RoutineRepository>(cubitContext), 
             RepositoryProvider.of<fb_auth.FirebaseAuth>(cubitContext),
           ),
         ),
-        BlocProvider( 
+        BlocProvider(
           create: (cubitContext) => UpcomingScheduleCubit(
             RepositoryProvider.of<RoutineRepository>(cubitContext),
             RepositoryProvider.of<fb_auth.FirebaseAuth>(cubitContext),
@@ -105,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
             weightStat = userProfile.weightKg != null
                 ? '${userProfile.weightKg!.toStringAsFixed(1)} KG'
                 : '-- KG';
-            streakStat = '${userProfile.currentStreak} DAY'; 
+            streakStat = '${userProfile.currentStreak} DAY';
             currentStreakForIcon = userProfile.currentStreak.toString();
           } else if (userState is UserProfileLoading) {
             greetingName = 'Loading...';
@@ -124,10 +126,10 @@ class DashboardScreen extends StatelessWidget {
               final userId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
               if (userId != null) {
                 context.read<UserProfileCubit>().fetchUserProfile(userId, forceRemote: true);
-                context.read<NotificationsCubit>().refreshNotifications(); 
+                context.read<NotificationsCubit>().refreshNotifications();
               }
-              context.read<DashboardStatsCubit>().fetchAllDashboardStats(); // Changed to fetch all
-              context.read<UpcomingScheduleCubit>().fetchUpcomingSchedule(); 
+              context.read<DashboardStatsCubit>().fetchAllDashboardStats(); 
+              context.read<UpcomingScheduleCubit>().fetchUpcomingSchedule();
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -146,7 +148,7 @@ class DashboardScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Welcome,',
+                                loc.dashboardGreetingWelcome,
                                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                       color: textBlack,
                                       fontWeight: FontWeight.w900,
@@ -183,7 +185,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'STATS',
+                    loc.dashboardSectionStats,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: textBlack,
                           fontFamily: ibmPlexMonoFont,
@@ -191,14 +193,14 @@ class DashboardScreen extends StatelessWidget {
                         ),
                   ),
                   const SizedBox(height: 8),
-                  
+
                   BlocBuilder<DashboardStatsCubit, DashboardStatsState>(
                     builder: (context, statsState) {
                       if (statsState is DashboardStatsLoading) {
                         return Container(
                           height: 150,
                           decoration: BoxDecoration(
-                             color: Theme.of(context).brightness == Brightness.dark 
+                             color: Theme.of(context).brightness == Brightness.dark
                                 ? Colors.grey[850]?.withOpacity(0.3)
                                 : Colors.grey[200]?.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
@@ -211,7 +213,7 @@ class DashboardScreen extends StatelessWidget {
                          return Container(
                           height: 150,
                            decoration: BoxDecoration(
-                             color: Theme.of(context).brightness == Brightness.dark 
+                             color: Theme.of(context).brightness == Brightness.dark
                                 ? Colors.red[900]?.withOpacity(0.3)
                                 : Colors.red[100]?.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
@@ -220,7 +222,7 @@ class DashboardScreen extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                'Error loading volume: ${statsState.message}',
+                                loc.volumeTrendChartError(statsState.message),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
                               ),
@@ -231,12 +233,12 @@ class DashboardScreen extends StatelessWidget {
                       return Container(
                         height: 150,
                         decoration: BoxDecoration(
-                           color: Theme.of(context).brightness == Brightness.dark 
+                           color: Theme.of(context).brightness == Brightness.dark
                               ? Colors.grey[850]?.withOpacity(0.3)
                               : Colors.grey[200]?.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Center(child: Text("Loading volume data...", style: TextStyle(color: Colors.grey))),
+                        child: Center(child: Text(loc.volumeTrendChartLoading, style: const TextStyle(color: Colors.grey))),
                       );
                     },
                   ),
@@ -255,9 +257,9 @@ class DashboardScreen extends StatelessWidget {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStatsItem(context, weightStat, 'WEIGHT'),
-                          _buildStatsItem(context, streakStat, 'STREAK'), 
-                          _buildStatsItem(context, adherenceDisplay, 'ADHERENCE'), // Updated
+                          _buildStatsItem(context, weightStat, loc.dashboardStatsWeightLabel),
+                          _buildStatsItem(context, streakStat, loc.dashboardStatsStreakLabel),
+                          _buildStatsItem(context, adherenceDisplay, loc.dashboardStatsAdherenceLabel),
                         ],
                       );
                     }
@@ -277,7 +279,7 @@ class DashboardScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            'NOTIFICATIONS',
+                            loc.dashboardSectionNotifications,
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   color: textBlack,
                                   fontFamily: ibmPlexMonoFont,
@@ -307,12 +309,12 @@ class DashboardScreen extends StatelessWidget {
                               onPressed: () {
                                 context.read<NotificationsCubit>().markAllNotificationsAsRead();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('All notifications marked as read!'), duration: Duration(seconds: 2),)
+                                  SnackBar(content: Text(loc.dashboardSnackbarAllNotificationsRead), duration: const Duration(seconds: 2),)
                                 );
                               },
-                              child: const Text(
-                                'READ ALL',
-                                style: TextStyle(
+                              child: Text(
+                                loc.dashboardNotificationsReadAll,
+                                style: const TextStyle(
                                   fontFamily: ibmPlexMonoFont,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -334,12 +336,12 @@ class DashboardScreen extends StatelessWidget {
                       } else if (notificationsState is NotificationsLoaded) {
                         final notificationsToShow = notificationsState.notifications.take(5).toList();
                         if (notificationsToShow.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20.0),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0),
                             child: Center(
                               child: Text(
-                                'No new notifications.',
-                                style: TextStyle(color: Colors.grey),
+                                loc.dashboardNotificationsEmpty,
+                                style: const TextStyle(color: Colors.grey),
                               ),
                             ),
                           );
@@ -357,20 +359,20 @@ class DashboardScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 20.0),
                           child: Center(
                             child: Text(
-                              'Error loading notifications: ${notificationsState.message}',
+                              loc.dashboardNotificationsError(notificationsState.message),
                               style: const TextStyle(color: Colors.red),
                               textAlign: TextAlign.center,
                             ),
                           ),
                         );
                       }
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.0),
-                        child: Center(child: Text('Loading notifications...')),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(child: Text(loc.dashboardNotificationsLoading)),
                       );
                     },
                   ),
-                  
+
                   Padding(
                     padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
                     child: ElevatedButton.icon(

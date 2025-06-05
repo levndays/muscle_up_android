@@ -1,0 +1,419 @@
+{
+  "@@locale": "uk",
+  "appTitle": "Muscle UP!",
+  "@appTitle": {
+    "description": "Назва додатку"
+  },
+  "loginPageSignInButton": "Увійти",
+  "@loginPageSignInButton": {
+    "description": "Напис для кнопки входу на сторінці логіну"
+  },
+  "loginPageTitleSignIn": "Вхід",
+  "@loginPageTitleSignIn": {
+    "description": "Заголовок на сторінці входу в режимі входу"
+  },
+  "loginPageTitleSignUp": "Реєстрація",
+  "@loginPageTitleSignUp": {
+    "description": "Заголовок на сторінці входу в режимі реєстрації"
+  },
+  "loginPageEmailHint": "Електронна пошта",
+  "@loginPageEmailHint": {
+    "description": "Підказка для поля вводу електронної пошти"
+  },
+  "loginPagePasswordHint": "Пароль",
+  "@loginPagePasswordHint": {
+    "description": "Підказка для поля вводу пароля"
+  },
+  "loginPageErrorEnterEmail": "Будь ласка, введіть вашу електронну пошту",
+  "@loginPageErrorEnterEmail": {
+    "description": "Помилка валідації, якщо пошта порожня"
+  },
+  "loginPageErrorValidEmail": "Будь ласка, введіть дійсну електронну пошту",
+  "@loginPageErrorValidEmail": {
+    "description": "Помилка валідації, якщо формат пошти неправильний"
+  },
+  "loginPageErrorEnterPassword": "Будь ласка, введіть ваш пароль",
+  "@loginPageErrorEnterPassword": {
+    "description": "Помилка валідації, якщо пароль порожній"
+  },
+  "loginPageErrorPasswordLength": "Пароль має містити щонайменше 6 символів",
+  "@loginPageErrorPasswordLength": {
+    "description": "Помилка валідації, якщо пароль занадто короткий при реєстрації"
+  },
+  "loginPageButtonCreateAccount": "Створити Обліковий Запис",
+  "@loginPageButtonCreateAccount": {
+    "description": "Напис для кнопки створення облікового запису"
+  },
+  "loginPageButtonSignInWithGoogle": "Увійти через Google",
+  "@loginPageButtonSignInWithGoogle": {
+    "description": "Напис для кнопки входу через Google"
+  },
+  "loginPageToggleSignUp": "Немає облікового запису? Зареєструватися",
+  "@loginPageToggleSignUp": {
+    "description": "Текст для переключення на форму реєстрації"
+  },
+  "loginPageToggleSignIn": "Вже є обліковий запис? Увійти",
+  "@loginPageToggleSignIn": {
+    "description": "Текст для переключення на форму входу"
+  },
+  "loginPageErrorAuthDefault": "Сталася помилка автентифікації.",
+  "@loginPageErrorAuthDefault": {
+    "description": "Стандартне повідомлення про помилку автентифікації"
+  },
+  "loginPageErrorUnknownDefault": "Сталася невідома помилка: {errorDetails}",
+  "@loginPageErrorUnknownDefault": {
+    "description": "Стандартне повідомлення про невідому помилку",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Помилка з'єднання"
+      }
+    }
+  },
+  "loginPageErrorGoogleSignInDefault": "Помилка входу через Google.",
+  "@loginPageErrorGoogleSignInDefault": {
+    "description": "Стандартне повідомлення про помилку входу через Google"
+  },
+  "loginPageErrorUnknownGoogleDefault": "Невідома помилка під час входу через Google: {errorDetails}",
+  "@loginPageErrorUnknownGoogleDefault": {
+    "description": "Стандартне повідомлення про невідому помилку входу через Google",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Помилка мережевого запиту"
+      }
+    }
+  },
+  "loginPageErrorInternalForm": "Внутрішня помилка форми. Будь ласка, спробуйте ще раз.",
+  "@loginPageErrorInternalForm": {
+    "description": "Повідомлення для снекбару про внутрішню помилку форми"
+  },
+  "profileSetupAppBarTitleEdit": "Редагувати Профіль",
+  "@profileSetupAppBarTitleEdit": {
+    "description": "Заголовок AppBar при редагуванні профілю"
+  },
+  "profileSetupAppBarTitleCreate": "Завершіть Ваш Профіль",
+  "@profileSetupAppBarTitleCreate": {
+    "description": "Заголовок AppBar при створенні нового профілю"
+  },
+  "profileSetupUsernameLabel": "Ім'я користувача",
+  "@profileSetupUsernameLabel": {
+    "description": "Мітка для поля вводу імені користувача"
+  },
+  "profileSetupUsernameErrorRequired": "Ім'я користувача обов'язкове",
+  "@profileSetupUsernameErrorRequired": {
+    "description": "Помилка валідації, якщо ім'я користувача порожнє"
+  },
+  "profileSetupDisplayNameLabel": "Відображуване ім'я",
+  "@profileSetupDisplayNameLabel": {
+    "description": "Мітка для поля вводу відображуваного імені"
+  },
+  "profileSetupGenderLabel": "Стать",
+  "@profileSetupGenderLabel": {
+    "description": "Мітка для вибору статі"
+  },
+  "profileSetupGenderMale": "Чоловіча",
+  "@profileSetupGenderMale": {
+    "description": "Опція статі: Чоловіча"
+  },
+  "profileSetupGenderFemale": "Жіноча",
+  "@profileSetupGenderFemale": {
+    "description": "Опція статі: Жіноча"
+  },
+  "profileSetupGenderOther": "Інша",
+  "@profileSetupGenderOther": {
+    "description": "Опція статі: Інша"
+  },
+  "profileSetupGenderPreferNotToSay": "Не вказувати",
+  "@profileSetupGenderPreferNotToSay": {
+    "description": "Опція статі: Не вказувати"
+  },
+  "profileSetupDobLabel": "Дата народження",
+  "@profileSetupDobLabel": {
+    "description": "Мітка для вибору дати народження"
+  },
+  "profileSetupDobDatePickerHelpText": "Оберіть вашу дату народження",
+  "@profileSetupDobDatePickerHelpText": {
+    "description": "Допоміжний текст для вибору дати народження"
+  },
+  "profileSetupHeightLabel": "Зріст (см)",
+  "@profileSetupHeightLabel": {
+    "description": "Мітка для поля вводу зросту"
+  },
+  "profileSetupHeightErrorInvalid": "Некоректний зріст (1-300 см)",
+  "@profileSetupHeightErrorInvalid": {
+    "description": "Помилка валідації для поля зросту"
+  },
+  "profileSetupWeightLabel": "Вага (кг)",
+  "@profileSetupWeightLabel": {
+    "description": "Мітка для поля вводу ваги"
+  },
+  "profileSetupWeightErrorInvalid": "Некоректна вага (1-500 кг)",
+  "@profileSetupWeightErrorInvalid": {
+    "description": "Помилка валідації для поля ваги"
+  },
+  "profileSetupFitnessGoalLabel": "Основна фітнес-ціль",
+  "@profileSetupFitnessGoalLabel": {
+    "description": "Мітка для вибору фітнес-цілі"
+  },
+  "profileSetupFitnessGoalLoseWeight": "Схуднути",
+  "@profileSetupFitnessGoalLoseWeight": {
+    "description": "Опція фітнес-цілі: Схуднути"
+  },
+  "profileSetupFitnessGoalGainMuscle": "Набрати м'язи",
+  "@profileSetupFitnessGoalGainMuscle": {
+    "description": "Опція фітнес-цілі: Набрати м'язи"
+  },
+  "profileSetupFitnessGoalImproveStamina": "Покращити витривалість",
+  "@profileSetupFitnessGoalImproveStamina": {
+    "description": "Опція фітнес-цілі: Покращити витривалість"
+  },
+  "profileSetupFitnessGoalGeneralFitness": "Загальна фізична форма",
+  "@profileSetupFitnessGoalGeneralFitness": {
+    "description": "Опція фітнес-цілі: Загальна фізична форма"
+  },
+  "profileSetupFitnessGoalImproveStrength": "Покращити силу",
+  "@profileSetupFitnessGoalImproveStrength": {
+    "description": "Опція фітнес-цілі: Покращити силу"
+  },
+  "profileSetupActivityLevelLabel": "Рівень активності",
+  "@profileSetupActivityLevelLabel": {
+    "description": "Мітка для вибору рівня активності"
+  },
+  "profileSetupActivityLevelSedentary": "Сидячий (мало або без вправ)",
+  "@profileSetupActivityLevelSedentary": {
+    "description": "Опція рівня активності: Сидячий"
+  },
+  "profileSetupActivityLevelLight": "Легкий (вправи 1-3 дні/тиждень)",
+  "@profileSetupActivityLevelLight": {
+    "description": "Опція рівня активності: Легкий"
+  },
+  "profileSetupActivityLevelModerate": "Помірний (вправи 3-5 днів/тиждень)",
+  "@profileSetupActivityLevelModerate": {
+    "description": "Опція рівня активності: Помірний"
+  },
+  "profileSetupActivityLevelActive": "Активний (вправи 6-7 днів/тиждень)",
+  "@profileSetupActivityLevelActive": {
+    "description": "Опція рівня активності: Активний"
+  },
+  "profileSetupActivityLevelVeryActive": "Дуже активний (важкі вправи або фізична робота)",
+  "@profileSetupActivityLevelVeryActive": {
+    "description": "Опція рівня активності: Дуже активний"
+  },
+  "profileSetupButtonSaveChanges": "Зберегти Зміни",
+  "@profileSetupButtonSaveChanges": {
+    "description": "Текст кнопки для збереження змін при редагуванні профілю"
+  },
+  "profileSetupButtonCompleteProfile": "Завершити Профіль",
+  "@profileSetupButtonCompleteProfile": {
+    "description": "Текст кнопки для завершення профілю при створенні нового"
+  },
+  "profileSetupErrorUserNotLoggedIn": "Користувач не увійшов.",
+  "@profileSetupErrorUserNotLoggedIn": {
+    "description": "Повідомлення про помилку, якщо користувач не увійшов"
+  },
+  "profileSetupErrorUsernameEmpty": "Ім'я користувача не може бути порожнім.",
+  "@profileSetupErrorUsernameEmpty": {
+    "description": "Повідомлення про помилку, якщо ім'я користувача порожнє при спробі збереження"
+  },
+  "profileSetupErrorProfileNotFoundEdit": "Профіль для редагування не знайдено. Будь ласка, спробуйте ще раз.",
+  "@profileSetupErrorProfileNotFoundEdit": {
+    "description": "Повідомлення про помилку, якщо профіль для редагування не знайдено"
+  },
+  "profileSetupErrorFailedToLoad": "Не вдалося завантажити дані профілю: {errorDetails}",
+  "@profileSetupErrorFailedToLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні даних профілю",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupErrorFailedAvatarUpload": "Не вдалося завантажити аватар. Профіль не збережено.",
+  "@profileSetupErrorFailedAvatarUpload": {
+    "description": "Повідомлення про помилку при невдалому завантаженні аватара"
+  },
+  "profileSetupErrorFailedToSave": "Помилка: {errorDetails}",
+  "@profileSetupErrorFailedToSave": {
+    "description": "Загальне повідомлення про помилку при збереженні",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupSuccessMessage": "Профіль успішно {status}!",
+  "@profileSetupSuccessMessage": {
+    "description": "Повідомлення про успіх після збереження/оновлення профілю",
+    "placeholders": {
+      "status": {
+        "type": "String",
+        "example": "збережено"
+      }
+    }
+  },
+  "profileSetupStatusSaved": "збережено",
+  "@profileSetupStatusSaved": {
+    "description": "Частина повідомлення про успіх: збережено"
+  },
+  "profileSetupStatusUpdated": "оновлено",
+  "@profileSetupStatusUpdated": {
+    "description": "Частина повідомлення про успіх: оновлено"
+  },
+  "profileSetupCorrectFormErrorsSnackbar": "Будь ласка, виправте помилки у формі.",
+  "@profileSetupCorrectFormErrorsSnackbar": {
+    "description": "Повідомлення для снекбару при помилках валідації форми"
+  },
+  "profileSetupOptionalFieldSuffix": "(необов'язково)",
+  "@profileSetupOptionalFieldSuffix": {
+    "description": "Суфікс для міток необов'язкових полів"
+  },
+  "dashboardGreetingWelcome": "Вітаємо,",
+  "@dashboardGreetingWelcome": {
+    "description": "Greeting text on the dashboard, part 1. Name will be appended."
+  },
+  "dashboardSectionStats": "СТАТИСТИКА",
+  "@dashboardSectionStats": {
+    "description": "Section title for user stats on the dashboard"
+  },
+  "dashboardStatsWeightLabel": "ВАГА",
+  "@dashboardStatsWeightLabel": {
+    "description": "Label for the weight stat on the dashboard"
+  },
+  "dashboardStatsStreakLabel": "СТРІК",
+  "@dashboardStatsStreakLabel": {
+    "description": "Label for the workout streak stat on the dashboard"
+  },
+  "dashboardStatsAdherenceLabel": "ДОТРИМАННЯ",
+  "@dashboardStatsAdherenceLabel": {
+    "description": "Label for the workout adherence percentage on the dashboard"
+  },
+  "dashboardSectionNotifications": "СПОВІЩЕННЯ",
+  "@dashboardSectionNotifications": {
+    "description": "Section title for notifications on the dashboard"
+  },
+  "dashboardNotificationsReadAll": "ПРОЧИТАТИ ВСІ",
+  "@dashboardNotificationsReadAll": {
+    "description": "Button text to mark all notifications as read"
+  },
+  "dashboardNotificationsEmpty": "Нових сповіщень немає.",
+  "@dashboardNotificationsEmpty": {
+    "description": "Message shown when there are no notifications"
+  },
+  "dashboardNotificationsError": "Помилка завантаження сповіщень: {message}",
+  "@dashboardNotificationsError": {
+    "description": "Error message when notifications fail to load",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "dashboardNotificationsLoading": "Завантаження сповіщень...",
+  "@dashboardNotificationsLoading": {
+    "description": "Loading message for notifications"
+  },
+  "dashboardSnackbarAllNotificationsRead": "Усі сповіщення позначено як прочитані!",
+  "@dashboardSnackbarAllNotificationsRead": {
+    "description": "Snackbar message after marking all notifications as read"
+  },
+  "upcomingScheduleTitle": "МАЙБУТНІЙ РОЗКЛАД (НА 7 ДНІВ)",
+  "@upcomingScheduleTitle": {
+    "description": "Title for the upcoming schedule widget on the dashboard"
+  },
+  "upcomingScheduleRestDay": "День відпочинку",
+  "@upcomingScheduleRestDay": {
+    "description": "Text displayed for a day with no scheduled workouts"
+  },
+  "upcomingScheduleError": "Помилка: {message}",
+  "@upcomingScheduleError": {
+    "description": "Error message in the upcoming schedule widget",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "upcomingScheduleEmpty": "Немає запланованих тренувань на найближчі 7 днів.",
+  "@upcomingScheduleEmpty": {
+    "description": "Message when no workouts are scheduled in the upcoming schedule widget"
+  },
+  "volumeTrendChartLogWorkouts": "Записуйте тренування, щоб побачити тенденцію об'єму.",
+  "@volumeTrendChartLogWorkouts": {
+    "description": "Message when no workout data for volume trend chart"
+  },
+  "volumeTrendChartLogMoreWorkouts": "Запишіть щонайменше два тренування, щоб побачити тенденцію.",
+  "@volumeTrendChartLogMoreWorkouts": {
+    "description": "Message when only one workout is logged for volume trend"
+  },
+  "volumeTrendChartSingleWorkoutVolume": "Об'єм останнього тренування: {volume} тис. кг.\nПотрібно більше тренувань для відображення тенденції.",
+  "@volumeTrendChartSingleWorkoutVolume": {
+    "description": "Message displaying single workout volume and need for more data",
+    "placeholders": {
+      "volume": {
+        "type": "String",
+        "example": "12.5"
+      }
+    }
+  },
+  "volumeTrendChartLoading": "Завантаження даних об'єму...",
+  "@volumeTrendChartLoading": {
+    "description": "Fallback loading message for volume chart"
+  },
+  "volumeTrendChartError": "Помилка завантаження об'єму: {message}",
+  "@volumeTrendChartError": {
+    "description": "Error message for volume chart loading failure",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "startWorkoutButton": "ПОЧАТИ ТРЕНУВАННЯ",
+  "@startWorkoutButton": {
+    "description": "Text for the main floating action button to start a workout"
+  },
+  "startWorkoutFabErrorLogin": "Будь ласка, увійдіть, щоб почати тренування.",
+   "@startWorkoutFabErrorLogin": {
+    "description": "Error message if user tries to start workout without being logged in."
+  },
+  "startWorkoutFabErrorActiveSession": "Помилка перевірки активної сесії: {errorDetails}",
+  "@startWorkoutFabErrorActiveSession": {
+    "description": "Error message when checking for an active workout session fails for FAB.",
+    "placeholders": {
+        "errorDetails": {
+            "type": "String"
+        }
+    }
+  },
+  "startWorkoutFabErrorLoadRoutines": "Не вдалося завантажити розклади. Будь ласка, спробуйте ще раз. Помилка: {errorDetails}",
+  "@startWorkoutFabErrorLoadRoutines": {
+    "description": "Error message when fetching routines fails for FAB logic.",
+    "placeholders": {
+        "errorDetails": {
+            "type": "String"
+        }
+    }
+  },
+  "startWorkoutFabNewRoutineCreatedSnackbar": "Нову програму створено! Оберіть її зі списку, щоб почати.",
+  "@startWorkoutFabNewRoutineCreatedSnackbar": {
+    "description": "Snackbar message after a new routine is created via the FAB flow."
+  },
+  "dashboardTabRoutines": "ПРОГРАМИ",
+  "@dashboardTabRoutines": {
+    "description": "Label for the Routines tab in the BottomNavigationBar"
+  },
+  "dashboardTabExplore": "ОГЛЯД",
+  "@dashboardTabExplore": {
+    "description": "Label for the Explore (social feed) tab in the BottomNavigationBar"
+  },
+  "dashboardTabProgress": "ПРОГРЕС",
+  "@dashboardTabProgress": {
+    "description": "Label for the Progress tab in the BottomNavigationBar"
+  },
+  "dashboardTabProfile": "ПРОФІЛЬ",
+  "@dashboardTabProfile": {
+    "description": "Label for the Profile tab in the BottomNavigationBar"
+  }
+}

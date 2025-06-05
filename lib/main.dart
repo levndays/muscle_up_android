@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+// Add these imports for localization
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart'; // Corrected import path
 
 import 'firebase_options.dart';
 import 'auth_gate.dart';
@@ -20,8 +23,8 @@ import 'core/domain/repositories/workout_log_repository.dart';
 import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart';
 import 'core/domain/repositories/league_repository.dart';
 import 'features/progress/data/repositories/league_repository_impl.dart';
-import 'core/domain/repositories/post_repository.dart'; // <-- Новий імпорт
-import 'features/social/data/repositories/post_repository_impl.dart'; // <-- Новий імпорт
+import 'core/domain/repositories/post_repository.dart';
+import 'features/social/data/repositories/post_repository_impl.dart';
 
 
 void main() async {
@@ -63,18 +66,31 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<LeagueRepository>(
           create: (context) => LeagueRepositoryImpl(),
         ),
-        RepositoryProvider<PostRepository>( // <-- Додано PostRepository
+        RepositoryProvider<PostRepository>( 
           create: (context) => PostRepositoryImpl(),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Muscle UP',
+        
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        
+        // >>> ADD THIS LINE TO FORCE A LOCALE FOR DEBUGGING <<<
+        locale: const Locale('uk'), // For Ukrainian
+        // locale: const Locale('en'), // For English
+        // Comment out or remove this line for production to use device locale
+
         theme: ThemeData(
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amberAccent,
+            accentColor: Colors.amberAccent, 
             brightness: Brightness.light,
           ).copyWith(
             primary: primaryOrange,
@@ -125,7 +141,7 @@ class MainApp extends StatelessWidget {
               borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+              borderRadius: BorderRadius.all(Radius.circular(12.0)),
               borderSide: BorderSide(color: primaryOrange, width: 2.0),
             ),
             errorBorder: OutlineInputBorder(
@@ -212,6 +228,9 @@ class MainApp extends StatelessWidget {
           ),
         ),
         home: const AuthGate(),
+        onGenerateTitle: (BuildContext context) {
+          return AppLocalizations.of(context)!.appTitle;
+        },
       ),
     );
   }

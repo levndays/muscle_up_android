@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
-Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-06-05T00:21:27.035803
+Project Root: C:\Users\levndays\Desktop\muscle_up2\muscle_up_android
+Snapshot created on: 2025-06-05T23:42:32.808921
 ================================================================================
 
 === FILE: .firebaserc ===
@@ -185,28 +185,14 @@ extensions:
 === END OF FILE: firebase.json ===
 
 
-=== FILE: muscle_up.iml ===
+=== FILE: l10n.yaml ===
 --------------------------------------------------
-<?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
-    <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/lib" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/.idea" />
-      <excludeFolder url="file://$MODULE_DIR$/build" />
-    </content>
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Dart SDK" level="project" />
-    <orderEntry type="library" name="Flutter Plugins" level="project" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
-  </component>
-</module>
-
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+nullable-getter: false
 --------------------------------------------------
-=== END OF FILE: muscle_up.iml ===
+=== END OF FILE: l10n.yaml ===
 
 
 === FILE: pubspec.yaml ===
@@ -214,7 +200,7 @@ extensions:
 name: muscle_up
 description: "Next-gen Fitness App. New height, New companions."
 publish_to: 'none' 
-version: 0.7.0
+version: 0.7.1
 
 environment:
   sdk: ^3.8.0 
@@ -222,13 +208,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: 
+    sdk: flutter         
   
   # Firebase SDK
   firebase_core: ^3.13.1
   firebase_auth: ^5.5.4
   google_sign_in: ^6.2.1
   cloud_firestore: ^5.6.8
-  firebase_storage: ^12.1.0 # NEW: For file uploads
+  firebase_storage: ^12.1.0 
 
   # State Management
   flutter_bloc: ^9.1.1
@@ -236,8 +224,8 @@ dependencies:
   
   # Utilities
   equatable: ^2.0.5
-  intl: ^0.19.0
-  image_picker: ^1.1.2 # NEW: For picking images from gallery/camera
+  intl: ^0.20.2 # <-- UPDATED THIS LINE
+  image_picker: ^1.1.2 
   
   # Graphics & Animations
   flutter_svg: ^2.0.10+1
@@ -260,9 +248,11 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
+  generate: true 
 
   assets:
     - assets/images/
+    - assets/images/achievements/
     - assets/images/male_front.svg 
     - assets/images/male_back.svg
     - assets/images/female_front.svg
@@ -909,42 +899,6 @@ android.enableJetifier=true
 
 --------------------------------------------------
 === END OF FILE: android/gradle.properties ===
-
-
-=== FILE: android/muscle_up_android.iml ===
---------------------------------------------------
-<?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="android" name="Android">
-      <configuration>
-        <option name="ALLOW_USER_CONFIGURATION" value="false" />
-        <option name="GEN_FOLDER_RELATIVE_PATH_APT" value="/gen" />
-        <option name="GEN_FOLDER_RELATIVE_PATH_AIDL" value="/gen" />
-        <option name="MANIFEST_FILE_RELATIVE_PATH" value="/app/src/main/AndroidManifest.xml" />
-        <option name="RES_FOLDER_RELATIVE_PATH" value="/app/src/main/res" />
-        <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/app/src/main/assets" />
-        <option name="LIBS_FOLDER_RELATIVE_PATH" value="/app/src/main/libs" />
-        <option name="PROGUARD_LOGS_FOLDER_RELATIVE_PATH" value="/app/src/main/proguard_logs" />
-      </configuration>
-    </facet>
-  </component>
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
-    <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/app/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/app/src/main/kotlin" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
-    </content>
-    <orderEntry type="jdk" jdkName="Android API 29 Platform" jdkType="Android SDK" />
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Flutter for Android" level="project" />
-    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
-  </component>
-</module>
-
---------------------------------------------------
-=== END OF FILE: android/muscle_up_android.iml ===
 
 
 === FILE: android/settings.gradle.kts ===
@@ -10502,8 +10456,7 @@ import {
   QueryDocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import { DocumentSnapshot, Timestamp, FieldValue, FieldPath } from "firebase-admin/firestore"; // <--- ДОДАНО FieldPath
-// import * as path from "path"; // For Storage path parsing - знадобиться якщо будемо видаляти медіа по URL
+import { DocumentSnapshot, Timestamp, FieldValue, FieldPath } from "firebase-admin/firestore"; 
 
 try {
   admin.initializeApp();
@@ -10515,7 +10468,28 @@ enum AchievementId {
   EARLY_BIRD = "earlyBird",
   FIRST_WORKOUT = "firstWorkout",
   PERSONAL_RECORD_SET = "personalRecordSet",
+  // Add other achievement IDs here to match Dart enum
+  CONSISTENT_KING_10 = "consistentKing10",
+  CONSISTENT_KING_30 = "consistentKing30",
+  VOLUME_STARTER = "volumeStarter",
+  VOLUME_PRO = "volumePro",
+  LEVEL_5_REACHED = "level5Reached",
+  LEVEL_10_REACHED = "level10Reached",
 }
+
+// NEW: Map of achievement IDs to their emblem asset paths (must match Dart side)
+const achievementEmblems: Record<string, string> = {
+  [AchievementId.EARLY_BIRD]: "assets/images/achievements/early_bird.png",
+  [AchievementId.FIRST_WORKOUT]: "assets/images/achievements/first_workout.png",
+  [AchievementId.PERSONAL_RECORD_SET]: "assets/images/achievements/personal_record.png",
+  [AchievementId.CONSISTENT_KING_10]: "assets/images/achievements/streak_star_10.png",
+  [AchievementId.CONSISTENT_KING_30]: "assets/images/achievements/consistent_king_30.png",
+  [AchievementId.VOLUME_STARTER]: "assets/images/achievements/volume_starter.png",
+  [AchievementId.VOLUME_PRO]: "assets/images/achievements/volume_pro.png",
+  [AchievementId.LEVEL_5_REACHED]: "assets/images/achievements/level_5.png",
+  [AchievementId.LEVEL_10_REACHED]: "assets/images/achievements/level_10.png",
+};
+
 
 enum NotificationType { 
   ACHIEVEMENT_UNLOCKED = "achievementUnlocked",
@@ -10684,9 +10658,11 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
           achievedRewardIds.push(AchievementId.FIRST_WORKOUT);
           const notificationsRef = userProfileRef.collection("notifications");
           transaction.set(notificationsRef.doc(), {
-            type: "achievementUnlocked", title: "First Workout Completed!",
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(), 
+            title: "First Workout Completed!",
             message: "You've successfully completed your first workout. Great start!",
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "fitness_center",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, 
+            iconName: achievementEmblems[AchievementId.FIRST_WORKOUT] ?? "fitness_center", // CHANGED
             relatedEntityId: AchievementId.FIRST_WORKOUT, relatedEntityType: "achievement",
           });
         }
@@ -10725,9 +10701,11 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
           await userProfileRef.update({ achievedRewardIds, updatedAt: FieldValue.serverTimestamp() });
           const notificationsRef = userProfileRef.collection("notifications");
           await notificationsRef.add({
-            type: "achievementUnlocked", title: "Profile Setup Complete!",
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(), 
+            title: "Profile Setup Complete!",
             message: "You've successfully set up your profile. Welcome aboard!",
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "auto_awesome",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, 
+            iconName: achievementEmblems[AchievementId.EARLY_BIRD] ?? "auto_awesome", // CHANGED
             relatedEntityId: AchievementId.EARLY_BIRD, relatedEntityType: "achievement",
           });
         }
@@ -10735,6 +10713,8 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
     }
   }
 );
+
+// ... (onCommentCreated, onCommentDeleted, onPostDeleted, onRecordClaimPostCreated, onRecordClaimVoteCasted remain the same) ...
 
 export const onCommentCreated = onDocumentCreated(
   { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
@@ -10869,9 +10849,9 @@ export const onRecordClaimVoteCasted = onDocumentUpdated(
           batchHasWrites = true;
           const notificationRef = userProfileRef.collection("notifications").doc();
           batch.set(notificationRef, {
-            type: "systemMessage", title: "XP for Voting!",
+            type: NotificationType.SYSTEM_MESSAGE.toString(), title: "XP for Voting!",
             message: `You received ${XP_FOR_VOTING} XP for voting on a record claim.`,
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech", // Generic icon, client will handle
             relatedEntityId: postIdFromEvent, relatedEntityType: "postVote",
           });
           logger.info(`Awarded ${XP_FOR_VOTING} XP to user ${voterId} for voting on post ${postIdFromEvent}`);
@@ -10962,7 +10942,7 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
           type: newStatus === RecordVerificationStatus.VERIFIED ? NotificationType.ACHIEVEMENT_UNLOCKED.toString() : NotificationType.SYSTEM_MESSAGE.toString(),
           title: authorNotificationTitle, message: authorNotificationMessage,
           timestamp: FieldValue.serverTimestamp(), isRead: false,
-          iconName: newStatus === RecordVerificationStatus.VERIFIED ? "military_tech" : "gavel",
+          iconName: newStatus === RecordVerificationStatus.VERIFIED ? (achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech") : "gavel", // CHANGED
           relatedEntityId: currentPostId, relatedEntityType: "postVerification",
         },
       });
@@ -10985,7 +10965,8 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
             type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
             title: `New Record: ${recordDetails?.exerciseName ?? "Exercise"} Verified!`,
             message: `You earned ${recordXp} XP for your verified record of ${recordDetails?.weightKg}kg x ${recordDetails?.reps} reps!`,
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, 
+            iconName: achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech", // CHANGED
             relatedEntityId: AchievementId.PERSONAL_RECORD_SET, relatedEntityType: "achievement",
           },
         });
@@ -11006,6 +10987,7 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
   }
 );
 
+// ... (handleUserFollowListUpdate remains the same) ...
 export const handleUserFollowListUpdate = onDocumentWritten(
   { document: "users/{userId}", region: defaultRegion, memory: "256MiB" },
   async (event: FirestoreEvent<Change<DocumentSnapshot> | undefined, { userId: string }>) => {
@@ -11054,7 +11036,7 @@ export const handleUserFollowListUpdate = onDocumentWritten(
         senderProfilePicUrl: afterData.profilePictureUrl ?? null,
         timestamp: FieldValue.serverTimestamp(),
         isRead: false,
-        iconName: "person_add_alt_1",
+        iconName: "person_add_alt_1", // This can stay as an IconData key for now, or be changed to a generic follow icon asset
         relatedEntityId: currentUserId,
         relatedEntityType: "userProfile",
       });
@@ -11182,12 +11164,12 @@ Runner/GeneratedPluginRegistrant.*
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=C:\Software\flutter\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\levndays\Desktop\muscle_up"
+export "FLUTTER_APPLICATION_PATH=C:\Users\levndays\Desktop\muscle_up2\muscle_up_android"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
-export "FLUTTER_BUILD_NAME=0.7.0"
-export "FLUTTER_BUILD_NUMBER=0.7.0"
+export "FLUTTER_BUILD_NAME=0.7.1"
+export "FLUTTER_BUILD_NUMBER=0.7.1"
 export "DART_OBFUSCATION=false"
 export "TRACK_WIDGET_CREATION=true"
 export "TREE_SHAKE_ICONS=false"
@@ -12683,14 +12665,16 @@ class _HomePageContentState extends State<_HomePageContent> {
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart'; // Not directly used in this file anymore for profile creation
 import 'dart:developer' as developer;
 
 import '../widgets/lava_lamp_background.dart';
+// Import for localization
+import 'package:muscle_up/l10n/app_localizations.dart'; // Adjust path if necessary, e.g. if login_page is deeper
 
 const Color primaryOrange = Color(0xFFED5D1A);
-const Color textBlackColor = Colors.black87; // Використовуємо більш узгоджену назву
-const Color textGreyColor = Color(0xFF757575); // Використовуємо більш узгоджену назву
+const Color textBlackColor = Colors.black87;
+const Color textGreyColor = Color(0xFF757575);
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12714,17 +12698,15 @@ class _LoginPageState extends State<LoginPage> {
     developer.log("LoginPage initState", name: "LoginPage");
   }
 
-  // !! ВИДАЛІТЬ ЦЕЙ МЕТОД ПОВНІСТЮ (якщо він ще є) !!
-  // Future<void> _createInitialUserProfile(User user) async { /* ... */ }
-
   Future<void> _submitForm() async {
+    final loc = AppLocalizations.of(context)!; // For easier access
     developer.log("Entering _submitForm. _formKey.currentState is: ${_formKey.currentState}", name: "LoginPage._submitForm");
 
     if (_formKey.currentState == null) {
       developer.log("CRITICAL: _formKey.currentState is NULL. Form might not be in the widget tree or key is not assigned.", name: "LoginPage._submitForm");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Internal form error. Please try again.')),
+          SnackBar(content: Text(loc.loginPageErrorInternalForm)),
         );
       }
       return;
@@ -12756,17 +12738,13 @@ class _LoginPageState extends State<LoginPage> {
           password: _passwordController.text.trim(),
         );
         developer.log("Account creation successful with Firebase Auth: ${userCredential.user?.uid}", name: "LoginPage._submitForm");
-        // !! ВИДАЛІТЬ ЗВІДСИ ВИКЛИК _createInitialUserProfile !!
-        // if (userCredential.user != null) {
-        //   await _createInitialUserProfile(userCredential.user!);
-        // }
       }
     } on FirebaseAuthException catch (e) {
       developer.log("FirebaseAuthException: ${e.code} - ${e.message}", name: "LoginPage._submitForm");
-      if(mounted) setState(() => _errorMessage = e.message ?? 'Сталася помилка автентифікації.');
+      if(mounted) setState(() => _errorMessage = e.message ?? loc.loginPageErrorAuthDefault);
     } catch (e, s) {
       developer.log("Generic Exception in _submitForm: $e", name: "LoginPage._submitForm", error: e, stackTrace: s);
-      if(mounted) setState(() => _errorMessage = 'Сталася невідома помилка: ${e.toString()}');
+      if(mounted) setState(() => _errorMessage = loc.loginPageErrorUnknownDefault(e.toString()));
     } finally {
       developer.log("_submitForm finally block. Mounted: $mounted. Setting _isLoading to false.", name: "LoginPage._submitForm");
       if (mounted) {
@@ -12776,6 +12754,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _signInWithGoogle() async {
+    final loc = AppLocalizations.of(context)!; // For easier access
     developer.log("Attempting Google Sign-In...", name: "LoginPage._signInWithGoogle");
     if(mounted) setState(() { _isLoading = true; _errorMessage = null; });
     try {
@@ -12793,17 +12772,12 @@ class _LoginPageState extends State<LoginPage> {
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       developer.log("Firebase Sign-In with Google successful: ${userCredential.user?.uid}", name: "LoginPage._signInWithGoogle");
 
-      // !! ВИДАЛІТЬ ЗВІДСИ ВИКЛИК _createInitialUserProfile !!
-      // if (userCredential.additionalUserInfo?.isNewUser == true && userCredential.user != null) {
-      //   developer.log("New user detected via Google Sign-In. Creating profile...", name: "LoginPage._signInWithGoogle");
-      //   await _createInitialUserProfile(userCredential.user!);
-      // }
     } on FirebaseAuthException catch (e) {
       developer.log("FirebaseAuthException during Google Sign-In: ${e.code} - ${e.message}", name: "LoginPage._signInWithGoogle");
-       if(mounted) setState(() => _errorMessage = e.message ?? 'Помилка входу через Google.');
+       if(mounted) setState(() => _errorMessage = e.message ?? loc.loginPageErrorGoogleSignInDefault);
     } catch (e, s) {
       developer.log("Generic Exception during Google Sign-In: $e", name: "LoginPage._signInWithGoogle", error: e, stackTrace: s);
-      if(mounted) setState(() => _errorMessage = 'Невідома помилка під час входу через Google: ${e.toString()}');
+      if(mounted) setState(() => _errorMessage = loc.loginPageErrorUnknownGoogleDefault(e.toString()));
     } finally {
       developer.log("Google Sign-In finally block. Mounted: $mounted. Setting _isLoading to false.", name: "LoginPage._signInWithGoogle");
       if (mounted) {
@@ -12822,6 +12796,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!; // For easier access
     developer.log("LoginPage build method. _isLogin: $_isLogin, _isLoading: $_isLoading", name: "LoginPage");
     return Scaffold(
       body: Stack(
@@ -12830,15 +12805,15 @@ class _LoginPageState extends State<LoginPage> {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0), // Збільшено вертикальний padding
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center, // Центрування контенту
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 50.0), // Збільшено відступ знизу
+                        padding: const EdgeInsets.only(bottom: 50.0), 
                         child: DefaultTextStyle(
                           style: const TextStyle(decoration: TextDecoration.none),
                           child: RichText(
@@ -12846,23 +12821,23 @@ class _LoginPageState extends State<LoginPage> {
                             text: TextSpan(
                               style: TextStyle(
                                 fontFamily: 'Inter',
-                                fontSize: 36, // Збільшено розмір шрифту логотипа
-                                fontWeight: FontWeight.w900, // <--- ЗМІНЕНО НА Black
+                                fontSize: 36, 
+                                fontWeight: FontWeight.w900, 
                                 decoration: TextDecoration.none,
                               ),
                               children: <TextSpan>[
                                 TextSpan(
-                                  text: 'Muscle',
+                                  text: 'Muscle', // Keep brand name not localized or add to ARB if needed
                                   style: TextStyle(
                                     color: primaryOrange,
-                                    fontWeight: FontWeight.w900, // <--- ЗМІНЕНО НА Black
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: 'UP',
+                                  text: 'UP', // Keep brand name not localized
                                   style: TextStyle(
                                     color: textBlackColor,
-                                    fontWeight: FontWeight.w900, // <--- ЗМІНЕНО НА Black
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                               ],
@@ -12871,11 +12846,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       Text(
-                        _isLogin ? 'Sign In' : 'Sign Up',
+                        _isLogin ? loc.loginPageTitleSignIn : loc.loginPageTitleSignUp,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 28,
-                          fontWeight: FontWeight.bold, // Залишаємо Bold, щоб відрізнялося від лого
+                          fontWeight: FontWeight.bold,
                           color: textBlackColor,
                           decoration: TextDecoration.none,
                         ),
@@ -12897,7 +12872,7 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          hintText: 'Email',
+                          hintText: loc.loginPageEmailHint,
                           prefixIcon: const Icon(Icons.email_outlined, color: textGreyColor),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.85),
@@ -12914,8 +12889,8 @@ class _LoginPageState extends State<LoginPage> {
                         keyboardType: TextInputType.emailAddress,
                         style: const TextStyle(color: textBlackColor, decoration: TextDecoration.none),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) return 'Please enter your email';
-                          if (!value.contains('@') || !value.contains('.')) return 'Please enter a valid email';
+                          if (value == null || value.trim().isEmpty) return loc.loginPageErrorEnterEmail;
+                          if (!value.contains('@') || !value.contains('.')) return loc.loginPageErrorValidEmail;
                           return null;
                         },
                       ),
@@ -12923,7 +12898,7 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          hintText: 'Password',
+                          hintText: loc.loginPagePasswordHint,
                           prefixIcon: const Icon(Icons.lock_outline, color: textGreyColor),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.85),
@@ -12940,8 +12915,8 @@ class _LoginPageState extends State<LoginPage> {
                         obscureText: true,
                         style: const TextStyle(color: textBlackColor, decoration: TextDecoration.none),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter your password';
-                          if (!_isLogin && value.length < 6) return 'Password must be at least 6 characters';
+                          if (value == null || value.isEmpty) return loc.loginPageErrorEnterPassword;
+                          if (!_isLogin && value.length < 6) return loc.loginPageErrorPasswordLength;
                           return null;
                         },
                       ),
@@ -12960,16 +12935,16 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           onPressed: _submitForm,
                           child: Text(
-                            _isLogin ? 'Sign In' : 'Create Account',
+                            _isLogin ? loc.loginPageSignInButton : loc.loginPageButtonCreateAccount,
                             style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
                           ),
                         ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         icon: Image.asset('assets/images/google_logo.png', height: 22.0),
-                        label: const Text(
-                          'Sign in with Google',
-                          style: TextStyle(color: textBlackColor, fontWeight: FontWeight.w500),
+                        label: Text(
+                          loc.loginPageButtonSignInWithGoogle,
+                          style: const TextStyle(color: textBlackColor, fontWeight: FontWeight.w500),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.9),
@@ -13001,7 +12976,7 @@ class _LoginPageState extends State<LoginPage> {
                            developer.log("Auth mode switched. New _isLogin: $_isLogin", name: "LoginPage");
                         },
                         child: Text(
-                          _isLogin ? 'Don\'t have an account? Sign Up' : 'Already have an account? Sign In',
+                          _isLogin ? loc.loginPageToggleSignUp : loc.loginPageToggleSignIn,
                           style: const TextStyle(
                             color: primaryOrange,
                             fontWeight: FontWeight.w600,
@@ -13032,6 +13007,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+// Add these imports for localization
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart'; // Corrected import path
 
 import 'firebase_options.dart';
 import 'auth_gate.dart';
@@ -13049,8 +13027,8 @@ import 'core/domain/repositories/workout_log_repository.dart';
 import 'features/workout_tracking/data/repositories/workout_log_repository_impl.dart';
 import 'core/domain/repositories/league_repository.dart';
 import 'features/progress/data/repositories/league_repository_impl.dart';
-import 'core/domain/repositories/post_repository.dart'; // <-- Новий імпорт
-import 'features/social/data/repositories/post_repository_impl.dart'; // <-- Новий імпорт
+import 'core/domain/repositories/post_repository.dart';
+import 'features/social/data/repositories/post_repository_impl.dart';
 
 
 void main() async {
@@ -13092,18 +13070,31 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<LeagueRepository>(
           create: (context) => LeagueRepositoryImpl(),
         ),
-        RepositoryProvider<PostRepository>( // <-- Додано PostRepository
+        RepositoryProvider<PostRepository>( 
           create: (context) => PostRepositoryImpl(),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Muscle UP',
+        
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        
+        // >>> ADD THIS LINE TO FORCE A LOCALE FOR DEBUGGING <<<
+        locale: const Locale('uk'), // For Ukrainian
+        // locale: const Locale('en'), // For English
+        // Comment out or remove this line for production to use device locale
+
         theme: ThemeData(
           primarySwatch: Colors.deepOrange,
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
-            accentColor: Colors.amberAccent,
+            accentColor: Colors.amberAccent, 
             brightness: Brightness.light,
           ).copyWith(
             primary: primaryOrange,
@@ -13154,7 +13145,7 @@ class MainApp extends StatelessWidget {
               borderSide: BorderSide(color: Colors.grey.shade400, width: 1.0),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+              borderRadius: BorderRadius.all(Radius.circular(12.0)),
               borderSide: BorderSide(color: primaryOrange, width: 2.0),
             ),
             errorBorder: OutlineInputBorder(
@@ -13241,6 +13232,9 @@ class MainApp extends StatelessWidget {
           ),
         ),
         home: const AuthGate(),
+        onGenerateTitle: (BuildContext context) {
+          return AppLocalizations.of(context)!.appTitle;
+        },
       ),
     );
   }
@@ -13252,7 +13246,7 @@ class MainApp extends StatelessWidget {
 === FILE: lib/core/domain/entities/achievement.dart ===
 --------------------------------------------------
 // lib/core/domain/entities/achievement.dart
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Keep for potential future use or if other parts need it
 import 'user_profile.dart';
 
 enum AchievementId {
@@ -13264,7 +13258,7 @@ enum AchievementId {
   volumePro,
   level5Reached,
   level10Reached,
-  personalRecordSet, // <-- NEW ACHIEVEMENT ID
+  personalRecordSet,
 }
 
 typedef ConditionChecker = String? Function(UserProfile userProfile);
@@ -13273,20 +13267,19 @@ class Achievement {
   final AchievementId id;
   final String name;
   final String description;
-  final IconData icon;
+  final String emblemAssetPath; // CHANGED: from IconData icon to String emblemAssetPath
   final ConditionChecker? conditionCheckerMessage;
-  final bool isPersonalized; // <-- NEW FIELD to indicate if name/desc can be dynamic
+  final bool isPersonalized;
 
   const Achievement({
     required this.id,
     required this.name,
     required this.description,
-    required this.icon,
+    required this.emblemAssetPath, // CHANGED
     this.conditionCheckerMessage,
-    this.isPersonalized = false, // <-- Default to false
+    this.isPersonalized = false,
   });
 
-  // Helper to get dynamic name for personalized achievements
   String getDynamicName({String? detail}) {
     if (isPersonalized && detail != null) {
       return name.replaceFirst('[Detail]', detail);
@@ -13294,7 +13287,6 @@ class Achievement {
     return name;
   }
 
-  // Helper to get dynamic description
   String getDynamicDescription({String? detail}) {
     if (isPersonalized && detail != null) {
       return description.replaceFirst('[Detail]', detail);
@@ -13303,24 +13295,25 @@ class Achievement {
   }
 }
 
+// Placeholder asset paths - replace with actual paths when available
 final Map<AchievementId, Achievement> allAchievements = {
   AchievementId.earlyBird: const Achievement(
     id: AchievementId.earlyBird,
     name: 'EARLY BIRD',
     description: 'Welcome to the club! Thanks for joining MuscleUP.',
-    icon: Icons.auto_awesome,
+    emblemAssetPath: 'assets/images/achievements/early_bird.png', // CHANGED
   ),
   AchievementId.firstWorkout: const Achievement(
     id: AchievementId.firstWorkout,
     name: 'FIRST STEP',
     description: 'You completed your first workout! Keep it up!',
-    icon: Icons.fitness_center,
+    emblemAssetPath: 'assets/images/achievements/first_workout.png', // CHANGED
   ),
   AchievementId.consistentKing10: Achievement(
       id: AchievementId.consistentKing10,
       name: 'STREAK STAR (10)',
       description: '10-day workout streak! You are on fire!',
-      icon: Icons.local_fire_department,
+      emblemAssetPath: 'assets/images/achievements/streak_star_10.png', // CHANGED
       conditionCheckerMessage: (UserProfile profile) {
         if (profile.longestStreak >= 10) return null;
         return 'Current best streak: ${profile.longestStreak}/10 days.';
@@ -13329,7 +13322,7 @@ final Map<AchievementId, Achievement> allAchievements = {
       id: AchievementId.consistentKing30,
       name: 'CONSISTENT KING (30)',
       description: '30-day workout streak! Unstoppable!',
-      icon: Icons.whatshot,
+      emblemAssetPath: 'assets/images/achievements/consistent_king_30.png', // CHANGED
       conditionCheckerMessage: (UserProfile profile) {
         if (profile.longestStreak >= 30) return null;
         return 'Current best streak: ${profile.longestStreak}/30 days.';
@@ -13338,7 +13331,7 @@ final Map<AchievementId, Achievement> allAchievements = {
     id: AchievementId.volumeStarter,
     name: 'VOLUME STARTER',
     description: 'Lifted over 10,000 KG in total volume!',
-    icon: Icons.line_weight,
+    emblemAssetPath: 'assets/images/achievements/volume_starter.png', // CHANGED
     conditionCheckerMessage: (UserProfile profile) =>
         "Needs total volume tracking in profile.",
   ),
@@ -13346,17 +13339,35 @@ final Map<AchievementId, Achievement> allAchievements = {
       id: AchievementId.level5Reached,
       name: 'LEVEL 5 REACHED',
       description: 'Congratulations on reaching level 5!',
-      icon: Icons.star_border_purple500_outlined,
+      emblemAssetPath: 'assets/images/achievements/level_5.png', // CHANGED
       conditionCheckerMessage: (UserProfile profile) {
         if (profile.level >= 5) return null;
         return 'Current level: ${profile.level}/5.';
       }),
-  AchievementId.personalRecordSet: const Achievement( // <-- NEW ACHIEVEMENT
+  AchievementId.personalRecordSet: const Achievement(
     id: AchievementId.personalRecordSet,
-    name: 'NEW RECORD: [Detail]!', // Placeholder for exercise name
-    description: 'Congratulations on setting a new personal record for [Detail]!', // Placeholder
-    icon: Icons.military_tech, // Or Icons.workspace_premium or Icons.verified
+    name: 'NEW RECORD: [Detail]!',
+    description: 'Congratulations on setting a new personal record for [Detail]!',
+    emblemAssetPath: 'assets/images/achievements/personal_record.png', // CHANGED
     isPersonalized: true,
+  ),
+  // Add other achievements with their emblemAssetPath
+  AchievementId.level10Reached: Achievement( // Example, add more if they exist
+      id: AchievementId.level10Reached,
+      name: 'LEVEL 10 REACHED',
+      description: 'Wow! Level 10! You\'re a true MuscleUP enthusiast!',
+      emblemAssetPath: 'assets/images/achievements/level_10.png', // CHANGED
+      conditionCheckerMessage: (UserProfile profile) {
+        if (profile.level >= 10) return null;
+        return 'Current level: ${profile.level}/10.';
+      }),
+  AchievementId.volumePro: Achievement( // Example
+    id: AchievementId.volumePro,
+    name: 'VOLUME PRO',
+    description: 'Lifted over 100,000 KG in total volume! Incredible strength!',
+    emblemAssetPath: 'assets/images/achievements/volume_pro.png', // CHANGED
+    conditionCheckerMessage: (UserProfile profile) =>
+        "Needs total volume tracking in profile.",
   ),
 };
 --------------------------------------------------
@@ -17229,52 +17240,101 @@ class NotificationDetailScreen extends StatelessWidget {
 
   const NotificationDetailScreen({super.key, required this.notification});
 
-  IconData _getIconForNotificationType(NotificationType type, String? customIconName) {
-    // Ця логіка дублює ту, що в NotificationListItem,
-    // в ідеалі її можна винести в helper або розширення для AppNotification.
-    // Поки що залишимо тут для простоти.
-    if (customIconName != null) {
+  Widget _getLeadingWidgetForDetail(BuildContext context, AppNotification notification) {
+    final theme = Theme.of(context);
+    final Color iconColor = theme.colorScheme.primary;
+    final Color avatarBgColor = theme.colorScheme.primary.withOpacity(0.1);
+
+    if (notification.type == NotificationType.achievementUnlocked &&
+        notification.iconName != null &&
+        (notification.iconName!.endsWith('.png') || notification.iconName!.endsWith('.gif'))) {
+      return CircleAvatar(
+        radius: 28,
+        backgroundColor: avatarBgColor,
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Image.asset(
+            notification.iconName!,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(Icons.emoji_events, size: 32, color: iconColor);
+            },
+          ),
+        ),
+      );
+    } else if (notification.type == NotificationType.newFollower &&
+               notification.senderProfilePicUrl != null &&
+               notification.senderProfilePicUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 28,
+        backgroundColor: avatarBgColor,
+        backgroundImage: NetworkImage(notification.senderProfilePicUrl!),
+        onBackgroundImageError: (_, __) {},
+        child: notification.senderProfilePicUrl == null || notification.senderProfilePicUrl!.isEmpty
+            ? Icon(Icons.person_add_alt_1, size: 32, color: iconColor)
+            : null,
+      );
+    }
+
+    IconData iconData;
+    if (notification.iconName != null) {
       final iconMap = {
-        'emoji_events': Icons.emoji_events, // Використовуємо заповнені іконки для більшої виразності
+        'emoji_events': Icons.emoji_events,
         'fitness_center': Icons.fitness_center,
         'notifications': Icons.notifications_active,
         'reminder': Icons.alarm_on,
         'info_outline': Icons.info,
+        'person_add_alt_1': Icons.person_add_alt_1,
+        'lightbulb_outline': Icons.lightbulb_outline,
+        'military_tech': Icons.military_tech,
+        'gavel': Icons.gavel,
       };
-      return iconMap[customIconName.toLowerCase()] ?? Icons.notifications_active;
+      iconData = iconMap[notification.iconName!.toLowerCase()] ?? Icons.notifications_active;
+    } else {
+       switch (notification.type) {
+        case NotificationType.achievementUnlocked:
+          iconData = Icons.emoji_events;
+          break;
+        case NotificationType.workoutReminder:
+          iconData = Icons.alarm_on;
+          break;
+        case NotificationType.newFollower:
+          iconData = Icons.person_add_alt_1;
+          break;
+        case NotificationType.routineShared:
+          iconData = Icons.share;
+          break;
+        case NotificationType.systemMessage:
+          iconData = Icons.info;
+          break;
+        case NotificationType.advice:
+           iconData = Icons.lightbulb_outline;
+           break;
+        default:
+          iconData = Icons.notifications_active;
+      }
     }
-
-    switch (type) {
-      case NotificationType.achievementUnlocked:
-        return Icons.emoji_events;
-      case NotificationType.workoutReminder:
-        return Icons.alarm_on;
-      case NotificationType.newFollower:
-        return Icons.person_add_alt_1;
-      case NotificationType.routineShared:
-        return Icons.share;
-      case NotificationType.systemMessage:
-        return Icons.info;
-      default:
-        return Icons.notifications_active;
-    }
+     return CircleAvatar(
+        radius: 28,
+        backgroundColor: avatarBgColor,
+        child: Icon(iconData, size: 32, color: iconColor),
+      );
   }
 
+
   String _formatTimestamp(DateTime timestamp) {
-    // Більш детальне форматування для екрану деталей
     return DateFormat('EEEE, MMMM d, yyyy HH:mm').format(timestamp);
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
     final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(notification.title),
-        backgroundColor: Theme.of(context).cardColor, // Або інший колір
-        elevation: 1, // Невелика тінь
+        backgroundColor: Theme.of(context).cardColor,
+        elevation: 1,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -17288,15 +17348,7 @@ class NotificationDetailScreen extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: primaryColor.withOpacity(0.1),
-                      child: Icon(
-                        _getIconForNotificationType(notification.type, notification.iconName),
-                        size: 32,
-                        color: primaryColor,
-                      ),
-                    ),
+                    _getLeadingWidgetForDetail(context, notification), // UPDATED
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
@@ -17325,7 +17377,7 @@ class NotificationDetailScreen extends StatelessWidget {
                   notification.message,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontSize: 16,
-                        height: 1.5, // Міжрядковий інтервал
+                        height: 1.5,
                         color: onSurfaceColor.withOpacity(0.85),
                       ),
                 ),
@@ -17345,15 +17397,7 @@ class NotificationDetailScreen extends StatelessWidget {
                   if (notification.relatedEntityId != null)
                     _buildInfoRow(context, 'ID:', notification.relatedEntityId!),
                   const SizedBox(height: 10),
-                  // TODO: В майбутньому тут може бути кнопка для переходу до пов'язаної сутності
-                  // ElevatedButton(
-                  //   onPressed: () {
-                  //     // Логіка навігації до relatedEntity
-                  //   },
-                  //   child: Text('View ${notification.relatedEntityType ?? 'Details'}'),
-                  // )
                 ],
-                // Якщо сповіщення вже прочитане, можна показати невеликий індикатор
                 if (notification.isRead) ...[
                   const SizedBox(height: 20),
                   Row(
@@ -17417,40 +17461,98 @@ import 'dart:developer' as developer;
 
 import '../../../../core/domain/entities/app_notification.dart';
 import '../cubit/notifications_cubit.dart';
-import '../screens/notification_detail_screen.dart'; // <--- ДОДАНО ІМПОРТ
+import '../screens/notification_detail_screen.dart'; 
 
 class NotificationListItem extends StatelessWidget {
   final AppNotification notification;
 
   const NotificationListItem({super.key, required this.notification});
 
-  IconData _getIconForNotificationType(NotificationType type, String? customIconName) {
-    if (customIconName != null) {
+  Widget _getLeadingWidget(BuildContext context, AppNotification notification) {
+    final theme = Theme.of(context);
+    final bool isUnread = !notification.isRead;
+    final Color iconColor = isUnread ? theme.colorScheme.primary : Colors.grey.shade700;
+    final Color avatarBgColor = isUnread
+        ? theme.colorScheme.primary.withAlpha((0.15 * 255).round())
+        : Colors.grey.shade200;
+
+    if (notification.type == NotificationType.achievementUnlocked &&
+        notification.iconName != null &&
+        (notification.iconName!.endsWith('.png') || notification.iconName!.endsWith('.gif'))) {
+      return CircleAvatar(
+        backgroundColor: avatarBgColor,
+        radius: 20, // Consistent with Icon size
+        child: Padding(
+          padding: const EdgeInsets.all(4.0), // Small padding for the image
+          child: Image.asset(
+            notification.iconName!,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback if image asset fails to load
+              return Icon(Icons.emoji_events_outlined, color: iconColor, size: 24);
+            },
+          ),
+        ),
+      );
+    } else if (notification.type == NotificationType.newFollower &&
+               notification.senderProfilePicUrl != null &&
+               notification.senderProfilePicUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 20,
+        backgroundColor: avatarBgColor, // Or a different color for followers
+        backgroundImage: NetworkImage(notification.senderProfilePicUrl!),
+        onBackgroundImageError: (_, __) {}, // Handle error if needed
+        child: notification.senderProfilePicUrl == null || notification.senderProfilePicUrl!.isEmpty
+            ? Icon(Icons.person_add_alt_1_outlined, color: iconColor, size: 24)
+            : null,
+      );
+    }
+
+    // Default icon logic
+    IconData iconData;
+    if (notification.iconName != null) {
       final iconMap = {
         'emoji_events': Icons.emoji_events_outlined,
         'fitness_center': Icons.fitness_center_outlined,
         'notifications': Icons.notifications_active_outlined,
         'reminder': Icons.alarm_on_outlined,
         'info_outline': Icons.info_outline,
+        'person_add_alt_1': Icons.person_add_alt_1_outlined, // For newFollower fallback
+        'lightbulb_outline': Icons.lightbulb_outline, // For advice
+        'military_tech': Icons.military_tech_outlined, // For record claim voting/verification
+        'gavel': Icons.gavel_outlined, // For record claim denied/expired
       };
-      return iconMap[customIconName.toLowerCase()] ?? Icons.notifications_active_outlined;
+      iconData = iconMap[notification.iconName!.toLowerCase()] ?? Icons.notifications_active_outlined;
+    } else {
+      switch (notification.type) {
+        case NotificationType.achievementUnlocked:
+          iconData = Icons.emoji_events_outlined;
+          break;
+        case NotificationType.workoutReminder:
+          iconData = Icons.alarm_on_outlined;
+          break;
+        case NotificationType.newFollower:
+          iconData = Icons.person_add_alt_1_outlined;
+          break;
+        case NotificationType.routineShared:
+          iconData = Icons.share_outlined;
+          break;
+        case NotificationType.systemMessage:
+          iconData = Icons.info_outline;
+          break;
+        case NotificationType.advice:
+          iconData = Icons.lightbulb_outline;
+          break;
+        default:
+          iconData = Icons.notifications_active_outlined;
+      }
     }
-
-    switch (type) {
-      case NotificationType.achievementUnlocked:
-        return Icons.emoji_events_outlined;
-      case NotificationType.workoutReminder:
-        return Icons.alarm_on_outlined;
-      case NotificationType.newFollower:
-        return Icons.person_add_alt_1_outlined;
-      case NotificationType.routineShared:
-        return Icons.share_outlined;
-      case NotificationType.systemMessage:
-        return Icons.info_outline;
-      default:
-        return Icons.notifications_active_outlined;
-    }
+    return CircleAvatar(
+      backgroundColor: avatarBgColor,
+      child: Icon(iconData, color: iconColor, size: 24),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -17512,16 +17614,7 @@ class NotificationListItem extends StatelessWidget {
               : BorderSide.none,
         ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: isUnread
-                ? Theme.of(context).colorScheme.primary.withAlpha((0.15 * 255).round())
-                : Colors.grey.shade200,
-            child: Icon(
-              _getIconForNotificationType(notification.type, notification.iconName),
-              color: isUnread ? Theme.of(context).colorScheme.primary : Colors.grey.shade700,
-              size: 24,
-            ),
-          ),
+          leading: _getLeadingWidget(context, notification), // UPDATED
           title: Text(
             notification.title,
             style: TextStyle(
@@ -17564,11 +17657,9 @@ class NotificationListItem extends StatelessWidget {
             ],
           ),
           onTap: () {
-            // Позначаємо як прочитане, якщо ще не прочитане
             if (isUnread) {
               context.read<NotificationsCubit>().markNotificationAsRead(notification.id);
             }
-            // Переходимо на екран деталей
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -18208,7 +18299,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                     )
                   else
                     SizedBox(
-                      height: 115,
+                      height: 115, // Adjusted height to accommodate text better
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -18217,7 +18308,19 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                           final achievementId = achievedRewardIdsEnum[index];
                           final achievement = allAchievements[achievementId];
                           if (achievement == null) return const SizedBox.shrink();
-                          return _buildRewardItem(context, achievement, true, null);
+                          
+                          String achievementName = achievement.name;
+                          String achievementDescription = achievement.description;
+
+                          if (achievement.isPersonalized) {
+                            // For now, we don't have the "detail" here on the profile screen.
+                            // We could fetch post details if necessary, or keep it generic.
+                            // Let's keep it generic for now or remove [Detail] part.
+                            achievementName = achievement.name.replaceAll('[Detail]', 'Record');
+                            achievementDescription = achievement.description.replaceAll('[Detail]', 'a record');
+                          }
+                          
+                          return _buildRewardItem(context, achievementName, achievementDescription, achievement.emblemAssetPath, true);
                         },
                       ),
                     ),
@@ -18246,14 +18349,12 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                             child: Text('You haven\'t made any posts yet.', style: TextStyle(color: Colors.grey.shade600)),
                           );
                         }
-                        // Using ListView.builder directly inside SingleChildScrollView is not recommended
-                        // without proper constraints or shrinkWrap + NeverScrollableScrollPhysics.
-                        return Column( // Wrap ListView.builder with Column to avoid infinite height
+                        return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: postState.posts.map((post) => PostListItem(post: post)).toList(),
                         );
                       }
-                      return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 40.0), child: Text('Loading posts...'))); // Default for UserPostsFeedInitial
+                      return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 40.0), child: Text('Loading posts...')));
                     },
                   ),
 
@@ -18292,7 +18393,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20), // For bottom padding inside SingleChildScrollView
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -18328,14 +18429,14 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
     );
   }
 
-  Widget _buildRewardItem(BuildContext context, Achievement achievement, bool isAchieved, String? conditionMessage) {
+  Widget _buildRewardItem(BuildContext context, String name, String description, String assetPath, bool isAchieved) {
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Tooltip(
-            message: achievement.description,
+            message: description,
             padding: const EdgeInsets.all(8),
             margin: const EdgeInsets.symmetric(horizontal: 20),
             textStyle: const TextStyle(color: Colors.white, fontSize: 12),
@@ -18347,21 +18448,28 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: profilePurple.withOpacity(0.95),
+                // Removed background color to let image show, or set a very transparent one
+                // color: profilePurple.withOpacity(0.95), 
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.amber.shade300, width: 1.5),
                  boxShadow: [
                   BoxShadow(
-                    color: profilePurple.withOpacity(0.4),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
+                    color: profilePurple.withOpacity(0.3), // Softer shadow
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
                   )
                 ],
               ),
-              child: Icon(
-                achievement.icon,
-                color: Colors.white,
-                size: 30,
+              child: ClipRRect( // To ensure image respects border radius
+                borderRadius: BorderRadius.circular(8.5), // Slightly less than container to show border
+                child: Image.asset(
+                  assetPath,
+                  fit: BoxFit.contain, // Or BoxFit.cover depending on emblem design
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback in case image asset is missing
+                    return const Icon(Icons.shield_outlined, color: Colors.white, size: 30);
+                  },
+                ),
               ),
             ),
           ),
@@ -18369,7 +18477,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
           SizedBox(
             width: 70,
             child: Text(
-              achievement.name,
+              name,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -18858,17 +18966,18 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
-import 'dart:io'; // NEW: For File type
+import 'dart:io'; 
 
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/profile_setup_cubit.dart';
 import '../../../../home_page.dart'; 
 import '../../../profile/presentation/cubit/user_profile_cubit.dart' as global_user_profile_cubit;
-import '../../../../core/services/image_picker_service.dart'; // NEW: Import image picker service
+import '../../../../core/services/image_picker_service.dart'; 
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 class ProfileSetupScreen extends StatefulWidget {
-  final UserProfile? userProfileToEdit; // Новий параметр для редагування
+  final UserProfile? userProfileToEdit; 
 
   const ProfileSetupScreen({super.key, this.userProfileToEdit});
 
@@ -18890,9 +18999,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String? _selectedActivityLevel;
 
   late ProfileSetupCubit _profileSetupCubit;
-  bool _isEditingMode = false; // Прапорець для режиму редагування
-  File? _selectedAvatarImage; // NEW: For storing selected image file
-  String? _currentAvatarUrl; // NEW: For displaying current avatar
+  bool _isEditingMode = false; 
+  File? _selectedAvatarImage; 
+  String? _currentAvatarUrl; 
 
   @override
   void initState() {
@@ -18916,7 +19025,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _selectedDateOfBirth = profile.dateOfBirth?.toDate();
       _selectedFitnessGoal = profile.fitnessGoal;
       _selectedActivityLevel = profile.activityLevel;
-      _currentAvatarUrl = profile.profilePictureUrl; // NEW
+      _currentAvatarUrl = profile.profilePictureUrl; 
     } else {
       final currentUser = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser;
       if (currentUser?.displayName != null && currentUser!.displayName!.isNotEmpty) {
@@ -18924,7 +19033,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       } else if (currentUser?.email != null && currentUser!.email!.contains('@')) {
          _displayNameController.text = currentUser.email!.split('@').first;
       }
-       _currentAvatarUrl = currentUser?.photoURL; // NEW: For new users from FirebaseAuth
+       _currentAvatarUrl = currentUser?.photoURL; 
     }
 
     _usernameController.addListener(() {
@@ -18953,12 +19062,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDateOfBirth ?? DateTime.now().subtract(const Duration(days: 365 * 18)),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      helpText: 'Select your date of birth',
+      helpText: loc.profileSetupDobDatePickerHelpText,
       builder: (context, child) { 
         return Theme(
           data: Theme.of(context).copyWith(
@@ -18985,7 +19095,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     }
   }
 
-  // NEW: Method to handle avatar image picking
   Future<void> _pickAvatarImage() async {
     final ImagePickerService imagePickerService = ImagePickerService();
     final File? image = await imagePickerService.pickImageFromGallery();
@@ -18997,6 +19106,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   void _handleSaveProfile() {
+    final loc = AppLocalizations.of(context)!;
     developer.log("Save Profile button pressed. IsEditing: $_isEditingMode", name: "ProfileSetupScreen");
     if (_formKey.currentState?.validate() ?? false) {
       developer.log("Form is valid, calling cubit.saveProfile()", name: "ProfileSetupScreen");
@@ -19010,12 +19120,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         fitnessGoal: _selectedFitnessGoal,
         activityLevel: _selectedActivityLevel,
       );
-      // NEW: Pass selected image file to the cubit for upload
       _profileSetupCubit.saveProfile(avatarImageFile: _selectedAvatarImage);
     } else {
       developer.log("Form is NOT valid", name: "ProfileSetupScreen");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please correct the errors in the form.'), backgroundColor: Colors.orangeAccent),
+        SnackBar(content: Text(loc.profileSetupCorrectFormErrorsSnackbar), backgroundColor: Colors.orangeAccent),
       );
     }
   }
@@ -19027,10 +19136,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     TextInputType? keyboardType,
     bool isOptional = false,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: isOptional ? '$label (Optional)' : '$label*',
+        labelText: isOptional ? '$label ${loc.profileSetupOptionalFieldSuffix}' : '$label*',
       ),
       keyboardType: keyboardType,
       validator: validator,
@@ -19046,10 +19156,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     String? Function(T?)? validator,
     bool isOptional = false,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return DropdownButtonFormField<T>(
       value: value,
       decoration: InputDecoration(
-        labelText: isOptional ? '$label (Optional)' : '$label*',
+        labelText: isOptional ? '$label ${loc.profileSetupOptionalFieldSuffix}' : '$label*',
       ),
       items: items,
       onChanged: (newValue) {
@@ -19068,11 +19179,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return BlocProvider.value(
       value: _profileSetupCubit,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEditingMode ? 'Edit Profile' : 'Complete Your Profile'),
+          title: Text(_isEditingMode ? loc.profileSetupAppBarTitleEdit : loc.profileSetupAppBarTitleCreate),
           centerTitle: true,
         ),
         body: BlocConsumer<ProfileSetupCubit, ProfileSetupState>(
@@ -19081,7 +19193,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             if (state is ProfileSetupSuccess) {
               developer.log("ProfileSetupSuccess: Navigating...", name: "ProfileSetupScreen.Listener");
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Profile ${_isEditingMode ? "updated" : "saved"} successfully!'), backgroundColor: Colors.green),
+                SnackBar(content: Text(loc.profileSetupSuccessMessage(_isEditingMode ? loc.profileSetupStatusUpdated : loc.profileSetupStatusSaved)), backgroundColor: Colors.green),
               );
               
               try {
@@ -19101,8 +19213,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               }
             } else if (state is ProfileSetupFailure) {
               developer.log("ProfileSetupFailure: ${state.error}", name: "ProfileSetupScreen.Listener");
+               String errorMessage = state.error;
+                // Try to translate known error keys if they match
+                if (state.error == "User not logged in.") errorMessage = loc.profileSetupErrorUserNotLoggedIn;
+                else if (state.error == "Username cannot be empty.") errorMessage = loc.profileSetupErrorUsernameEmpty;
+                else if (state.error == "Profile to edit not found. Please try again.") errorMessage = loc.profileSetupErrorProfileNotFoundEdit;
+                else if (state.error.startsWith("Failed to load profile data: ")) errorMessage = loc.profileSetupErrorFailedToLoad(state.error.replaceFirst("Failed to load profile data: ", ""));
+                else if (state.error == "Failed to upload avatar image. Profile not saved.") errorMessage = loc.profileSetupErrorFailedAvatarUpload;
+                else if (state.error.startsWith("Failed to save profile data: ")) errorMessage = loc.profileSetupErrorFailedToSave(state.error.replaceFirst("Failed to save profile data: ", ""));
+
+
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+                SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
               );
             }
           },
@@ -19116,10 +19238,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               _displayNameController.text = profileFromCubit.displayName ?? _displayNameController.text;
               _heightController.text = profileFromCubit.heightCm?.toStringAsFixed(0) ?? _heightController.text;
               _weightController.text = profileFromCubit.weightKg?.toStringAsFixed(1) ?? _weightController.text;
-              // NEW: Update current avatar URL from cubit state as well
               _currentAvatarUrl = profileFromCubit.profilePictureUrl ?? _currentAvatarUrl;
             } else if (state is ProfileSetupDataLoaded && _isEditingMode) {
-              // For editing mode, ensure currentAvatarUrl is also updated if it changes via cubit
               _currentAvatarUrl = state.userProfile.profilePictureUrl ?? _currentAvatarUrl;
             }
 
@@ -19135,7 +19255,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    // NEW: Avatar Picker
                     Center(
                       child: Stack(
                         children: [
@@ -19154,7 +19273,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           Positioned(
                             bottom: 0,
                             right: 0,
-                            child: Material( // For InkWell ripple effect
+                            child: Material( 
                               color: Theme.of(context).colorScheme.secondary,
                               shape: const CircleBorder(),
                               child: InkWell(
@@ -19173,21 +19292,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     const SizedBox(height: 24),
                     _buildTextField(
                       controller: _usernameController,
-                      label: 'Username',
-                      validator: (value) => (value == null || value.trim().isEmpty) ? 'Username is required' : null,
+                      label: loc.profileSetupUsernameLabel,
+                      validator: (value) => (value == null || value.trim().isEmpty) ? loc.profileSetupUsernameErrorRequired : null,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _displayNameController,
-                      label: 'Display Name',
+                      label: loc.profileSetupDisplayNameLabel,
                       isOptional: true,
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField<String>(
                       value: _selectedGender,
-                      label: 'Gender',
+                      label: loc.profileSetupGenderLabel,
                       isOptional: true,
-                      items: ['Male', 'Female', 'Other', 'Prefer not to say']
+                      items: [
+                        loc.profileSetupGenderMale, 
+                        loc.profileSetupGenderFemale, 
+                        loc.profileSetupGenderOther, 
+                        loc.profileSetupGenderPreferNotToSay
+                      ]
                           .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
                           .toList(),
                       onChangedCallback: (value) => _profileSetupCubit.updateField(gender: value),
@@ -19202,7 +19326,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       tileColor: Theme.of(context).inputDecorationTheme.fillColor,
                       title: Text(
                         _selectedDateOfBirth == null
-                            ? 'Date of Birth (Optional)'
+                            ? '${loc.profileSetupDobLabel} ${loc.profileSetupOptionalFieldSuffix}'
                             : DateFormat('dd MMMM yyyy').format(_selectedDateOfBirth!),
                         style: _selectedDateOfBirth == null
                             ? Theme.of(context).inputDecorationTheme.hintStyle
@@ -19214,35 +19338,41 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     const SizedBox(height: 16),
                      _buildTextField(
                       controller: _heightController,
-                      label: 'Height (cm)',
+                      label: loc.profileSetupHeightLabel,
                       isOptional: true,
                       keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
                       validator: (value) {
                         if (value == null || value.isEmpty) return null;
                         final n = int.tryParse(value);
-                        if (n == null || n <= 0 || n > 300) return 'Invalid height (1-300 cm)';
+                        if (n == null || n <= 0 || n > 300) return loc.profileSetupHeightErrorInvalid;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _weightController,
-                      label: 'Weight (kg)',
+                      label: loc.profileSetupWeightLabel,
                       isOptional: true,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
                        validator: (value) {
                         if (value == null || value.isEmpty) return null;
                         final n = double.tryParse(value);
-                        if (n == null || n <= 0 || n > 500) return 'Invalid weight (1-500 kg)';
+                        if (n == null || n <= 0 || n > 500) return loc.profileSetupWeightErrorInvalid;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField<String>(
                       value: _selectedFitnessGoal,
-                      label: 'Primary Fitness Goal',
+                      label: loc.profileSetupFitnessGoalLabel,
                       isOptional: true,
-                      items: ['Lose Weight', 'Gain Muscle', 'Improve Stamina', 'General Fitness', 'Improve Strength']
+                      items: [
+                        loc.profileSetupFitnessGoalLoseWeight, 
+                        loc.profileSetupFitnessGoalGainMuscle, 
+                        loc.profileSetupFitnessGoalImproveStamina, 
+                        loc.profileSetupFitnessGoalGeneralFitness, 
+                        loc.profileSetupFitnessGoalImproveStrength
+                      ]
                           .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
                           .toList(),
                       onChangedCallback: (value) => _profileSetupCubit.updateField(fitnessGoal: value),
@@ -19250,10 +19380,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     const SizedBox(height: 16),
                      _buildDropdownField<String>(
                       value: _selectedActivityLevel,
-                      label: 'Activity Level',
+                      label: loc.profileSetupActivityLevelLabel,
                       isOptional: true,
-                      items: ['Sedentary (little or no exercise)', 'Light (exercise 1-3 days/week)', 'Moderate (exercise 3-5 days/week)', 'Active (exercise 6-7 days/week)', 'Very Active (hard exercise or physical job)']
+                      items: [
+                        loc.profileSetupActivityLevelSedentary, 
+                        loc.profileSetupActivityLevelLight, 
+                        loc.profileSetupActivityLevelModerate, 
+                        loc.profileSetupActivityLevelActive, 
+                        loc.profileSetupActivityLevelVeryActive
+                      ]
                           .map((label) {
+                            // Use first word as key (or define explicit keys in ARB if needed)
                             final value = label.split(' ').first.toLowerCase();
                             return DropdownMenuItem(value: value, child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1,));
                           })
@@ -19265,7 +19402,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       onPressed: (state is ProfileSetupLoading) ? null : _handleSaveProfile,
                       child: (state is ProfileSetupLoading)
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3,))
-                          : Text(_isEditingMode ? 'Save Changes' : 'Complete Profile'),
+                          : Text(_isEditingMode ? loc.profileSetupButtonSaveChanges : loc.profileSetupButtonCompleteProfile),
                     ),
                      const SizedBox(height: 20),
                   ],
@@ -27610,6 +27747,1500 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
 }
 --------------------------------------------------
 === END OF FILE: lib/features/workout_tracking/presentation/widgets/current_set_display.dart ===
+
+
+=== FILE: lib/l10n/app_en.arb ===
+--------------------------------------------------
+{
+  "@@locale": "en",
+  "appTitle": "Muscle UP!",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "loginPageSignInButton": "Sign In",
+  "@loginPageSignInButton": {
+    "description": "Label for the sign in button on the login page"
+  },
+  "loginPageTitleSignIn": "Sign In",
+  "@loginPageTitleSignIn": {
+    "description": "Title text on the login page when in sign-in mode"
+  },
+  "loginPageTitleSignUp": "Sign Up",
+  "@loginPageTitleSignUp": {
+    "description": "Title text on the login page when in sign-up mode"
+  },
+  "loginPageEmailHint": "Email",
+  "@loginPageEmailHint": {
+    "description": "Hint text for the email input field"
+  },
+  "loginPagePasswordHint": "Password",
+  "@loginPagePasswordHint": {
+    "description": "Hint text for the password input field"
+  },
+  "loginPageErrorEnterEmail": "Please enter your email",
+  "@loginPageErrorEnterEmail": {
+    "description": "Validation error if email is empty"
+  },
+  "loginPageErrorValidEmail": "Please enter a valid email",
+  "@loginPageErrorValidEmail": {
+    "description": "Validation error if email format is incorrect"
+  },
+  "loginPageErrorEnterPassword": "Please enter your password",
+  "@loginPageErrorEnterPassword": {
+    "description": "Validation error if password is empty"
+  },
+  "loginPageErrorPasswordLength": "Password must be at least 6 characters",
+  "@loginPageErrorPasswordLength": {
+    "description": "Validation error if password is too short during sign up"
+  },
+  "loginPageButtonCreateAccount": "Create Account",
+  "@loginPageButtonCreateAccount": {
+    "description": "Label for the create account button"
+  },
+  "loginPageButtonSignInWithGoogle": "Sign in with Google",
+  "@loginPageButtonSignInWithGoogle": {
+    "description": "Label for the Google sign-in button"
+  },
+  "loginPageToggleSignUp": "Don't have an account? Sign Up",
+  "@loginPageToggleSignUp": {
+    "description": "Text to toggle to the sign-up form"
+  },
+  "loginPageToggleSignIn": "Already have an account? Sign In",
+  "@loginPageToggleSignIn": {
+    "description": "Text to toggle to the sign-in form"
+  },
+  "loginPageErrorAuthDefault": "Authentication error occurred.",
+  "@loginPageErrorAuthDefault": {
+    "description": "Default authentication error message"
+  },
+  "loginPageErrorUnknownDefault": "An unknown error occurred: {errorDetails}",
+  "@loginPageErrorUnknownDefault": {
+    "description": "Default unknown error message",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Connection failed"
+      }
+    }
+  },
+  "loginPageErrorGoogleSignInDefault": "Google Sign-In error.",
+  "@loginPageErrorGoogleSignInDefault": {
+    "description": "Default Google Sign-In error message"
+  },
+  "loginPageErrorUnknownGoogleDefault": "Unknown Google Sign-In error: {errorDetails}",
+  "@loginPageErrorUnknownGoogleDefault": {
+    "description": "Default unknown Google Sign-In error message",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Network request failed"
+      }
+    }
+  },
+  "loginPageErrorInternalForm": "Internal form error. Please try again.",
+  "@loginPageErrorInternalForm": {
+    "description": "Snackbar message for internal form error"
+  },
+  "profileSetupAppBarTitleEdit": "Edit Profile",
+  "@profileSetupAppBarTitleEdit": {
+    "description": "App bar title when editing profile"
+  },
+  "profileSetupAppBarTitleCreate": "Complete Your Profile",
+  "@profileSetupAppBarTitleCreate": {
+    "description": "App bar title when creating a new profile"
+  },
+  "profileSetupUsernameLabel": "Username",
+  "@profileSetupUsernameLabel": {
+    "description": "Label for username input field"
+  },
+  "profileSetupUsernameErrorRequired": "Username is required",
+  "@profileSetupUsernameErrorRequired": {
+    "description": "Validation error if username is empty"
+  },
+  "profileSetupDisplayNameLabel": "Display Name",
+  "@profileSetupDisplayNameLabel": {
+    "description": "Label for display name input field"
+  },
+  "profileSetupGenderLabel": "Gender",
+  "@profileSetupGenderLabel": {
+    "description": "Label for gender selection"
+  },
+  "profileSetupGenderMale": "Male",
+  "@profileSetupGenderMale": {
+    "description": "Gender option: Male"
+  },
+  "profileSetupGenderFemale": "Female",
+  "@profileSetupGenderFemale": {
+    "description": "Gender option: Female"
+  },
+  "profileSetupGenderOther": "Other",
+  "@profileSetupGenderOther": {
+    "description": "Gender option: Other"
+  },
+  "profileSetupGenderPreferNotToSay": "Prefer not to say",
+  "@profileSetupGenderPreferNotToSay": {
+    "description": "Gender option: Prefer not to say"
+  },
+  "profileSetupDobLabel": "Date of Birth",
+  "@profileSetupDobLabel": {
+    "description": "Label for date of birth selection"
+  },
+  "profileSetupDobDatePickerHelpText": "Select your date of birth",
+  "@profileSetupDobDatePickerHelpText": {
+    "description": "Help text for date of birth picker"
+  },
+  "profileSetupHeightLabel": "Height (cm)",
+  "@profileSetupHeightLabel": {
+    "description": "Label for height input field"
+  },
+  "profileSetupHeightErrorInvalid": "Invalid height (1-300 cm)",
+  "@profileSetupHeightErrorInvalid": {
+    "description": "Validation error for height input"
+  },
+  "profileSetupWeightLabel": "Weight (kg)",
+  "@profileSetupWeightLabel": {
+    "description": "Label for weight input field"
+  },
+  "profileSetupWeightErrorInvalid": "Invalid weight (1-500 kg)",
+  "@profileSetupWeightErrorInvalid": {
+    "description": "Validation error for weight input"
+  },
+  "profileSetupFitnessGoalLabel": "Primary Fitness Goal",
+  "@profileSetupFitnessGoalLabel": {
+    "description": "Label for fitness goal selection"
+  },
+  "profileSetupFitnessGoalLoseWeight": "Lose Weight",
+  "@profileSetupFitnessGoalLoseWeight": {
+    "description": "Fitness goal option: Lose Weight"
+  },
+  "profileSetupFitnessGoalGainMuscle": "Gain Muscle",
+  "@profileSetupFitnessGoalGainMuscle": {
+    "description": "Fitness goal option: Gain Muscle"
+  },
+  "profileSetupFitnessGoalImproveStamina": "Improve Stamina",
+  "@profileSetupFitnessGoalImproveStamina": {
+    "description": "Fitness goal option: Improve Stamina"
+  },
+  "profileSetupFitnessGoalGeneralFitness": "General Fitness",
+  "@profileSetupFitnessGoalGeneralFitness": {
+    "description": "Fitness goal option: General Fitness"
+  },
+  "profileSetupFitnessGoalImproveStrength": "Improve Strength",
+  "@profileSetupFitnessGoalImproveStrength": {
+    "description": "Fitness goal option: Improve Strength"
+  },
+  "profileSetupActivityLevelLabel": "Activity Level",
+  "@profileSetupActivityLevelLabel": {
+    "description": "Label for activity level selection"
+  },
+  "profileSetupActivityLevelSedentary": "Sedentary (little or no exercise)",
+  "@profileSetupActivityLevelSedentary": {
+    "description": "Activity level option: Sedentary"
+  },
+  "profileSetupActivityLevelLight": "Light (exercise 1-3 days/week)",
+  "@profileSetupActivityLevelLight": {
+    "description": "Activity level option: Light"
+  },
+  "profileSetupActivityLevelModerate": "Moderate (exercise 3-5 days/week)",
+  "@profileSetupActivityLevelModerate": {
+    "description": "Activity level option: Moderate"
+  },
+  "profileSetupActivityLevelActive": "Active (exercise 6-7 days/week)",
+  "@profileSetupActivityLevelActive": {
+    "description": "Activity level option: Active"
+  },
+  "profileSetupActivityLevelVeryActive": "Very Active (hard exercise or physical job)",
+  "@profileSetupActivityLevelVeryActive": {
+    "description": "Activity level option: Very Active"
+  },
+  "profileSetupButtonSaveChanges": "Save Changes",
+  "@profileSetupButtonSaveChanges": {
+    "description": "Button text to save changes when editing profile"
+  },
+  "profileSetupButtonCompleteProfile": "Complete Profile",
+  "@profileSetupButtonCompleteProfile": {
+    "description": "Button text to complete profile when creating new"
+  },
+  "profileSetupErrorUserNotLoggedIn": "User not logged in.",
+  "@profileSetupErrorUserNotLoggedIn": {
+    "description": "Error message if user is not logged in"
+  },
+  "profileSetupErrorUsernameEmpty": "Username cannot be empty.",
+  "@profileSetupErrorUsernameEmpty": {
+    "description": "Error message if username is empty on save attempt"
+  },
+  "profileSetupErrorProfileNotFoundEdit": "Profile to edit not found. Please try again.",
+  "@profileSetupErrorProfileNotFoundEdit": {
+    "description": "Error message if profile to edit is not found"
+  },
+  "profileSetupErrorFailedToLoad": "Failed to load profile data: {errorDetails}",
+  "@profileSetupErrorFailedToLoad": {
+    "description": "Error message when failing to load profile data",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupErrorFailedAvatarUpload": "Failed to upload avatar image. Profile not saved.",
+  "@profileSetupErrorFailedAvatarUpload": {
+    "description": "Error message when avatar upload fails"
+  },
+  "profileSetupErrorFailedToSave": "Error: {errorDetails}",
+  "@profileSetupErrorFailedToSave": {
+    "description": "Generic error message on save failure",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupSuccessMessage": "Profile {status} successfully!",
+  "@profileSetupSuccessMessage": {
+    "description": "Success message after saving/updating profile",
+    "placeholders": {
+      "status": {
+        "type": "String",
+        "example": "saved"
+      }
+    }
+  },
+  "profileSetupStatusSaved": "saved",
+  "@profileSetupStatusSaved": {
+    "description": "Status part of success message: saved"
+  },
+  "profileSetupStatusUpdated": "updated",
+  "@profileSetupStatusUpdated": {
+    "description": "Status part of success message: updated"
+  },
+  "profileSetupCorrectFormErrorsSnackbar": "Please correct the errors in the form.",
+  "@profileSetupCorrectFormErrorsSnackbar": {
+    "description": "Snackbar message when form validation fails"
+  },
+  "profileSetupOptionalFieldSuffix": "(Optional)",
+  "@profileSetupOptionalFieldSuffix": {
+    "description": "Suffix for optional field labels"
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/l10n/app_en.arb ===
+
+
+=== FILE: lib/l10n/app_localizations.dart ===
+--------------------------------------------------
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_uk.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('uk'),
+  ];
+
+  /// The title of the application
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle UP!'**
+  String get appTitle;
+
+  /// Label for the sign in button on the login page
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get loginPageSignInButton;
+
+  /// Title text on the login page when in sign-in mode
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get loginPageTitleSignIn;
+
+  /// Title text on the login page when in sign-up mode
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get loginPageTitleSignUp;
+
+  /// Hint text for the email input field
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get loginPageEmailHint;
+
+  /// Hint text for the password input field
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get loginPagePasswordHint;
+
+  /// Validation error if email is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get loginPageErrorEnterEmail;
+
+  /// Validation error if email format is incorrect
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get loginPageErrorValidEmail;
+
+  /// Validation error if password is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get loginPageErrorEnterPassword;
+
+  /// Validation error if password is too short during sign up
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get loginPageErrorPasswordLength;
+
+  /// Label for the create account button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get loginPageButtonCreateAccount;
+
+  /// Label for the Google sign-in button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get loginPageButtonSignInWithGoogle;
+
+  /// Text to toggle to the sign-up form
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Sign Up'**
+  String get loginPageToggleSignUp;
+
+  /// Text to toggle to the sign-in form
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign In'**
+  String get loginPageToggleSignIn;
+
+  /// Default authentication error message
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication error occurred.'**
+  String get loginPageErrorAuthDefault;
+
+  /// Default unknown error message
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred: {errorDetails}'**
+  String loginPageErrorUnknownDefault(String errorDetails);
+
+  /// Default Google Sign-In error message
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In error.'**
+  String get loginPageErrorGoogleSignInDefault;
+
+  /// Default unknown Google Sign-In error message
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Google Sign-In error: {errorDetails}'**
+  String loginPageErrorUnknownGoogleDefault(String errorDetails);
+
+  /// Snackbar message for internal form error
+  ///
+  /// In en, this message translates to:
+  /// **'Internal form error. Please try again.'**
+  String get loginPageErrorInternalForm;
+
+  /// App bar title when editing profile
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get profileSetupAppBarTitleEdit;
+
+  /// App bar title when creating a new profile
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Your Profile'**
+  String get profileSetupAppBarTitleCreate;
+
+  /// Label for username input field
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get profileSetupUsernameLabel;
+
+  /// Validation error if username is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Username is required'**
+  String get profileSetupUsernameErrorRequired;
+
+  /// Label for display name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get profileSetupDisplayNameLabel;
+
+  /// Label for gender selection
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get profileSetupGenderLabel;
+
+  /// Gender option: Male
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get profileSetupGenderMale;
+
+  /// Gender option: Female
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get profileSetupGenderFemale;
+
+  /// Gender option: Other
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get profileSetupGenderOther;
+
+  /// Gender option: Prefer not to say
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer not to say'**
+  String get profileSetupGenderPreferNotToSay;
+
+  /// Label for date of birth selection
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get profileSetupDobLabel;
+
+  /// Help text for date of birth picker
+  ///
+  /// In en, this message translates to:
+  /// **'Select your date of birth'**
+  String get profileSetupDobDatePickerHelpText;
+
+  /// Label for height input field
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get profileSetupHeightLabel;
+
+  /// Validation error for height input
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid height (1-300 cm)'**
+  String get profileSetupHeightErrorInvalid;
+
+  /// Label for weight input field
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get profileSetupWeightLabel;
+
+  /// Validation error for weight input
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid weight (1-500 kg)'**
+  String get profileSetupWeightErrorInvalid;
+
+  /// Label for fitness goal selection
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Fitness Goal'**
+  String get profileSetupFitnessGoalLabel;
+
+  /// Fitness goal option: Lose Weight
+  ///
+  /// In en, this message translates to:
+  /// **'Lose Weight'**
+  String get profileSetupFitnessGoalLoseWeight;
+
+  /// Fitness goal option: Gain Muscle
+  ///
+  /// In en, this message translates to:
+  /// **'Gain Muscle'**
+  String get profileSetupFitnessGoalGainMuscle;
+
+  /// Fitness goal option: Improve Stamina
+  ///
+  /// In en, this message translates to:
+  /// **'Improve Stamina'**
+  String get profileSetupFitnessGoalImproveStamina;
+
+  /// Fitness goal option: General Fitness
+  ///
+  /// In en, this message translates to:
+  /// **'General Fitness'**
+  String get profileSetupFitnessGoalGeneralFitness;
+
+  /// Fitness goal option: Improve Strength
+  ///
+  /// In en, this message translates to:
+  /// **'Improve Strength'**
+  String get profileSetupFitnessGoalImproveStrength;
+
+  /// Label for activity level selection
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get profileSetupActivityLevelLabel;
+
+  /// Activity level option: Sedentary
+  ///
+  /// In en, this message translates to:
+  /// **'Sedentary (little or no exercise)'**
+  String get profileSetupActivityLevelSedentary;
+
+  /// Activity level option: Light
+  ///
+  /// In en, this message translates to:
+  /// **'Light (exercise 1-3 days/week)'**
+  String get profileSetupActivityLevelLight;
+
+  /// Activity level option: Moderate
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate (exercise 3-5 days/week)'**
+  String get profileSetupActivityLevelModerate;
+
+  /// Activity level option: Active
+  ///
+  /// In en, this message translates to:
+  /// **'Active (exercise 6-7 days/week)'**
+  String get profileSetupActivityLevelActive;
+
+  /// Activity level option: Very Active
+  ///
+  /// In en, this message translates to:
+  /// **'Very Active (hard exercise or physical job)'**
+  String get profileSetupActivityLevelVeryActive;
+
+  /// Button text to save changes when editing profile
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get profileSetupButtonSaveChanges;
+
+  /// Button text to complete profile when creating new
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Profile'**
+  String get profileSetupButtonCompleteProfile;
+
+  /// Error message if user is not logged in
+  ///
+  /// In en, this message translates to:
+  /// **'User not logged in.'**
+  String get profileSetupErrorUserNotLoggedIn;
+
+  /// Error message if username is empty on save attempt
+  ///
+  /// In en, this message translates to:
+  /// **'Username cannot be empty.'**
+  String get profileSetupErrorUsernameEmpty;
+
+  /// Error message if profile to edit is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Profile to edit not found. Please try again.'**
+  String get profileSetupErrorProfileNotFoundEdit;
+
+  /// Error message when failing to load profile data
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load profile data: {errorDetails}'**
+  String profileSetupErrorFailedToLoad(String errorDetails);
+
+  /// Error message when avatar upload fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload avatar image. Profile not saved.'**
+  String get profileSetupErrorFailedAvatarUpload;
+
+  /// Generic error message on save failure
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {errorDetails}'**
+  String profileSetupErrorFailedToSave(String errorDetails);
+
+  /// Success message after saving/updating profile
+  ///
+  /// In en, this message translates to:
+  /// **'Profile {status} successfully!'**
+  String profileSetupSuccessMessage(String status);
+
+  /// Status part of success message: saved
+  ///
+  /// In en, this message translates to:
+  /// **'saved'**
+  String get profileSetupStatusSaved;
+
+  /// Status part of success message: updated
+  ///
+  /// In en, this message translates to:
+  /// **'updated'**
+  String get profileSetupStatusUpdated;
+
+  /// Snackbar message when form validation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Please correct the errors in the form.'**
+  String get profileSetupCorrectFormErrorsSnackbar;
+
+  /// Suffix for optional field labels
+  ///
+  /// In en, this message translates to:
+  /// **'(Optional)'**
+  String get profileSetupOptionalFieldSuffix;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'uk'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'uk':
+      return AppLocalizationsUk();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}
+
+--------------------------------------------------
+=== END OF FILE: lib/l10n/app_localizations.dart ===
+
+
+=== FILE: lib/l10n/app_localizations_en.dart ===
+--------------------------------------------------
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'Muscle UP!';
+
+  @override
+  String get loginPageSignInButton => 'Sign In';
+
+  @override
+  String get loginPageTitleSignIn => 'Sign In';
+
+  @override
+  String get loginPageTitleSignUp => 'Sign Up';
+
+  @override
+  String get loginPageEmailHint => 'Email';
+
+  @override
+  String get loginPagePasswordHint => 'Password';
+
+  @override
+  String get loginPageErrorEnterEmail => 'Please enter your email';
+
+  @override
+  String get loginPageErrorValidEmail => 'Please enter a valid email';
+
+  @override
+  String get loginPageErrorEnterPassword => 'Please enter your password';
+
+  @override
+  String get loginPageErrorPasswordLength =>
+      'Password must be at least 6 characters';
+
+  @override
+  String get loginPageButtonCreateAccount => 'Create Account';
+
+  @override
+  String get loginPageButtonSignInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get loginPageToggleSignUp => 'Don\'t have an account? Sign Up';
+
+  @override
+  String get loginPageToggleSignIn => 'Already have an account? Sign In';
+
+  @override
+  String get loginPageErrorAuthDefault => 'Authentication error occurred.';
+
+  @override
+  String loginPageErrorUnknownDefault(String errorDetails) {
+    return 'An unknown error occurred: $errorDetails';
+  }
+
+  @override
+  String get loginPageErrorGoogleSignInDefault => 'Google Sign-In error.';
+
+  @override
+  String loginPageErrorUnknownGoogleDefault(String errorDetails) {
+    return 'Unknown Google Sign-In error: $errorDetails';
+  }
+
+  @override
+  String get loginPageErrorInternalForm =>
+      'Internal form error. Please try again.';
+
+  @override
+  String get profileSetupAppBarTitleEdit => 'Edit Profile';
+
+  @override
+  String get profileSetupAppBarTitleCreate => 'Complete Your Profile';
+
+  @override
+  String get profileSetupUsernameLabel => 'Username';
+
+  @override
+  String get profileSetupUsernameErrorRequired => 'Username is required';
+
+  @override
+  String get profileSetupDisplayNameLabel => 'Display Name';
+
+  @override
+  String get profileSetupGenderLabel => 'Gender';
+
+  @override
+  String get profileSetupGenderMale => 'Male';
+
+  @override
+  String get profileSetupGenderFemale => 'Female';
+
+  @override
+  String get profileSetupGenderOther => 'Other';
+
+  @override
+  String get profileSetupGenderPreferNotToSay => 'Prefer not to say';
+
+  @override
+  String get profileSetupDobLabel => 'Date of Birth';
+
+  @override
+  String get profileSetupDobDatePickerHelpText => 'Select your date of birth';
+
+  @override
+  String get profileSetupHeightLabel => 'Height (cm)';
+
+  @override
+  String get profileSetupHeightErrorInvalid => 'Invalid height (1-300 cm)';
+
+  @override
+  String get profileSetupWeightLabel => 'Weight (kg)';
+
+  @override
+  String get profileSetupWeightErrorInvalid => 'Invalid weight (1-500 kg)';
+
+  @override
+  String get profileSetupFitnessGoalLabel => 'Primary Fitness Goal';
+
+  @override
+  String get profileSetupFitnessGoalLoseWeight => 'Lose Weight';
+
+  @override
+  String get profileSetupFitnessGoalGainMuscle => 'Gain Muscle';
+
+  @override
+  String get profileSetupFitnessGoalImproveStamina => 'Improve Stamina';
+
+  @override
+  String get profileSetupFitnessGoalGeneralFitness => 'General Fitness';
+
+  @override
+  String get profileSetupFitnessGoalImproveStrength => 'Improve Strength';
+
+  @override
+  String get profileSetupActivityLevelLabel => 'Activity Level';
+
+  @override
+  String get profileSetupActivityLevelSedentary =>
+      'Sedentary (little or no exercise)';
+
+  @override
+  String get profileSetupActivityLevelLight => 'Light (exercise 1-3 days/week)';
+
+  @override
+  String get profileSetupActivityLevelModerate =>
+      'Moderate (exercise 3-5 days/week)';
+
+  @override
+  String get profileSetupActivityLevelActive =>
+      'Active (exercise 6-7 days/week)';
+
+  @override
+  String get profileSetupActivityLevelVeryActive =>
+      'Very Active (hard exercise or physical job)';
+
+  @override
+  String get profileSetupButtonSaveChanges => 'Save Changes';
+
+  @override
+  String get profileSetupButtonCompleteProfile => 'Complete Profile';
+
+  @override
+  String get profileSetupErrorUserNotLoggedIn => 'User not logged in.';
+
+  @override
+  String get profileSetupErrorUsernameEmpty => 'Username cannot be empty.';
+
+  @override
+  String get profileSetupErrorProfileNotFoundEdit =>
+      'Profile to edit not found. Please try again.';
+
+  @override
+  String profileSetupErrorFailedToLoad(String errorDetails) {
+    return 'Failed to load profile data: $errorDetails';
+  }
+
+  @override
+  String get profileSetupErrorFailedAvatarUpload =>
+      'Failed to upload avatar image. Profile not saved.';
+
+  @override
+  String profileSetupErrorFailedToSave(String errorDetails) {
+    return 'Error: $errorDetails';
+  }
+
+  @override
+  String profileSetupSuccessMessage(String status) {
+    return 'Profile $status successfully!';
+  }
+
+  @override
+  String get profileSetupStatusSaved => 'saved';
+
+  @override
+  String get profileSetupStatusUpdated => 'updated';
+
+  @override
+  String get profileSetupCorrectFormErrorsSnackbar =>
+      'Please correct the errors in the form.';
+
+  @override
+  String get profileSetupOptionalFieldSuffix => '(Optional)';
+}
+
+--------------------------------------------------
+=== END OF FILE: lib/l10n/app_localizations_en.dart ===
+
+
+=== FILE: lib/l10n/app_localizations_uk.dart ===
+--------------------------------------------------
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Ukrainian (`uk`).
+class AppLocalizationsUk extends AppLocalizations {
+  AppLocalizationsUk([String locale = 'uk']) : super(locale);
+
+  @override
+  String get appTitle => 'Muscle UP!';
+
+  @override
+  String get loginPageSignInButton => 'Увійти';
+
+  @override
+  String get loginPageTitleSignIn => 'Вхід';
+
+  @override
+  String get loginPageTitleSignUp => 'Реєстрація';
+
+  @override
+  String get loginPageEmailHint => 'Електронна пошта';
+
+  @override
+  String get loginPagePasswordHint => 'Пароль';
+
+  @override
+  String get loginPageErrorEnterEmail =>
+      'Будь ласка, введіть вашу електронну пошту';
+
+  @override
+  String get loginPageErrorValidEmail =>
+      'Будь ласка, введіть дійсну електронну пошту';
+
+  @override
+  String get loginPageErrorEnterPassword => 'Будь ласка, введіть ваш пароль';
+
+  @override
+  String get loginPageErrorPasswordLength =>
+      'Пароль має містити щонайменше 6 символів';
+
+  @override
+  String get loginPageButtonCreateAccount => 'Створити Обліковий Запис';
+
+  @override
+  String get loginPageButtonSignInWithGoogle => 'Увійти через Google';
+
+  @override
+  String get loginPageToggleSignUp =>
+      'Немає облікового запису? Зареєструватися';
+
+  @override
+  String get loginPageToggleSignIn => 'Вже є обліковий запис? Увійти';
+
+  @override
+  String get loginPageErrorAuthDefault => 'Сталася помилка автентифікації.';
+
+  @override
+  String loginPageErrorUnknownDefault(String errorDetails) {
+    return 'Сталася невідома помилка: $errorDetails';
+  }
+
+  @override
+  String get loginPageErrorGoogleSignInDefault => 'Помилка входу через Google.';
+
+  @override
+  String loginPageErrorUnknownGoogleDefault(String errorDetails) {
+    return 'Невідома помилка під час входу через Google: $errorDetails';
+  }
+
+  @override
+  String get loginPageErrorInternalForm =>
+      'Внутрішня помилка форми. Будь ласка, спробуйте ще раз.';
+
+  @override
+  String get profileSetupAppBarTitleEdit => 'Редагувати Профіль';
+
+  @override
+  String get profileSetupAppBarTitleCreate => 'Завершіть Ваш Профіль';
+
+  @override
+  String get profileSetupUsernameLabel => 'Ім\'я користувача';
+
+  @override
+  String get profileSetupUsernameErrorRequired =>
+      'Ім\'я користувача обов\'язкове';
+
+  @override
+  String get profileSetupDisplayNameLabel => 'Відображуване ім\'я';
+
+  @override
+  String get profileSetupGenderLabel => 'Стать';
+
+  @override
+  String get profileSetupGenderMale => 'Чоловіча';
+
+  @override
+  String get profileSetupGenderFemale => 'Жіноча';
+
+  @override
+  String get profileSetupGenderOther => 'Інша';
+
+  @override
+  String get profileSetupGenderPreferNotToSay => 'Не вказувати';
+
+  @override
+  String get profileSetupDobLabel => 'Дата народження';
+
+  @override
+  String get profileSetupDobDatePickerHelpText =>
+      'Оберіть вашу дату народження';
+
+  @override
+  String get profileSetupHeightLabel => 'Зріст (см)';
+
+  @override
+  String get profileSetupHeightErrorInvalid => 'Некоректний зріст (1-300 см)';
+
+  @override
+  String get profileSetupWeightLabel => 'Вага (кг)';
+
+  @override
+  String get profileSetupWeightErrorInvalid => 'Некоректна вага (1-500 кг)';
+
+  @override
+  String get profileSetupFitnessGoalLabel => 'Основна фітнес-ціль';
+
+  @override
+  String get profileSetupFitnessGoalLoseWeight => 'Схуднути';
+
+  @override
+  String get profileSetupFitnessGoalGainMuscle => 'Набрати м\'язи';
+
+  @override
+  String get profileSetupFitnessGoalImproveStamina => 'Покращити витривалість';
+
+  @override
+  String get profileSetupFitnessGoalGeneralFitness => 'Загальна фізична форма';
+
+  @override
+  String get profileSetupFitnessGoalImproveStrength => 'Покращити силу';
+
+  @override
+  String get profileSetupActivityLevelLabel => 'Рівень активності';
+
+  @override
+  String get profileSetupActivityLevelSedentary =>
+      'Сидячий (мало або без вправ)';
+
+  @override
+  String get profileSetupActivityLevelLight =>
+      'Легкий (вправи 1-3 дні/тиждень)';
+
+  @override
+  String get profileSetupActivityLevelModerate =>
+      'Помірний (вправи 3-5 днів/тиждень)';
+
+  @override
+  String get profileSetupActivityLevelActive =>
+      'Активний (вправи 6-7 днів/тиждень)';
+
+  @override
+  String get profileSetupActivityLevelVeryActive =>
+      'Дуже активний (важкі вправи або фізична робота)';
+
+  @override
+  String get profileSetupButtonSaveChanges => 'Зберегти Зміни';
+
+  @override
+  String get profileSetupButtonCompleteProfile => 'Завершити Профіль';
+
+  @override
+  String get profileSetupErrorUserNotLoggedIn => 'Користувач не увійшов.';
+
+  @override
+  String get profileSetupErrorUsernameEmpty =>
+      'Ім\'я користувача не може бути порожнім.';
+
+  @override
+  String get profileSetupErrorProfileNotFoundEdit =>
+      'Профіль для редагування не знайдено. Будь ласка, спробуйте ще раз.';
+
+  @override
+  String profileSetupErrorFailedToLoad(String errorDetails) {
+    return 'Не вдалося завантажити дані профілю: $errorDetails';
+  }
+
+  @override
+  String get profileSetupErrorFailedAvatarUpload =>
+      'Не вдалося завантажити аватар. Профіль не збережено.';
+
+  @override
+  String profileSetupErrorFailedToSave(String errorDetails) {
+    return 'Помилка: $errorDetails';
+  }
+
+  @override
+  String profileSetupSuccessMessage(String status) {
+    return 'Профіль успішно $status!';
+  }
+
+  @override
+  String get profileSetupStatusSaved => 'збережено';
+
+  @override
+  String get profileSetupStatusUpdated => 'оновлено';
+
+  @override
+  String get profileSetupCorrectFormErrorsSnackbar =>
+      'Будь ласка, виправте помилки у формі.';
+
+  @override
+  String get profileSetupOptionalFieldSuffix => '(необов\'язково)';
+}
+
+--------------------------------------------------
+=== END OF FILE: lib/l10n/app_localizations_uk.dart ===
+
+
+=== FILE: lib/l10n/app_uk.arb ===
+--------------------------------------------------
+{
+  "@@locale": "uk",
+  "appTitle": "Muscle UP!",
+  "@appTitle": {
+    "description": "Назва додатку"
+  },
+  "loginPageSignInButton": "Увійти",
+  "@loginPageSignInButton": {
+    "description": "Напис для кнопки входу на сторінці логіну"
+  },
+  "loginPageTitleSignIn": "Вхід",
+  "@loginPageTitleSignIn": {
+    "description": "Заголовок на сторінці входу в режимі входу"
+  },
+  "loginPageTitleSignUp": "Реєстрація",
+  "@loginPageTitleSignUp": {
+    "description": "Заголовок на сторінці входу в режимі реєстрації"
+  },
+  "loginPageEmailHint": "Електронна пошта",
+  "@loginPageEmailHint": {
+    "description": "Підказка для поля вводу електронної пошти"
+  },
+  "loginPagePasswordHint": "Пароль",
+  "@loginPagePasswordHint": {
+    "description": "Підказка для поля вводу пароля"
+  },
+  "loginPageErrorEnterEmail": "Будь ласка, введіть вашу електронну пошту",
+  "@loginPageErrorEnterEmail": {
+    "description": "Помилка валідації, якщо пошта порожня"
+  },
+  "loginPageErrorValidEmail": "Будь ласка, введіть дійсну електронну пошту",
+  "@loginPageErrorValidEmail": {
+    "description": "Помилка валідації, якщо формат пошти неправильний"
+  },
+  "loginPageErrorEnterPassword": "Будь ласка, введіть ваш пароль",
+  "@loginPageErrorEnterPassword": {
+    "description": "Помилка валідації, якщо пароль порожній"
+  },
+  "loginPageErrorPasswordLength": "Пароль має містити щонайменше 6 символів",
+  "@loginPageErrorPasswordLength": {
+    "description": "Помилка валідації, якщо пароль занадто короткий при реєстрації"
+  },
+  "loginPageButtonCreateAccount": "Створити Обліковий Запис",
+  "@loginPageButtonCreateAccount": {
+    "description": "Напис для кнопки створення облікового запису"
+  },
+  "loginPageButtonSignInWithGoogle": "Увійти через Google",
+  "@loginPageButtonSignInWithGoogle": {
+    "description": "Напис для кнопки входу через Google"
+  },
+  "loginPageToggleSignUp": "Немає облікового запису? Зареєструватися",
+  "@loginPageToggleSignUp": {
+    "description": "Текст для переключення на форму реєстрації"
+  },
+  "loginPageToggleSignIn": "Вже є обліковий запис? Увійти",
+  "@loginPageToggleSignIn": {
+    "description": "Текст для переключення на форму входу"
+  },
+  "loginPageErrorAuthDefault": "Сталася помилка автентифікації.",
+  "@loginPageErrorAuthDefault": {
+    "description": "Стандартне повідомлення про помилку автентифікації"
+  },
+  "loginPageErrorUnknownDefault": "Сталася невідома помилка: {errorDetails}",
+  "@loginPageErrorUnknownDefault": {
+    "description": "Стандартне повідомлення про невідому помилку",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Помилка з'єднання"
+      }
+    }
+  },
+  "loginPageErrorGoogleSignInDefault": "Помилка входу через Google.",
+  "@loginPageErrorGoogleSignInDefault": {
+    "description": "Стандартне повідомлення про помилку входу через Google"
+  },
+  "loginPageErrorUnknownGoogleDefault": "Невідома помилка під час входу через Google: {errorDetails}",
+  "@loginPageErrorUnknownGoogleDefault": {
+    "description": "Стандартне повідомлення про невідому помилку входу через Google",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String",
+        "example": "Помилка мережевого запиту"
+      }
+    }
+  },
+  "loginPageErrorInternalForm": "Внутрішня помилка форми. Будь ласка, спробуйте ще раз.",
+  "@loginPageErrorInternalForm": {
+    "description": "Повідомлення для снекбару про внутрішню помилку форми"
+  },
+  "profileSetupAppBarTitleEdit": "Редагувати Профіль",
+  "@profileSetupAppBarTitleEdit": {
+    "description": "Заголовок AppBar при редагуванні профілю"
+  },
+  "profileSetupAppBarTitleCreate": "Завершіть Ваш Профіль",
+  "@profileSetupAppBarTitleCreate": {
+    "description": "Заголовок AppBar при створенні нового профілю"
+  },
+  "profileSetupUsernameLabel": "Ім'я користувача",
+  "@profileSetupUsernameLabel": {
+    "description": "Мітка для поля вводу імені користувача"
+  },
+  "profileSetupUsernameErrorRequired": "Ім'я користувача обов'язкове",
+  "@profileSetupUsernameErrorRequired": {
+    "description": "Помилка валідації, якщо ім'я користувача порожнє"
+  },
+  "profileSetupDisplayNameLabel": "Відображуване ім'я",
+  "@profileSetupDisplayNameLabel": {
+    "description": "Мітка для поля вводу відображуваного імені"
+  },
+  "profileSetupGenderLabel": "Стать",
+  "@profileSetupGenderLabel": {
+    "description": "Мітка для вибору статі"
+  },
+  "profileSetupGenderMale": "Чоловіча",
+  "@profileSetupGenderMale": {
+    "description": "Опція статі: Чоловіча"
+  },
+  "profileSetupGenderFemale": "Жіноча",
+  "@profileSetupGenderFemale": {
+    "description": "Опція статі: Жіноча"
+  },
+  "profileSetupGenderOther": "Інша",
+  "@profileSetupGenderOther": {
+    "description": "Опція статі: Інша"
+  },
+  "profileSetupGenderPreferNotToSay": "Не вказувати",
+  "@profileSetupGenderPreferNotToSay": {
+    "description": "Опція статі: Не вказувати"
+  },
+  "profileSetupDobLabel": "Дата народження",
+  "@profileSetupDobLabel": {
+    "description": "Мітка для вибору дати народження"
+  },
+  "profileSetupDobDatePickerHelpText": "Оберіть вашу дату народження",
+  "@profileSetupDobDatePickerHelpText": {
+    "description": "Допоміжний текст для вибору дати народження"
+  },
+  "profileSetupHeightLabel": "Зріст (см)",
+  "@profileSetupHeightLabel": {
+    "description": "Мітка для поля вводу зросту"
+  },
+  "profileSetupHeightErrorInvalid": "Некоректний зріст (1-300 см)",
+  "@profileSetupHeightErrorInvalid": {
+    "description": "Помилка валідації для поля зросту"
+  },
+  "profileSetupWeightLabel": "Вага (кг)",
+  "@profileSetupWeightLabel": {
+    "description": "Мітка для поля вводу ваги"
+  },
+  "profileSetupWeightErrorInvalid": "Некоректна вага (1-500 кг)",
+  "@profileSetupWeightErrorInvalid": {
+    "description": "Помилка валідації для поля ваги"
+  },
+  "profileSetupFitnessGoalLabel": "Основна фітнес-ціль",
+  "@profileSetupFitnessGoalLabel": {
+    "description": "Мітка для вибору фітнес-цілі"
+  },
+  "profileSetupFitnessGoalLoseWeight": "Схуднути",
+  "@profileSetupFitnessGoalLoseWeight": {
+    "description": "Опція фітнес-цілі: Схуднути"
+  },
+  "profileSetupFitnessGoalGainMuscle": "Набрати м'язи",
+  "@profileSetupFitnessGoalGainMuscle": {
+    "description": "Опція фітнес-цілі: Набрати м'язи"
+  },
+  "profileSetupFitnessGoalImproveStamina": "Покращити витривалість",
+  "@profileSetupFitnessGoalImproveStamina": {
+    "description": "Опція фітнес-цілі: Покращити витривалість"
+  },
+  "profileSetupFitnessGoalGeneralFitness": "Загальна фізична форма",
+  "@profileSetupFitnessGoalGeneralFitness": {
+    "description": "Опція фітнес-цілі: Загальна фізична форма"
+  },
+  "profileSetupFitnessGoalImproveStrength": "Покращити силу",
+  "@profileSetupFitnessGoalImproveStrength": {
+    "description": "Опція фітнес-цілі: Покращити силу"
+  },
+  "profileSetupActivityLevelLabel": "Рівень активності",
+  "@profileSetupActivityLevelLabel": {
+    "description": "Мітка для вибору рівня активності"
+  },
+  "profileSetupActivityLevelSedentary": "Сидячий (мало або без вправ)",
+  "@profileSetupActivityLevelSedentary": {
+    "description": "Опція рівня активності: Сидячий"
+  },
+  "profileSetupActivityLevelLight": "Легкий (вправи 1-3 дні/тиждень)",
+  "@profileSetupActivityLevelLight": {
+    "description": "Опція рівня активності: Легкий"
+  },
+  "profileSetupActivityLevelModerate": "Помірний (вправи 3-5 днів/тиждень)",
+  "@profileSetupActivityLevelModerate": {
+    "description": "Опція рівня активності: Помірний"
+  },
+  "profileSetupActivityLevelActive": "Активний (вправи 6-7 днів/тиждень)",
+  "@profileSetupActivityLevelActive": {
+    "description": "Опція рівня активності: Активний"
+  },
+  "profileSetupActivityLevelVeryActive": "Дуже активний (важкі вправи або фізична робота)",
+  "@profileSetupActivityLevelVeryActive": {
+    "description": "Опція рівня активності: Дуже активний"
+  },
+  "profileSetupButtonSaveChanges": "Зберегти Зміни",
+  "@profileSetupButtonSaveChanges": {
+    "description": "Текст кнопки для збереження змін при редагуванні профілю"
+  },
+  "profileSetupButtonCompleteProfile": "Завершити Профіль",
+  "@profileSetupButtonCompleteProfile": {
+    "description": "Текст кнопки для завершення профілю при створенні нового"
+  },
+  "profileSetupErrorUserNotLoggedIn": "Користувач не увійшов.",
+  "@profileSetupErrorUserNotLoggedIn": {
+    "description": "Повідомлення про помилку, якщо користувач не увійшов"
+  },
+  "profileSetupErrorUsernameEmpty": "Ім'я користувача не може бути порожнім.",
+  "@profileSetupErrorUsernameEmpty": {
+    "description": "Повідомлення про помилку, якщо ім'я користувача порожнє при спробі збереження"
+  },
+  "profileSetupErrorProfileNotFoundEdit": "Профіль для редагування не знайдено. Будь ласка, спробуйте ще раз.",
+  "@profileSetupErrorProfileNotFoundEdit": {
+    "description": "Повідомлення про помилку, якщо профіль для редагування не знайдено"
+  },
+  "profileSetupErrorFailedToLoad": "Не вдалося завантажити дані профілю: {errorDetails}",
+  "@profileSetupErrorFailedToLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні даних профілю",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupErrorFailedAvatarUpload": "Не вдалося завантажити аватар. Профіль не збережено.",
+  "@profileSetupErrorFailedAvatarUpload": {
+    "description": "Повідомлення про помилку при невдалому завантаженні аватара"
+  },
+  "profileSetupErrorFailedToSave": "Помилка: {errorDetails}",
+  "@profileSetupErrorFailedToSave": {
+    "description": "Загальне повідомлення про помилку при збереженні",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSetupSuccessMessage": "Профіль успішно {status}!",
+  "@profileSetupSuccessMessage": {
+    "description": "Повідомлення про успіх після збереження/оновлення профілю",
+    "placeholders": {
+      "status": {
+        "type": "String",
+        "example": "збережено"
+      }
+    }
+  },
+  "profileSetupStatusSaved": "збережено",
+  "@profileSetupStatusSaved": {
+    "description": "Частина повідомлення про успіх: збережено"
+  },
+  "profileSetupStatusUpdated": "оновлено",
+  "@profileSetupStatusUpdated": {
+    "description": "Частина повідомлення про успіх: оновлено"
+  },
+  "profileSetupCorrectFormErrorsSnackbar": "Будь ласка, виправте помилки у формі.",
+  "@profileSetupCorrectFormErrorsSnackbar": {
+    "description": "Повідомлення для снекбару при помилках валідації форми"
+  },
+  "profileSetupOptionalFieldSuffix": "(необов'язково)",
+  "@profileSetupOptionalFieldSuffix": {
+    "description": "Суфікс для міток необов'язкових полів"
+  }
+}
+--------------------------------------------------
+=== END OF FILE: lib/l10n/app_uk.arb ===
 
 
 === FILE: lib/utils/duration_formatter.dart ===

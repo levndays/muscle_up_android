@@ -5,17 +5,18 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
-import 'dart:io'; // NEW: For File type
+import 'dart:io'; 
 
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/profile_setup_cubit.dart';
 import '../../../../home_page.dart'; 
 import '../../../profile/presentation/cubit/user_profile_cubit.dart' as global_user_profile_cubit;
-import '../../../../core/services/image_picker_service.dart'; // NEW: Import image picker service
+import '../../../../core/services/image_picker_service.dart'; 
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 class ProfileSetupScreen extends StatefulWidget {
-  final UserProfile? userProfileToEdit; // Новий параметр для редагування
+  final UserProfile? userProfileToEdit; 
 
   const ProfileSetupScreen({super.key, this.userProfileToEdit});
 
@@ -37,9 +38,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String? _selectedActivityLevel;
 
   late ProfileSetupCubit _profileSetupCubit;
-  bool _isEditingMode = false; // Прапорець для режиму редагування
-  File? _selectedAvatarImage; // NEW: For storing selected image file
-  String? _currentAvatarUrl; // NEW: For displaying current avatar
+  bool _isEditingMode = false; 
+  File? _selectedAvatarImage; 
+  String? _currentAvatarUrl; 
 
   @override
   void initState() {
@@ -63,7 +64,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _selectedDateOfBirth = profile.dateOfBirth?.toDate();
       _selectedFitnessGoal = profile.fitnessGoal;
       _selectedActivityLevel = profile.activityLevel;
-      _currentAvatarUrl = profile.profilePictureUrl; // NEW
+      _currentAvatarUrl = profile.profilePictureUrl; 
     } else {
       final currentUser = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser;
       if (currentUser?.displayName != null && currentUser!.displayName!.isNotEmpty) {
@@ -71,7 +72,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       } else if (currentUser?.email != null && currentUser!.email!.contains('@')) {
          _displayNameController.text = currentUser.email!.split('@').first;
       }
-       _currentAvatarUrl = currentUser?.photoURL; // NEW: For new users from FirebaseAuth
+       _currentAvatarUrl = currentUser?.photoURL; 
     }
 
     _usernameController.addListener(() {
@@ -100,12 +101,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDateOfBirth ?? DateTime.now().subtract(const Duration(days: 365 * 18)),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      helpText: 'Select your date of birth',
+      helpText: loc.profileSetupDobDatePickerHelpText,
       builder: (context, child) { 
         return Theme(
           data: Theme.of(context).copyWith(
@@ -132,7 +134,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     }
   }
 
-  // NEW: Method to handle avatar image picking
   Future<void> _pickAvatarImage() async {
     final ImagePickerService imagePickerService = ImagePickerService();
     final File? image = await imagePickerService.pickImageFromGallery();
@@ -144,6 +145,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   void _handleSaveProfile() {
+    final loc = AppLocalizations.of(context)!;
     developer.log("Save Profile button pressed. IsEditing: $_isEditingMode", name: "ProfileSetupScreen");
     if (_formKey.currentState?.validate() ?? false) {
       developer.log("Form is valid, calling cubit.saveProfile()", name: "ProfileSetupScreen");
@@ -157,12 +159,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         fitnessGoal: _selectedFitnessGoal,
         activityLevel: _selectedActivityLevel,
       );
-      // NEW: Pass selected image file to the cubit for upload
       _profileSetupCubit.saveProfile(avatarImageFile: _selectedAvatarImage);
     } else {
       developer.log("Form is NOT valid", name: "ProfileSetupScreen");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please correct the errors in the form.'), backgroundColor: Colors.orangeAccent),
+        SnackBar(content: Text(loc.profileSetupCorrectFormErrorsSnackbar), backgroundColor: Colors.orangeAccent),
       );
     }
   }
@@ -174,10 +175,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     TextInputType? keyboardType,
     bool isOptional = false,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: isOptional ? '$label (Optional)' : '$label*',
+        labelText: isOptional ? '$label ${loc.profileSetupOptionalFieldSuffix}' : '$label*',
       ),
       keyboardType: keyboardType,
       validator: validator,
@@ -193,10 +195,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     String? Function(T?)? validator,
     bool isOptional = false,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return DropdownButtonFormField<T>(
       value: value,
       decoration: InputDecoration(
-        labelText: isOptional ? '$label (Optional)' : '$label*',
+        labelText: isOptional ? '$label ${loc.profileSetupOptionalFieldSuffix}' : '$label*',
       ),
       items: items,
       onChanged: (newValue) {
@@ -215,11 +218,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return BlocProvider.value(
       value: _profileSetupCubit,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEditingMode ? 'Edit Profile' : 'Complete Your Profile'),
+          title: Text(_isEditingMode ? loc.profileSetupAppBarTitleEdit : loc.profileSetupAppBarTitleCreate),
           centerTitle: true,
         ),
         body: BlocConsumer<ProfileSetupCubit, ProfileSetupState>(
@@ -228,7 +232,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             if (state is ProfileSetupSuccess) {
               developer.log("ProfileSetupSuccess: Navigating...", name: "ProfileSetupScreen.Listener");
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Profile ${_isEditingMode ? "updated" : "saved"} successfully!'), backgroundColor: Colors.green),
+                SnackBar(content: Text(loc.profileSetupSuccessMessage(_isEditingMode ? loc.profileSetupStatusUpdated : loc.profileSetupStatusSaved)), backgroundColor: Colors.green),
               );
               
               try {
@@ -248,8 +252,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               }
             } else if (state is ProfileSetupFailure) {
               developer.log("ProfileSetupFailure: ${state.error}", name: "ProfileSetupScreen.Listener");
+               String errorMessage = state.error;
+                // Try to translate known error keys if they match
+                if (state.error == "User not logged in.") errorMessage = loc.profileSetupErrorUserNotLoggedIn;
+                else if (state.error == "Username cannot be empty.") errorMessage = loc.profileSetupErrorUsernameEmpty;
+                else if (state.error == "Profile to edit not found. Please try again.") errorMessage = loc.profileSetupErrorProfileNotFoundEdit;
+                else if (state.error.startsWith("Failed to load profile data: ")) errorMessage = loc.profileSetupErrorFailedToLoad(state.error.replaceFirst("Failed to load profile data: ", ""));
+                else if (state.error == "Failed to upload avatar image. Profile not saved.") errorMessage = loc.profileSetupErrorFailedAvatarUpload;
+                else if (state.error.startsWith("Failed to save profile data: ")) errorMessage = loc.profileSetupErrorFailedToSave(state.error.replaceFirst("Failed to save profile data: ", ""));
+
+
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+                SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
               );
             }
           },
@@ -263,10 +277,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               _displayNameController.text = profileFromCubit.displayName ?? _displayNameController.text;
               _heightController.text = profileFromCubit.heightCm?.toStringAsFixed(0) ?? _heightController.text;
               _weightController.text = profileFromCubit.weightKg?.toStringAsFixed(1) ?? _weightController.text;
-              // NEW: Update current avatar URL from cubit state as well
               _currentAvatarUrl = profileFromCubit.profilePictureUrl ?? _currentAvatarUrl;
             } else if (state is ProfileSetupDataLoaded && _isEditingMode) {
-              // For editing mode, ensure currentAvatarUrl is also updated if it changes via cubit
               _currentAvatarUrl = state.userProfile.profilePictureUrl ?? _currentAvatarUrl;
             }
 
@@ -282,7 +294,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    // NEW: Avatar Picker
                     Center(
                       child: Stack(
                         children: [
@@ -301,7 +312,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           Positioned(
                             bottom: 0,
                             right: 0,
-                            child: Material( // For InkWell ripple effect
+                            child: Material( 
                               color: Theme.of(context).colorScheme.secondary,
                               shape: const CircleBorder(),
                               child: InkWell(
@@ -320,21 +331,26 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     const SizedBox(height: 24),
                     _buildTextField(
                       controller: _usernameController,
-                      label: 'Username',
-                      validator: (value) => (value == null || value.trim().isEmpty) ? 'Username is required' : null,
+                      label: loc.profileSetupUsernameLabel,
+                      validator: (value) => (value == null || value.trim().isEmpty) ? loc.profileSetupUsernameErrorRequired : null,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _displayNameController,
-                      label: 'Display Name',
+                      label: loc.profileSetupDisplayNameLabel,
                       isOptional: true,
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField<String>(
                       value: _selectedGender,
-                      label: 'Gender',
+                      label: loc.profileSetupGenderLabel,
                       isOptional: true,
-                      items: ['Male', 'Female', 'Other', 'Prefer not to say']
+                      items: [
+                        loc.profileSetupGenderMale, 
+                        loc.profileSetupGenderFemale, 
+                        loc.profileSetupGenderOther, 
+                        loc.profileSetupGenderPreferNotToSay
+                      ]
                           .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
                           .toList(),
                       onChangedCallback: (value) => _profileSetupCubit.updateField(gender: value),
@@ -349,7 +365,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       tileColor: Theme.of(context).inputDecorationTheme.fillColor,
                       title: Text(
                         _selectedDateOfBirth == null
-                            ? 'Date of Birth (Optional)'
+                            ? '${loc.profileSetupDobLabel} ${loc.profileSetupOptionalFieldSuffix}'
                             : DateFormat('dd MMMM yyyy').format(_selectedDateOfBirth!),
                         style: _selectedDateOfBirth == null
                             ? Theme.of(context).inputDecorationTheme.hintStyle
@@ -361,35 +377,41 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     const SizedBox(height: 16),
                      _buildTextField(
                       controller: _heightController,
-                      label: 'Height (cm)',
+                      label: loc.profileSetupHeightLabel,
                       isOptional: true,
                       keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
                       validator: (value) {
                         if (value == null || value.isEmpty) return null;
                         final n = int.tryParse(value);
-                        if (n == null || n <= 0 || n > 300) return 'Invalid height (1-300 cm)';
+                        if (n == null || n <= 0 || n > 300) return loc.profileSetupHeightErrorInvalid;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _weightController,
-                      label: 'Weight (kg)',
+                      label: loc.profileSetupWeightLabel,
                       isOptional: true,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
                        validator: (value) {
                         if (value == null || value.isEmpty) return null;
                         final n = double.tryParse(value);
-                        if (n == null || n <= 0 || n > 500) return 'Invalid weight (1-500 kg)';
+                        if (n == null || n <= 0 || n > 500) return loc.profileSetupWeightErrorInvalid;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField<String>(
                       value: _selectedFitnessGoal,
-                      label: 'Primary Fitness Goal',
+                      label: loc.profileSetupFitnessGoalLabel,
                       isOptional: true,
-                      items: ['Lose Weight', 'Gain Muscle', 'Improve Stamina', 'General Fitness', 'Improve Strength']
+                      items: [
+                        loc.profileSetupFitnessGoalLoseWeight, 
+                        loc.profileSetupFitnessGoalGainMuscle, 
+                        loc.profileSetupFitnessGoalImproveStamina, 
+                        loc.profileSetupFitnessGoalGeneralFitness, 
+                        loc.profileSetupFitnessGoalImproveStrength
+                      ]
                           .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
                           .toList(),
                       onChangedCallback: (value) => _profileSetupCubit.updateField(fitnessGoal: value),
@@ -397,10 +419,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     const SizedBox(height: 16),
                      _buildDropdownField<String>(
                       value: _selectedActivityLevel,
-                      label: 'Activity Level',
+                      label: loc.profileSetupActivityLevelLabel,
                       isOptional: true,
-                      items: ['Sedentary (little or no exercise)', 'Light (exercise 1-3 days/week)', 'Moderate (exercise 3-5 days/week)', 'Active (exercise 6-7 days/week)', 'Very Active (hard exercise or physical job)']
+                      items: [
+                        loc.profileSetupActivityLevelSedentary, 
+                        loc.profileSetupActivityLevelLight, 
+                        loc.profileSetupActivityLevelModerate, 
+                        loc.profileSetupActivityLevelActive, 
+                        loc.profileSetupActivityLevelVeryActive
+                      ]
                           .map((label) {
+                            // Use first word as key (or define explicit keys in ARB if needed)
                             final value = label.split(' ').first.toLowerCase();
                             return DropdownMenuItem(value: value, child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1,));
                           })
@@ -412,7 +441,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       onPressed: (state is ProfileSetupLoading) ? null : _handleSaveProfile,
                       child: (state is ProfileSetupLoading)
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3,))
-                          : Text(_isEditingMode ? 'Save Changes' : 'Complete Profile'),
+                          : Text(_isEditingMode ? loc.profileSetupButtonSaveChanges : loc.profileSetupButtonCompleteProfile),
                     ),
                      const SizedBox(height: 20),
                   ],
