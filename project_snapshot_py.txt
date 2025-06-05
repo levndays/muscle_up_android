@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up
-Snapshot created on: 2025-06-05T00:11:14.354086
+Snapshot created on: 2025-06-05T00:21:27.035803
 ================================================================================
 
 === FILE: .firebaserc ===
@@ -14766,6 +14766,9 @@ abstract class WorkoutLogRepository {
     int? limit,
   });
   Stream<WorkoutSession?> getActiveWorkoutSessionStream(String userId);
+
+  // NEW METHOD
+  Future<double?> getAverageWorkingWeightForExercise(String userId, String predefinedExerciseId, {int lookbackLimit = 10});
 }
 --------------------------------------------------
 === END OF FILE: lib/core/domain/repositories/workout_log_repository.dart ===
@@ -26043,6 +26046,7 @@ class VoteProgressBarWidget extends StatelessWidget {
 // lib/features/workout_tracking/data/repositories/workout_log_repository_impl.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer' as developer;
+import 'dart:math' as math;
 
 import '../../../../core/domain/entities/workout_session.dart';
 import '../../../../core/domain/repositories/workout_log_repository.dart';
@@ -26064,21 +26068,11 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
       final docRef = _userWorkoutLogsCollection(session.userId).doc();
       final sessionToSave = session.copyWith(
         id: docRef.id,
-        // Переконуємось, що startedAt встановлено, якщо не встановлено раніше,
-        // або використовуємо серверний час, якщо це перше збереження.
-        startedAt: session.startedAt, // Припускаємо, що startedAt встановлюється перед викликом
+        startedAt: session.startedAt, 
         status: WorkoutStatus.inProgress,
       );
       
       Map<String, dynamic> sessionData = sessionToSave.toMap();
-      // Якщо startedAt ще не є Firebase Timestamp, а локальний DateTime, то
-      // при першому збереженні може бути доцільно використовувати FieldValue.serverTimestamp()
-      // Але якщо ми створюємо об'єкт WorkoutSession з Timestamp.now() перед викликом, то все ОК.
-      // Для консистентності, можна додати перевірку та встановлення серверного часу:
-      // if (sessionData['startedAt'] == null ) { // Або якась інша умова
-      //   sessionData['startedAt'] = FieldValue.serverTimestamp();
-      // }
-
       await docRef.set(sessionData);
       developer.log('Workout session ${docRef.id} started.', name: 'WorkoutLogRepoImpl');
       return docRef.id;
@@ -26093,8 +26087,6 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
     developer.log('Updating workout session ${session.id} for user ${session.userId}', name: 'WorkoutLogRepoImpl');
     if (session.id.isEmpty) throw ArgumentError("Session ID cannot be empty for update.");
     try {
-      // `updatedAt` не є частиною моделі WorkoutSession, але може бути додано на рівні Firestore
-      // Тут ми просто оновлюємо дані сесії.
       await _userWorkoutLogsCollection(session.userId).doc(session.id).update(session.toMap());
       developer.log('Workout session ${session.id} updated.', name: 'WorkoutLogRepoImpl');
     } catch (e, s) {
@@ -26108,13 +26100,13 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
     developer.log('Completing workout session ${session.id} for user ${session.userId}', name: 'WorkoutLogRepoImpl');
     if (session.id.isEmpty) throw ArgumentError("Session ID cannot be empty for completion.");
     try {
-      final endedAt = session.endedAt ?? Timestamp.now(); // Якщо не встановлено, беремо поточний
+      final endedAt = session.endedAt ?? Timestamp.now(); 
       final duration = endedAt.seconds - session.startedAt.seconds;
       final totalVolume = session.calculateTotalVolume();
 
       final sessionToComplete = session.copyWith(
         endedAt: endedAt,
-        durationSeconds: duration,
+        durationSeconds: duration > 0 ? duration : 0,
         status: WorkoutStatus.completed,
         totalVolume: totalVolume,
       );
@@ -26133,7 +26125,7 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
     try {
       await _userWorkoutLogsCollection(userId).doc(sessionId).update({
         'status': WorkoutStatus.cancelled.name,
-        'endedAt': FieldValue.serverTimestamp(), // Позначаємо час скасування
+        'endedAt': FieldValue.serverTimestamp(),
       });
       developer.log('Workout session $sessionId cancelled.', name: 'WorkoutLogRepoImpl');
     } catch (e, s) {
@@ -26162,19 +26154,18 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
     String userId, {
     DateTime? startDate,
     DateTime? endDate,
-    int? limit = 20, // Default limit
+    int? limit = 20,
   }) async {
     developer.log('Fetching workout history for user $userId. Limit: $limit', name: 'WorkoutLogRepoImpl');
     try {
       Query<Map<String, dynamic>> query = _userWorkoutLogsCollection(userId)
-          .where('status', isEqualTo: WorkoutStatus.completed.name) // Тільки завершені
-          .orderBy('startedAt', descending: true); // Останні спочатку
+          .where('status', isEqualTo: WorkoutStatus.completed.name) 
+          .orderBy('startedAt', descending: true); 
 
       if (startDate != null) {
         query = query.where('startedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
       }
       if (endDate != null) {
-        // Для endDate, якщо ми хочемо включити весь день, треба брати кінець дня
         DateTime endOfDay = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
         query = query.where('startedAt', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay));
       }
@@ -26195,7 +26186,7 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
     developer.log('Subscribing to active workout session for user $userId', name: 'WorkoutLogRepoImpl');
     return _userWorkoutLogsCollection(userId)
         .where('status', isEqualTo: WorkoutStatus.inProgress.name)
-        .limit(1) // Має бути тільки одна активна сесія
+        .limit(1) 
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isNotEmpty) {
@@ -26206,10 +26197,64 @@ class WorkoutLogRepositoryImpl implements WorkoutLogRepository {
       return null;
     }).handleError((error, stackTrace) {
       developer.log('Error in active workout session stream for $userId: $error', error: error, stackTrace: stackTrace, name: 'WorkoutLogRepoImpl');
-      // Важливо обробити помилку, можна повернути null або передати помилку далі
-      // throw Exception('Active workout session stream error: ${error.toString()}');
-      return null; // Повертаємо null у випадку помилки, щоб UI міг це обробити
+      return null; 
     });
+  }
+
+  // NEW METHOD IMPLEMENTATION
+  @override
+  Future<double?> getAverageWorkingWeightForExercise(String userId, String predefinedExerciseId, {int lookbackLimit = 10}) async {
+    developer.log('Fetching average working weight for exercise $predefinedExerciseId, user $userId, limit $lookbackLimit sessions.', name: 'WorkoutLogRepoImpl');
+    if (userId.isEmpty || predefinedExerciseId.isEmpty) return null;
+
+    try {
+      // 1. Get the last 'lookbackLimit' completed workout sessions for the user.
+      final querySnapshot = await _userWorkoutLogsCollection(userId)
+          .where('status', isEqualTo: WorkoutStatus.completed.name)
+          .orderBy('startedAt', descending: true)
+          .limit(lookbackLimit)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        developer.log('No completed workout sessions found for user $userId to calculate average weight.', name: 'WorkoutLogRepoImpl');
+        return null;
+      }
+
+      List<double> allWeightsForExercise = [];
+
+      // 2. Iterate through these sessions and their exercises.
+      for (var sessionDoc in querySnapshot.docs) {
+        final session = WorkoutSession.fromFirestore(sessionDoc);
+        for (var loggedExercise in session.completedExercises) {
+          if (loggedExercise.predefinedExerciseId == predefinedExerciseId) {
+            for (var loggedSet in loggedExercise.completedSets) {
+              if (loggedSet.isCompleted && loggedSet.weightKg != null && loggedSet.weightKg! > 0 && loggedSet.reps != null && loggedSet.reps! > 0) {
+                allWeightsForExercise.add(loggedSet.weightKg!);
+              }
+            }
+          }
+        }
+      }
+
+      if (allWeightsForExercise.isEmpty) {
+        developer.log('No valid sets found for exercise $predefinedExerciseId in the last $lookbackLimit sessions for user $userId.', name: 'WorkoutLogRepoImpl');
+        return null;
+      }
+
+      // 3. Calculate the average weight.
+      final double sum = allWeightsForExercise.reduce((a, b) => a + b);
+      final double averageWeight = sum / allWeightsForExercise.length;
+      
+      // Round to nearest 0.5 or 1 (e.g., 22.5, 23.0)
+      final double roundedAverageWeight = (averageWeight * 2).round() / 2.0;
+
+      developer.log('Calculated average weight for exercise $predefinedExerciseId: $roundedAverageWeight (from ${allWeightsForExercise.length} sets)', name: 'WorkoutLogRepoImpl');
+      return roundedAverageWeight;
+
+    } catch (e, s) {
+      developer.log('Error fetching average working weight for exercise $predefinedExerciseId: $e', error: e, stackTrace: s, name: 'WorkoutLogRepoImpl');
+      return null; // Return null on error, Cubit can handle it
+    }
   }
 }
 --------------------------------------------------
@@ -26247,7 +26292,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     this._workoutLogRepository,
     this._userProfileRepository,
     this._firebaseAuth,
-  ) : super(ActiveWorkoutInitial()) { // Створюємо екземпляр стану
+  ) : super(ActiveWorkoutInitial()) { 
     _subscribeToActiveSession();
   }
 
@@ -26257,7 +26302,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final userId = _currentUserId;
     if (userId == null) {
       developer.log('ActiveWorkoutCubit: No user logged in, cannot subscribe.', name: 'ActiveWorkoutCubit');
-      emit(ActiveWorkoutNone()); // Створюємо екземпляр стану
+      emit(ActiveWorkoutNone()); 
       return;
     }
 
@@ -26273,7 +26318,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           developer.log('ActiveWorkoutCubit: No active session found via stream.', name: 'ActiveWorkoutCubit');
           _durationTimer?.cancel();
           if (state is! ActiveWorkoutLoading || (state as ActiveWorkoutLoading).message?.contains('Starting new') == false ) {
-             emit(ActiveWorkoutNone()); // Створюємо екземпляр стану
+             emit(ActiveWorkoutNone()); 
           }
         }
       },
@@ -26314,19 +26359,31 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     try {
       List<LoggedExercise> initialExercises = [];
       if (fromRoutine != null) {
-        initialExercises = fromRoutine.exercises.map((re) {
+        for (final routineExercise in fromRoutine.exercises) {
+          double? suggestedWeight;
+          try {
+            suggestedWeight = await _workoutLogRepository.getAverageWorkingWeightForExercise(userId, routineExercise.predefinedExerciseId);
+            developer.log("Suggested weight for ${routineExercise.exerciseNameSnapshot}: $suggestedWeight kg", name: "ActiveWorkoutCubit.StartWorkout");
+          } catch (e) {
+            developer.log("Error getting suggested weight for ${routineExercise.exerciseNameSnapshot}: $e", name: "ActiveWorkoutCubit.StartWorkout");
+          }
+
           List<LoggedSet> sets = List.generate(
-            re.numberOfSets > 0 ? re.numberOfSets : 1,
-            (index) => LoggedSet(setNumber: index + 1),
+            routineExercise.numberOfSets > 0 ? routineExercise.numberOfSets : 1,
+            (index) => LoggedSet(
+              setNumber: index + 1,
+              // Pre-fill weight only for the first set if a suggestion exists
+              weightKg: (index == 0 && suggestedWeight != null) ? suggestedWeight : null, 
+            ),
           );
-          return LoggedExercise(
-            predefinedExerciseId: re.predefinedExerciseId,
-            exerciseNameSnapshot: re.exerciseNameSnapshot,
-            targetSets: re.numberOfSets,
+          initialExercises.add(LoggedExercise(
+            predefinedExerciseId: routineExercise.predefinedExerciseId,
+            exerciseNameSnapshot: routineExercise.exerciseNameSnapshot,
+            targetSets: routineExercise.numberOfSets,
             completedSets: sets,
-            notes: re.notes,
-          );
-        }).toList();
+            notes: routineExercise.notes,
+          ));
+        }
       }
 
       final newSession = WorkoutSession(
@@ -26458,15 +26515,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         totalVolume: totalVolume,
       );
 
-      // Викликаємо оновлення сесії, що ініціює Cloud Function
       await _workoutLogRepository.completeWorkoutSession(sessionToComplete);
       developer.log('ActiveWorkoutCubit: Workout ${sessionToComplete.id} marked as completed. Waiting for Cloud Function to update profile.', name: 'ActiveWorkoutCubit');
       
       _durationTimer?.cancel();
 
-      // Після того, як Cloud Function оновила профіль, зчитуємо його знову для UI
-      // Цей запит може бути швидшим, ніж оновлення через загальний стрім,
-      // оскільки ми явно запитуємо документ.
       UserProfile? userProfile = await _userProfileRepository.getUserProfile(userId);
       
       if (userProfile == null) {
@@ -26474,9 +26527,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           return;
       }
 
-      // Для екрану завершення, нам все одно потрібно передати xpGained,
-      // оскільки Cloud Function не повертає його клієнту.
-      // XP GAINED ТУТ ЦЕ БУДЕ ОЦІНКА НА ОСНОВІ ТРИВАЛОСТІ/ОБ'ЄМУ, що збігається з функцією.
       int xpGainedEstimated = 50; 
       if (totalVolume > 0) xpGainedEstimated += (totalVolume / 100).round();
       if (duration > 0) xpGainedEstimated += (duration / (5 * 60)).round();
@@ -26485,8 +26535,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
       emit(ActiveWorkoutSuccessfullyCompleted(
           completedSession: sessionToComplete, 
-          xpGained: xpGainedEstimated, // Передаємо оцінене XP
-          updatedUserProfile: userProfile // Передаємо оновлений профіль
+          xpGained: xpGainedEstimated, 
+          updatedUserProfile: userProfile 
       ));
     } catch (e, s) {
       developer.log('ActiveWorkoutCubit: Error completing workout: $e', error:e, stackTrace:s, name: 'ActiveWorkoutCubit');
@@ -27189,7 +27239,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/domain/entities/logged_exercise.dart';
 import '../../../../core/domain/entities/logged_set.dart';
-import '../cubit/active_workout_cubit.dart'; // Для виклику методів
+import '../cubit/active_workout_cubit.dart'; 
 import 'dart:math' as math;
 
 // --- RpeSlider Widget ---
@@ -27339,18 +27389,28 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   }
 
   void _initializeSetData(LoggedSet set, LoggedExercise exercise, int currentSetIndex) {
-    double? initialWeight = set.weightKg;
+    double? weightForTextField;
 
-    if (currentSetIndex > 0 && exercise.completedSets.length > currentSetIndex - 1) {
-      final previousSet = exercise.completedSets[currentSetIndex - 1];
-      if (previousSet.isCompleted && previousSet.weightKg != null && previousSet.weightKg! > 0) {
-        initialWeight = previousSet.weightKg;
-      }
+    // 1. Якщо сет вже має вагу (попередньо заповнену кубітом або введену користувачем)
+    if (set.weightKg != null && set.weightKg! > 0) {
+        weightForTextField = set.weightKg;
+    } 
+    // 2. Якщо це НЕ перший сет І поточний сет порожній, копіюємо з попереднього
+    else if (currentSetIndex > 0) { 
+        if (exercise.completedSets.length > currentSetIndex - 1) {
+            final previousSet = exercise.completedSets[currentSetIndex - 1];
+            if (previousSet.isCompleted && previousSet.weightKg != null && previousSet.weightKg! > 0) {
+                weightForTextField = previousSet.weightKg; 
+            }
+        }
     }
-    
-    _weightController = TextEditingController(text: initialWeight?.toStringAsFixed(initialWeight % 1 == 0 ? 0 : 1) ?? '0');
+    // Якщо weightForTextField все ще null (наприклад, перший сет без попереднього заповнення,
+    // або попередній сет був порожній/не завершений),
+    // TextEditingController отримає '0'.
+
+    _weightController = TextEditingController(text: weightForTextField?.toStringAsFixed(weightForTextField != null && weightForTextField % 1 == 0 ? 0 : 1) ?? '0');
     _repsCount = set.reps ?? 8;
-    _rpePerRep = List.filled(20, 0); // Max 20 reps for RPE sliders
+    _rpePerRep = List.filled(20, 0); 
     final rpeData = _parseRpeNotes(set.notes);
     if (rpeData != null) {
       for (int i = 0; i < rpeData.length; i++) {
@@ -27358,7 +27418,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
       }
     } else {
       for (int i = 0; i < _repsCount; i++) {
-         if (i < _rpePerRep.length) _rpePerRep[i] = 5; // Default RPE 5 for new repetitions
+         if (i < _rpePerRep.length) _rpePerRep[i] = 5;
       }
     }
   }
@@ -27443,7 +27503,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
     bool isLastExercise = totalExercises > 0 && widget.exerciseIndex == totalExercises - 1;
     bool isLastSetOverall = isLastExercise && isLastSetOfCurrentExercise;
     
-    final double currentWeightValue = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
+    // final double currentWeightValue = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0; // This line is not used
 
     return SingleChildScrollView(
       child: Padding(
@@ -27461,7 +27521,6 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                   children: [
                     RichText(text: TextSpan(style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.w900), children: [ const TextSpan(text: 'SET ', style: TextStyle(color: textBlackColor)), TextSpan(text: '${widget.setIndex + 1}', style: const TextStyle(color: primaryOrange))])),
                     const Spacer(),
-                    // --- Вага та кнопки +/- ---
                     _buildWeightControlButton(Icons.remove, () {
                       double currentWeight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
                       currentWeight = (currentWeight - 1.0).clamp(0.0, 999.0);

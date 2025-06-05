@@ -377,7 +377,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                     )
                   else
                     SizedBox(
-                      height: 115,
+                      height: 115, // Adjusted height to accommodate text better
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -386,7 +386,19 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                           final achievementId = achievedRewardIdsEnum[index];
                           final achievement = allAchievements[achievementId];
                           if (achievement == null) return const SizedBox.shrink();
-                          return _buildRewardItem(context, achievement, true, null);
+                          
+                          String achievementName = achievement.name;
+                          String achievementDescription = achievement.description;
+
+                          if (achievement.isPersonalized) {
+                            // For now, we don't have the "detail" here on the profile screen.
+                            // We could fetch post details if necessary, or keep it generic.
+                            // Let's keep it generic for now or remove [Detail] part.
+                            achievementName = achievement.name.replaceAll('[Detail]', 'Record');
+                            achievementDescription = achievement.description.replaceAll('[Detail]', 'a record');
+                          }
+                          
+                          return _buildRewardItem(context, achievementName, achievementDescription, achievement.emblemAssetPath, true);
                         },
                       ),
                     ),
@@ -415,14 +427,12 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                             child: Text('You haven\'t made any posts yet.', style: TextStyle(color: Colors.grey.shade600)),
                           );
                         }
-                        // Using ListView.builder directly inside SingleChildScrollView is not recommended
-                        // without proper constraints or shrinkWrap + NeverScrollableScrollPhysics.
-                        return Column( // Wrap ListView.builder with Column to avoid infinite height
+                        return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: postState.posts.map((post) => PostListItem(post: post)).toList(),
                         );
                       }
-                      return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 40.0), child: Text('Loading posts...'))); // Default for UserPostsFeedInitial
+                      return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 40.0), child: Text('Loading posts...')));
                     },
                   ),
 
@@ -461,7 +471,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20), // For bottom padding inside SingleChildScrollView
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -497,14 +507,14 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
     );
   }
 
-  Widget _buildRewardItem(BuildContext context, Achievement achievement, bool isAchieved, String? conditionMessage) {
+  Widget _buildRewardItem(BuildContext context, String name, String description, String assetPath, bool isAchieved) {
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Tooltip(
-            message: achievement.description,
+            message: description,
             padding: const EdgeInsets.all(8),
             margin: const EdgeInsets.symmetric(horizontal: 20),
             textStyle: const TextStyle(color: Colors.white, fontSize: 12),
@@ -516,21 +526,28 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: profilePurple.withOpacity(0.95),
+                // Removed background color to let image show, or set a very transparent one
+                // color: profilePurple.withOpacity(0.95), 
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.amber.shade300, width: 1.5),
                  boxShadow: [
                   BoxShadow(
-                    color: profilePurple.withOpacity(0.4),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
+                    color: profilePurple.withOpacity(0.3), // Softer shadow
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
                   )
                 ],
               ),
-              child: Icon(
-                achievement.icon,
-                color: Colors.white,
-                size: 30,
+              child: ClipRRect( // To ensure image respects border radius
+                borderRadius: BorderRadius.circular(8.5), // Slightly less than container to show border
+                child: Image.asset(
+                  assetPath,
+                  fit: BoxFit.contain, // Or BoxFit.cover depending on emblem design
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback in case image asset is missing
+                    return const Icon(Icons.shield_outlined, color: Colors.white, size: 30);
+                  },
+                ),
               ),
             ),
           ),
@@ -538,7 +555,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
           SizedBox(
             width: 70,
             child: Text(
-              achievement.name,
+              name,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

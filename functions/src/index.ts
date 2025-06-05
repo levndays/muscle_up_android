@@ -12,8 +12,7 @@ import {
   QueryDocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import { DocumentSnapshot, Timestamp, FieldValue, FieldPath } from "firebase-admin/firestore"; // <--- ДОДАНО FieldPath
-// import * as path from "path"; // For Storage path parsing - знадобиться якщо будемо видаляти медіа по URL
+import { DocumentSnapshot, Timestamp, FieldValue, FieldPath } from "firebase-admin/firestore"; 
 
 try {
   admin.initializeApp();
@@ -25,7 +24,28 @@ enum AchievementId {
   EARLY_BIRD = "earlyBird",
   FIRST_WORKOUT = "firstWorkout",
   PERSONAL_RECORD_SET = "personalRecordSet",
+  // Add other achievement IDs here to match Dart enum
+  CONSISTENT_KING_10 = "consistentKing10",
+  CONSISTENT_KING_30 = "consistentKing30",
+  VOLUME_STARTER = "volumeStarter",
+  VOLUME_PRO = "volumePro",
+  LEVEL_5_REACHED = "level5Reached",
+  LEVEL_10_REACHED = "level10Reached",
 }
+
+// NEW: Map of achievement IDs to their emblem asset paths (must match Dart side)
+const achievementEmblems: Record<string, string> = {
+  [AchievementId.EARLY_BIRD]: "assets/images/achievements/early_bird.png",
+  [AchievementId.FIRST_WORKOUT]: "assets/images/achievements/first_workout.png",
+  [AchievementId.PERSONAL_RECORD_SET]: "assets/images/achievements/personal_record.png",
+  [AchievementId.CONSISTENT_KING_10]: "assets/images/achievements/streak_star_10.png",
+  [AchievementId.CONSISTENT_KING_30]: "assets/images/achievements/consistent_king_30.png",
+  [AchievementId.VOLUME_STARTER]: "assets/images/achievements/volume_starter.png",
+  [AchievementId.VOLUME_PRO]: "assets/images/achievements/volume_pro.png",
+  [AchievementId.LEVEL_5_REACHED]: "assets/images/achievements/level_5.png",
+  [AchievementId.LEVEL_10_REACHED]: "assets/images/achievements/level_10.png",
+};
+
 
 enum NotificationType { 
   ACHIEVEMENT_UNLOCKED = "achievementUnlocked",
@@ -194,9 +214,11 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
           achievedRewardIds.push(AchievementId.FIRST_WORKOUT);
           const notificationsRef = userProfileRef.collection("notifications");
           transaction.set(notificationsRef.doc(), {
-            type: "achievementUnlocked", title: "First Workout Completed!",
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(), 
+            title: "First Workout Completed!",
             message: "You've successfully completed your first workout. Great start!",
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "fitness_center",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, 
+            iconName: achievementEmblems[AchievementId.FIRST_WORKOUT] ?? "fitness_center", // CHANGED
             relatedEntityId: AchievementId.FIRST_WORKOUT, relatedEntityType: "achievement",
           });
         }
@@ -235,9 +257,11 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
           await userProfileRef.update({ achievedRewardIds, updatedAt: FieldValue.serverTimestamp() });
           const notificationsRef = userProfileRef.collection("notifications");
           await notificationsRef.add({
-            type: "achievementUnlocked", title: "Profile Setup Complete!",
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(), 
+            title: "Profile Setup Complete!",
             message: "You've successfully set up your profile. Welcome aboard!",
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "auto_awesome",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, 
+            iconName: achievementEmblems[AchievementId.EARLY_BIRD] ?? "auto_awesome", // CHANGED
             relatedEntityId: AchievementId.EARLY_BIRD, relatedEntityType: "achievement",
           });
         }
@@ -245,6 +269,8 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
     }
   }
 );
+
+// ... (onCommentCreated, onCommentDeleted, onPostDeleted, onRecordClaimPostCreated, onRecordClaimVoteCasted remain the same) ...
 
 export const onCommentCreated = onDocumentCreated(
   { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
@@ -379,9 +405,9 @@ export const onRecordClaimVoteCasted = onDocumentUpdated(
           batchHasWrites = true;
           const notificationRef = userProfileRef.collection("notifications").doc();
           batch.set(notificationRef, {
-            type: "systemMessage", title: "XP for Voting!",
+            type: NotificationType.SYSTEM_MESSAGE.toString(), title: "XP for Voting!",
             message: `You received ${XP_FOR_VOTING} XP for voting on a record claim.`,
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech", // Generic icon, client will handle
             relatedEntityId: postIdFromEvent, relatedEntityType: "postVote",
           });
           logger.info(`Awarded ${XP_FOR_VOTING} XP to user ${voterId} for voting on post ${postIdFromEvent}`);
@@ -472,7 +498,7 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
           type: newStatus === RecordVerificationStatus.VERIFIED ? NotificationType.ACHIEVEMENT_UNLOCKED.toString() : NotificationType.SYSTEM_MESSAGE.toString(),
           title: authorNotificationTitle, message: authorNotificationMessage,
           timestamp: FieldValue.serverTimestamp(), isRead: false,
-          iconName: newStatus === RecordVerificationStatus.VERIFIED ? "military_tech" : "gavel",
+          iconName: newStatus === RecordVerificationStatus.VERIFIED ? (achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech") : "gavel", // CHANGED
           relatedEntityId: currentPostId, relatedEntityType: "postVerification",
         },
       });
@@ -495,7 +521,8 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
             type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
             title: `New Record: ${recordDetails?.exerciseName ?? "Exercise"} Verified!`,
             message: `You earned ${recordXp} XP for your verified record of ${recordDetails?.weightKg}kg x ${recordDetails?.reps} reps!`,
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
+            timestamp: FieldValue.serverTimestamp(), isRead: false, 
+            iconName: achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech", // CHANGED
             relatedEntityId: AchievementId.PERSONAL_RECORD_SET, relatedEntityType: "achievement",
           },
         });
@@ -516,6 +543,7 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
   }
 );
 
+// ... (handleUserFollowListUpdate remains the same) ...
 export const handleUserFollowListUpdate = onDocumentWritten(
   { document: "users/{userId}", region: defaultRegion, memory: "256MiB" },
   async (event: FirestoreEvent<Change<DocumentSnapshot> | undefined, { userId: string }>) => {
@@ -564,7 +592,7 @@ export const handleUserFollowListUpdate = onDocumentWritten(
         senderProfilePicUrl: afterData.profilePictureUrl ?? null,
         timestamp: FieldValue.serverTimestamp(),
         isRead: false,
-        iconName: "person_add_alt_1",
+        iconName: "person_add_alt_1", // This can stay as an IconData key for now, or be changed to a generic follow icon asset
         relatedEntityId: currentUserId,
         relatedEntityType: "userProfile",
       });

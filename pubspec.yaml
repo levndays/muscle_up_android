@@ -1,7 +1,7 @@
 name: muscle_up
 description: "Next-gen Fitness App. New height, New companions."
 publish_to: 'none' 
-version: 0.7.0
+version: 0.7.1
 
 environment:
   sdk: ^3.8.0 
@@ -15,7 +15,7 @@ dependencies:
   firebase_auth: ^5.5.4
   google_sign_in: ^6.2.1
   cloud_firestore: ^5.6.8
-  firebase_storage: ^12.1.0 # NEW: For file uploads
+  firebase_storage: ^12.1.0 
 
   # State Management
   flutter_bloc: ^9.1.1
@@ -24,7 +24,7 @@ dependencies:
   # Utilities
   equatable: ^2.0.5
   intl: ^0.19.0
-  image_picker: ^1.1.2 # NEW: For picking images from gallery/camera
+  image_picker: ^1.1.2 
   
   # Graphics & Animations
   flutter_svg: ^2.0.10+1
@@ -50,6 +50,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/achievements/
     - assets/images/male_front.svg 
     - assets/images/male_back.svg
     - assets/images/female_front.svg

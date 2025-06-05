@@ -6,40 +6,98 @@ import 'dart:developer' as developer;
 
 import '../../../../core/domain/entities/app_notification.dart';
 import '../cubit/notifications_cubit.dart';
-import '../screens/notification_detail_screen.dart'; // <--- ДОДАНО ІМПОРТ
+import '../screens/notification_detail_screen.dart'; 
 
 class NotificationListItem extends StatelessWidget {
   final AppNotification notification;
 
   const NotificationListItem({super.key, required this.notification});
 
-  IconData _getIconForNotificationType(NotificationType type, String? customIconName) {
-    if (customIconName != null) {
+  Widget _getLeadingWidget(BuildContext context, AppNotification notification) {
+    final theme = Theme.of(context);
+    final bool isUnread = !notification.isRead;
+    final Color iconColor = isUnread ? theme.colorScheme.primary : Colors.grey.shade700;
+    final Color avatarBgColor = isUnread
+        ? theme.colorScheme.primary.withAlpha((0.15 * 255).round())
+        : Colors.grey.shade200;
+
+    if (notification.type == NotificationType.achievementUnlocked &&
+        notification.iconName != null &&
+        (notification.iconName!.endsWith('.png') || notification.iconName!.endsWith('.gif'))) {
+      return CircleAvatar(
+        backgroundColor: avatarBgColor,
+        radius: 20, // Consistent with Icon size
+        child: Padding(
+          padding: const EdgeInsets.all(4.0), // Small padding for the image
+          child: Image.asset(
+            notification.iconName!,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback if image asset fails to load
+              return Icon(Icons.emoji_events_outlined, color: iconColor, size: 24);
+            },
+          ),
+        ),
+      );
+    } else if (notification.type == NotificationType.newFollower &&
+               notification.senderProfilePicUrl != null &&
+               notification.senderProfilePicUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 20,
+        backgroundColor: avatarBgColor, // Or a different color for followers
+        backgroundImage: NetworkImage(notification.senderProfilePicUrl!),
+        onBackgroundImageError: (_, __) {}, // Handle error if needed
+        child: notification.senderProfilePicUrl == null || notification.senderProfilePicUrl!.isEmpty
+            ? Icon(Icons.person_add_alt_1_outlined, color: iconColor, size: 24)
+            : null,
+      );
+    }
+
+    // Default icon logic
+    IconData iconData;
+    if (notification.iconName != null) {
       final iconMap = {
         'emoji_events': Icons.emoji_events_outlined,
         'fitness_center': Icons.fitness_center_outlined,
         'notifications': Icons.notifications_active_outlined,
         'reminder': Icons.alarm_on_outlined,
         'info_outline': Icons.info_outline,
+        'person_add_alt_1': Icons.person_add_alt_1_outlined, // For newFollower fallback
+        'lightbulb_outline': Icons.lightbulb_outline, // For advice
+        'military_tech': Icons.military_tech_outlined, // For record claim voting/verification
+        'gavel': Icons.gavel_outlined, // For record claim denied/expired
       };
-      return iconMap[customIconName.toLowerCase()] ?? Icons.notifications_active_outlined;
+      iconData = iconMap[notification.iconName!.toLowerCase()] ?? Icons.notifications_active_outlined;
+    } else {
+      switch (notification.type) {
+        case NotificationType.achievementUnlocked:
+          iconData = Icons.emoji_events_outlined;
+          break;
+        case NotificationType.workoutReminder:
+          iconData = Icons.alarm_on_outlined;
+          break;
+        case NotificationType.newFollower:
+          iconData = Icons.person_add_alt_1_outlined;
+          break;
+        case NotificationType.routineShared:
+          iconData = Icons.share_outlined;
+          break;
+        case NotificationType.systemMessage:
+          iconData = Icons.info_outline;
+          break;
+        case NotificationType.advice:
+          iconData = Icons.lightbulb_outline;
+          break;
+        default:
+          iconData = Icons.notifications_active_outlined;
+      }
     }
-
-    switch (type) {
-      case NotificationType.achievementUnlocked:
-        return Icons.emoji_events_outlined;
-      case NotificationType.workoutReminder:
-        return Icons.alarm_on_outlined;
-      case NotificationType.newFollower:
-        return Icons.person_add_alt_1_outlined;
-      case NotificationType.routineShared:
-        return Icons.share_outlined;
-      case NotificationType.systemMessage:
-        return Icons.info_outline;
-      default:
-        return Icons.notifications_active_outlined;
-    }
+    return CircleAvatar(
+      backgroundColor: avatarBgColor,
+      child: Icon(iconData, color: iconColor, size: 24),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -101,16 +159,7 @@ class NotificationListItem extends StatelessWidget {
               : BorderSide.none,
         ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: isUnread
-                ? Theme.of(context).colorScheme.primary.withAlpha((0.15 * 255).round())
-                : Colors.grey.shade200,
-            child: Icon(
-              _getIconForNotificationType(notification.type, notification.iconName),
-              color: isUnread ? Theme.of(context).colorScheme.primary : Colors.grey.shade700,
-              size: 24,
-            ),
-          ),
+          leading: _getLeadingWidget(context, notification), // UPDATED
           title: Text(
             notification.title,
             style: TextStyle(
@@ -153,11 +202,9 @@ class NotificationListItem extends StatelessWidget {
             ],
           ),
           onTap: () {
-            // Позначаємо як прочитане, якщо ще не прочитане
             if (isUnread) {
               context.read<NotificationsCubit>().markNotificationAsRead(notification.id);
             }
-            // Переходимо на екран деталей
             Navigator.push(
               context,
               MaterialPageRoute(

@@ -8,52 +8,101 @@ class NotificationDetailScreen extends StatelessWidget {
 
   const NotificationDetailScreen({super.key, required this.notification});
 
-  IconData _getIconForNotificationType(NotificationType type, String? customIconName) {
-    // Ця логіка дублює ту, що в NotificationListItem,
-    // в ідеалі її можна винести в helper або розширення для AppNotification.
-    // Поки що залишимо тут для простоти.
-    if (customIconName != null) {
+  Widget _getLeadingWidgetForDetail(BuildContext context, AppNotification notification) {
+    final theme = Theme.of(context);
+    final Color iconColor = theme.colorScheme.primary;
+    final Color avatarBgColor = theme.colorScheme.primary.withOpacity(0.1);
+
+    if (notification.type == NotificationType.achievementUnlocked &&
+        notification.iconName != null &&
+        (notification.iconName!.endsWith('.png') || notification.iconName!.endsWith('.gif'))) {
+      return CircleAvatar(
+        radius: 28,
+        backgroundColor: avatarBgColor,
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Image.asset(
+            notification.iconName!,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(Icons.emoji_events, size: 32, color: iconColor);
+            },
+          ),
+        ),
+      );
+    } else if (notification.type == NotificationType.newFollower &&
+               notification.senderProfilePicUrl != null &&
+               notification.senderProfilePicUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 28,
+        backgroundColor: avatarBgColor,
+        backgroundImage: NetworkImage(notification.senderProfilePicUrl!),
+        onBackgroundImageError: (_, __) {},
+        child: notification.senderProfilePicUrl == null || notification.senderProfilePicUrl!.isEmpty
+            ? Icon(Icons.person_add_alt_1, size: 32, color: iconColor)
+            : null,
+      );
+    }
+
+    IconData iconData;
+    if (notification.iconName != null) {
       final iconMap = {
-        'emoji_events': Icons.emoji_events, // Використовуємо заповнені іконки для більшої виразності
+        'emoji_events': Icons.emoji_events,
         'fitness_center': Icons.fitness_center,
         'notifications': Icons.notifications_active,
         'reminder': Icons.alarm_on,
         'info_outline': Icons.info,
+        'person_add_alt_1': Icons.person_add_alt_1,
+        'lightbulb_outline': Icons.lightbulb_outline,
+        'military_tech': Icons.military_tech,
+        'gavel': Icons.gavel,
       };
-      return iconMap[customIconName.toLowerCase()] ?? Icons.notifications_active;
+      iconData = iconMap[notification.iconName!.toLowerCase()] ?? Icons.notifications_active;
+    } else {
+       switch (notification.type) {
+        case NotificationType.achievementUnlocked:
+          iconData = Icons.emoji_events;
+          break;
+        case NotificationType.workoutReminder:
+          iconData = Icons.alarm_on;
+          break;
+        case NotificationType.newFollower:
+          iconData = Icons.person_add_alt_1;
+          break;
+        case NotificationType.routineShared:
+          iconData = Icons.share;
+          break;
+        case NotificationType.systemMessage:
+          iconData = Icons.info;
+          break;
+        case NotificationType.advice:
+           iconData = Icons.lightbulb_outline;
+           break;
+        default:
+          iconData = Icons.notifications_active;
+      }
     }
-
-    switch (type) {
-      case NotificationType.achievementUnlocked:
-        return Icons.emoji_events;
-      case NotificationType.workoutReminder:
-        return Icons.alarm_on;
-      case NotificationType.newFollower:
-        return Icons.person_add_alt_1;
-      case NotificationType.routineShared:
-        return Icons.share;
-      case NotificationType.systemMessage:
-        return Icons.info;
-      default:
-        return Icons.notifications_active;
-    }
+     return CircleAvatar(
+        radius: 28,
+        backgroundColor: avatarBgColor,
+        child: Icon(iconData, size: 32, color: iconColor),
+      );
   }
 
+
   String _formatTimestamp(DateTime timestamp) {
-    // Більш детальне форматування для екрану деталей
     return DateFormat('EEEE, MMMM d, yyyy HH:mm').format(timestamp);
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
     final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(notification.title),
-        backgroundColor: Theme.of(context).cardColor, // Або інший колір
-        elevation: 1, // Невелика тінь
+        backgroundColor: Theme.of(context).cardColor,
+        elevation: 1,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -67,15 +116,7 @@ class NotificationDetailScreen extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: primaryColor.withOpacity(0.1),
-                      child: Icon(
-                        _getIconForNotificationType(notification.type, notification.iconName),
-                        size: 32,
-                        color: primaryColor,
-                      ),
-                    ),
+                    _getLeadingWidgetForDetail(context, notification), // UPDATED
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
@@ -104,7 +145,7 @@ class NotificationDetailScreen extends StatelessWidget {
                   notification.message,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontSize: 16,
-                        height: 1.5, // Міжрядковий інтервал
+                        height: 1.5,
                         color: onSurfaceColor.withOpacity(0.85),
                       ),
                 ),
@@ -124,15 +165,7 @@ class NotificationDetailScreen extends StatelessWidget {
                   if (notification.relatedEntityId != null)
                     _buildInfoRow(context, 'ID:', notification.relatedEntityId!),
                   const SizedBox(height: 10),
-                  // TODO: В майбутньому тут може бути кнопка для переходу до пов'язаної сутності
-                  // ElevatedButton(
-                  //   onPressed: () {
-                  //     // Логіка навігації до relatedEntity
-                  //   },
-                  //   child: Text('View ${notification.relatedEntityType ?? 'Details'}'),
-                  // )
                 ],
-                // Якщо сповіщення вже прочитане, можна показати невеликий індикатор
                 if (notification.isRead) ...[
                   const SizedBox(height: 20),
                   Row(
