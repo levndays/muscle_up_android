@@ -268,67 +268,71 @@
   "@profileSetupOptionalFieldSuffix": {
     "description": "Суфікс для міток необов'язкових полів"
   },
+  "authGateFinalizingAccountSetup": "Завершення налаштування облікового запису...",
+  "@authGateFinalizingAccountSetup": {
+    "description": "Повідомлення в AuthGate під час очікування синхронізації профілю"
+  },
   "dashboardGreetingWelcome": "Вітаємо,",
   "@dashboardGreetingWelcome": {
-    "description": "Greeting text on the dashboard, part 1. Name will be appended."
+    "description": "Вітальний текст на панелі приладів, частина 1. Ім'я буде додано."
   },
   "dashboardSectionStats": "СТАТИСТИКА",
   "@dashboardSectionStats": {
-    "description": "Section title for user stats on the dashboard"
+    "description": "Заголовок розділу для статистики користувача на панелі приладів"
   },
   "dashboardStatsWeightLabel": "ВАГА",
   "@dashboardStatsWeightLabel": {
-    "description": "Label for the weight stat on the dashboard"
+    "description": "Мітка для статистики ваги на панелі приладів"
   },
   "dashboardStatsStreakLabel": "СТРІК",
   "@dashboardStatsStreakLabel": {
-    "description": "Label for the workout streak stat on the dashboard"
+    "description": "Мітка для статистики стріку тренувань на панелі приладів"
   },
-  "dashboardStatsAdherenceLabel": "ДОТРИМАННЯ",
+  "dashboardStatsAdherenceLabel": "ВІДВІДУВАНІСТЬ",
   "@dashboardStatsAdherenceLabel": {
-    "description": "Label for the workout adherence percentage on the dashboard"
+    "description": "Мітка для відсотка відвідуваності тренувань на панелі приладів"
   },
   "dashboardSectionNotifications": "СПОВІЩЕННЯ",
   "@dashboardSectionNotifications": {
-    "description": "Section title for notifications on the dashboard"
+    "description": "Заголовок розділу для сповіщень на панелі приладів"
   },
   "dashboardNotificationsReadAll": "ПРОЧИТАТИ ВСІ",
   "@dashboardNotificationsReadAll": {
-    "description": "Button text to mark all notifications as read"
+    "description": "Текст кнопки для позначення всіх сповіщень як прочитаних"
   },
   "dashboardNotificationsEmpty": "Нових сповіщень немає.",
   "@dashboardNotificationsEmpty": {
-    "description": "Message shown when there are no notifications"
+    "description": "Повідомлення, що відображається, коли немає сповіщень"
   },
   "dashboardNotificationsError": "Помилка завантаження сповіщень: {message}",
   "@dashboardNotificationsError": {
-    "description": "Error message when notifications fail to load",
+    "description": "Повідомлення про помилку, коли сповіщення не вдалося завантажити",
     "placeholders": {
       "message": {
         "type": "String",
-        "example": "Network error"
+        "example": "Помилка мережі"
       }
     }
   },
   "dashboardNotificationsLoading": "Завантаження сповіщень...",
   "@dashboardNotificationsLoading": {
-    "description": "Loading message for notifications"
+    "description": "Повідомлення про завантаження сповіщень"
   },
   "dashboardSnackbarAllNotificationsRead": "Усі сповіщення позначено як прочитані!",
   "@dashboardSnackbarAllNotificationsRead": {
-    "description": "Snackbar message after marking all notifications as read"
+    "description": "Повідомлення снекбару після позначення всіх сповіщень як прочитаних"
   },
   "upcomingScheduleTitle": "МАЙБУТНІЙ РОЗКЛАД (НА 7 ДНІВ)",
   "@upcomingScheduleTitle": {
-    "description": "Title for the upcoming schedule widget on the dashboard"
+    "description": "Заголовок для віджета майбутнього розкладу на панелі приладів"
   },
   "upcomingScheduleRestDay": "День відпочинку",
   "@upcomingScheduleRestDay": {
-    "description": "Text displayed for a day with no scheduled workouts"
+    "description": "Текст, що відображається для дня без запланованих тренувань"
   },
   "upcomingScheduleError": "Помилка: {message}",
   "@upcomingScheduleError": {
-    "description": "Error message in the upcoming schedule widget",
+    "description": "Повідомлення про помилку у віджеті майбутнього розкладу",
     "placeholders": {
       "message": {
         "type": "String"
@@ -337,19 +341,19 @@
   },
   "upcomingScheduleEmpty": "Немає запланованих тренувань на найближчі 7 днів.",
   "@upcomingScheduleEmpty": {
-    "description": "Message when no workouts are scheduled in the upcoming schedule widget"
+    "description": "Повідомлення, коли немає запланованих тренувань у віджеті майбутнього розкладу"
   },
   "volumeTrendChartLogWorkouts": "Записуйте тренування, щоб побачити тенденцію об'єму.",
   "@volumeTrendChartLogWorkouts": {
-    "description": "Message when no workout data for volume trend chart"
+    "description": "Повідомлення, коли немає даних тренувань для діаграми тенденції об'єму"
   },
   "volumeTrendChartLogMoreWorkouts": "Запишіть щонайменше два тренування, щоб побачити тенденцію.",
   "@volumeTrendChartLogMoreWorkouts": {
-    "description": "Message when only one workout is logged for volume trend"
+    "description": "Повідомлення, коли записано лише одне тренування для тенденції об'єму"
   },
   "volumeTrendChartSingleWorkoutVolume": "Об'єм останнього тренування: {volume} тис. кг.\nПотрібно більше тренувань для відображення тенденції.",
   "@volumeTrendChartSingleWorkoutVolume": {
-    "description": "Message displaying single workout volume and need for more data",
+    "description": "Повідомлення, що відображає об'єм одного тренування та потребу в більшій кількості даних",
     "placeholders": {
       "volume": {
         "type": "String",
@@ -359,11 +363,11 @@
   },
   "volumeTrendChartLoading": "Завантаження даних об'єму...",
   "@volumeTrendChartLoading": {
-    "description": "Fallback loading message for volume chart"
+    "description": "Запасне повідомлення про завантаження для діаграми об'єму"
   },
   "volumeTrendChartError": "Помилка завантаження об'єму: {message}",
   "@volumeTrendChartError": {
-    "description": "Error message for volume chart loading failure",
+    "description": "Повідомлення про помилку при невдалому завантаженні діаграми об'єму",
     "placeholders": {
       "message": {
         "type": "String"
@@ -372,48 +376,1363 @@
   },
   "startWorkoutButton": "ПОЧАТИ ТРЕНУВАННЯ",
   "@startWorkoutButton": {
-    "description": "Text for the main floating action button to start a workout"
+    "description": "Текст для основної плаваючої кнопки дії для початку тренування"
   },
   "startWorkoutFabErrorLogin": "Будь ласка, увійдіть, щоб почати тренування.",
-   "@startWorkoutFabErrorLogin": {
-    "description": "Error message if user tries to start workout without being logged in."
+  "@startWorkoutFabErrorLogin": {
+    "description": "Повідомлення про помилку, якщо користувач намагається розпочати тренування без входу в систему."
   },
   "startWorkoutFabErrorActiveSession": "Помилка перевірки активної сесії: {errorDetails}",
   "@startWorkoutFabErrorActiveSession": {
-    "description": "Error message when checking for an active workout session fails for FAB.",
+    "description": "Повідомлення про помилку при невдалій перевірці активної сесії тренування для FAB.",
     "placeholders": {
-        "errorDetails": {
-            "type": "String"
-        }
+      "errorDetails": {
+        "type": "String"
+      }
     }
   },
   "startWorkoutFabErrorLoadRoutines": "Не вдалося завантажити розклади. Будь ласка, спробуйте ще раз. Помилка: {errorDetails}",
   "@startWorkoutFabErrorLoadRoutines": {
-    "description": "Error message when fetching routines fails for FAB logic.",
+    "description": "Повідомлення про помилку при невдалому отриманні розкладів для логіки FAB.",
     "placeholders": {
-        "errorDetails": {
-            "type": "String"
-        }
+      "errorDetails": {
+        "type": "String"
+      }
     }
   },
   "startWorkoutFabNewRoutineCreatedSnackbar": "Нову програму створено! Оберіть її зі списку, щоб почати.",
   "@startWorkoutFabNewRoutineCreatedSnackbar": {
-    "description": "Snackbar message after a new routine is created via the FAB flow."
+    "description": "Повідомлення снекбару після створення нової програми через потік FAB."
   },
   "dashboardTabRoutines": "ПРОГРАМИ",
   "@dashboardTabRoutines": {
-    "description": "Label for the Routines tab in the BottomNavigationBar"
+    "description": "Напис для вкладки Програми в BottomNavigationBar"
   },
   "dashboardTabExplore": "ОГЛЯД",
   "@dashboardTabExplore": {
-    "description": "Label for the Explore (social feed) tab in the BottomNavigationBar"
+    "description": "Напис для вкладки Огляд (стрічка соцмережі) в BottomNavigationBar"
   },
   "dashboardTabProgress": "ПРОГРЕС",
   "@dashboardTabProgress": {
-    "description": "Label for the Progress tab in the BottomNavigationBar"
+    "description": "Напис для вкладки Прогрес в BottomNavigationBar"
   },
   "dashboardTabProfile": "ПРОФІЛЬ",
   "@dashboardTabProfile": {
-    "description": "Label for the Profile tab in the BottomNavigationBar"
+    "description": "Напис для вкладки Профіль в BottomNavigationBar"
+  },
+  "userRoutinesScreenTitle": "Мої Програми",
+  "@userRoutinesScreenTitle": {
+    "description": "Заголовок AppBar для екрану списку програм користувача в режимі вибору"
+  },
+  "userRoutinesErrorLoad": "Помилка завантаження програм: {message}",
+  "@userRoutinesErrorLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні програм",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "userRoutinesEmptyTitle": "У вас ще немає програм.",
+  "@userRoutinesEmptyTitle": {
+    "description": "Текст заголовка, коли у користувача немає програм"
+  },
+  "userRoutinesEmptySubtitle": "Створіть програму, щоб почати організовувати свої тренування!",
+  "@userRoutinesEmptySubtitle": {
+    "description": "Текст підзаголовка, що заохочує користувача створити програму"
+  },
+  "userRoutinesButtonCreateFirst": "Створити Першу Програму",
+  "@userRoutinesButtonCreateFirst": {
+    "description": "Текст кнопки для створення першої програми, коли список порожній"
+  },
+  "userRoutinesFabNewRoutine": "НОВА ПРОГРАМА",
+  "@userRoutinesFabNewRoutine": {
+    "description": "Текст плаваючої кнопки дії для створення нової програми"
+  },
+  "routineListItemMenuStartWorkout": "Почати Тренування",
+  "@routineListItemMenuStartWorkout": {
+    "description": "Опція меню для початку тренування з програми"
+  },
+  "routineListItemMenuEditRoutine": "Редагувати Програму",
+  "@routineListItemMenuEditRoutine": {
+    "description": "Опція меню для редагування програми"
+  },
+  "routineListItemMenuShareRoutine": "Поділитися Програмою",
+  "@routineListItemMenuShareRoutine": {
+    "description": "Опція меню для поширення програми"
+  },
+  "routineListItemMenuDeleteRoutine": "Видалити Програму",
+  "@routineListItemMenuDeleteRoutine": {
+    "description": "Опція меню для видалення програми"
+  },
+  "routineListItemDeleteConfirmTitle": "Підтвердити Видалення",
+  "@routineListItemDeleteConfirmTitle": {
+    "description": "Заголовок діалогового вікна підтвердження видалення програми"
+  },
+  "routineListItemDeleteConfirmMessage": "Ви впевнені, що хочете видалити \"{routineName}\"? Цю дію неможливо буде скасувати.",
+  "@routineListItemDeleteConfirmMessage": {
+    "description": "Повідомлення підтвердження для видалення програми",
+    "placeholders": {
+      "routineName": {
+        "type": "String"
+      }
+    }
+  },
+  "routineListItemDeleteConfirmButtonCancel": "Скасувати",
+  "@routineListItemDeleteConfirmButtonCancel": {
+    "description": "Кнопка скасування в діалоговому вікні підтвердження видалення"
+  },
+  "routineListItemDeleteConfirmButtonDelete": "Видалити",
+  "@routineListItemDeleteConfirmButtonDelete": {
+    "description": "Кнопка видалення в діалоговому вікні підтвердження видалення"
+  },
+  "routineListItemSnackbarDeleted": "Програму \"{routineName}\" видалено.",
+  "@routineListItemSnackbarDeleted": {
+    "description": "Повідомлення снекбару після видалення програми",
+    "placeholders": {
+      "routineName": {
+        "type": "String"
+      }
+    }
+  },
+  "routineListItemSnackbarErrorDelete": "Помилка видалення програми: {errorDetails}",
+  "@routineListItemSnackbarErrorDelete": {
+    "description": "Повідомлення снекбару при помилці видалення програми",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "createEditRoutineScreenTitleEdit": "Редагувати Програму",
+  "@createEditRoutineScreenTitleEdit": {
+    "description": "Заголовок AppBar для редагування програми"
+  },
+  "createEditRoutineScreenTitleCreate": "Створити Програму",
+  "@createEditRoutineScreenTitleCreate": {
+    "description": "Заголовок AppBar для створення нової програми"
+  },
+  "createEditRoutineTooltipDelete": "Видалити Програму",
+  "@createEditRoutineTooltipDelete": {
+    "description": "Підказка для кнопки видалення програми"
+  },
+  "createEditRoutineSnackbarFormErrors": "Будь ласка, виправте помилки у формі.",
+  "@createEditRoutineSnackbarFormErrors": {
+    "description": "Повідомлення снекбару, якщо валідація форми не пройшла"
+  },
+  "createEditRoutineSuccessMessage": "{message}",
+  "@createEditRoutineSuccessMessage": {
+    "description": "Загальне повідомлення про успіх для операцій з програмами",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "createEditRoutineErrorMessage": "Помилка: {errorDetails}",
+  "@createEditRoutineErrorMessage": {
+    "description": "Загальне повідомлення про помилку для операцій з програмами",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "createEditRoutineStatusUpdated": "Програму оновлено успішно!",
+  "@createEditRoutineStatusUpdated": {
+    "description": "Частина повідомлення про успіх: програму оновлено"
+  },
+  "createEditRoutineStatusCreated": "Програму створено успішно!",
+  "@createEditRoutineStatusCreated": {
+    "description": "Частина повідомлення про успіх: програму створено"
+  },
+  "createEditRoutineStatusDeleted": "Програму видалено успішно!",
+  "@createEditRoutineStatusDeleted": {
+    "description": "Частина повідомлення про успіх: програму видалено"
+  },
+  "createEditRoutineErrorNameEmpty": "Назва програми не може бути порожньою.",
+  "@createEditRoutineErrorNameEmpty": {
+    "description": "Повідомлення про помилку, якщо назва програми порожня"
+  },
+  "createEditRoutineErrorNoExercises": "Програма повинна містити хоча б одну вправу.",
+  "@createEditRoutineErrorNoExercises": {
+    "description": "Повідомлення про помилку, якщо програма не містить вправ"
+  },
+  "createEditRoutineErrorDeleteNew": "Неможливо видалити нову або незбережену програму.",
+  "@createEditRoutineErrorDeleteNew": {
+    "description": "Повідомлення про помилку при спробі видалити незбережену програму"
+  },
+  "createEditRoutineLoadingMessageSaving": "Збереження програми...",
+  "@createEditRoutineLoadingMessageSaving": {
+    "description": "Повідомлення про завантаження при збереженні програми"
+  },
+  "createEditRoutineLoadingMessageDeleting": "Видалення програми...",
+  "@createEditRoutineLoadingMessageDeleting": {
+    "description": "Повідомлення про завантаження при видаленні програми"
+  },
+  "createEditRoutineNameLabel": "Назва Програми*",
+  "@createEditRoutineNameLabel": {
+    "description": "Мітка для поля вводу назви програми"
+  },
+  "createEditRoutineNameErrorEmpty": "Назва не може бути порожньою",
+  "@createEditRoutineNameErrorEmpty": {
+    "description": "Помилка валідації для порожньої назви програми"
+  },
+  "createEditRoutineDescriptionLabel": "Опис (необов'язково)",
+  "@createEditRoutineDescriptionLabel": {
+    "description": "Мітка для поля вводу опису програми"
+  },
+  "createEditRoutineScheduledDaysLabel": "Заплановані дні:",
+  "@createEditRoutineScheduledDaysLabel": {
+    "description": "Мітка для вибору запланованих днів"
+  },
+  "createEditRoutineExercisesLabel": "Вправи ({count}):",
+  "@createEditRoutineExercisesLabel": {
+    "description": "Мітка для списку вправ, показує кількість вправ",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createEditRoutineButtonAddExercise": "Додати",
+  "@createEditRoutineButtonAddExercise": {
+    "description": "Текст кнопки для додавання вправи до програми"
+  },
+  "createEditRoutineNoExercisesPlaceholder": "Ще не додано жодної вправи. Натисніть \"Додати\", щоб почати.",
+  "@createEditRoutineNoExercisesPlaceholder": {
+    "description": "Текст-заповнювач, коли до програми не додано жодної вправи"
+  },
+  "createEditRoutineButtonSaveChanges": "Зберегти Зміни",
+  "@createEditRoutineButtonSaveChanges": {
+    "description": "Текст кнопки для збереження змін при редагуванні програми"
+  },
+  "createEditRoutineButtonCreateRoutine": "Створити Програму",
+  "@createEditRoutineButtonCreateRoutine": {
+    "description": "Текст кнопки для створення нової програми"
+  },
+  "addExerciseDialogTitle": "Додати \"{exerciseName}\"",
+  "@addExerciseDialogTitle": {
+    "description": "Заголовок для діалогового вікна додавання вправи до програми",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "addExerciseDialogSetsLabel": "Кількість підходів",
+  "@addExerciseDialogSetsLabel": {
+    "description": "Мітка для поля вводу кількості підходів у діалоговому вікні додавання вправи"
+  },
+  "addExerciseDialogSetsErrorEmpty": "Не може бути порожнім",
+  "@addExerciseDialogSetsErrorEmpty": {
+    "description": "Помилка валідації для порожньої кількості підходів"
+  },
+  "addExerciseDialogSetsErrorInvalid": "Має бути позитивним числом",
+  "@addExerciseDialogSetsErrorInvalid": {
+    "description": "Помилка валідації для недійсної кількості підходів"
+  },
+  "addExerciseDialogNotesLabel": "Нотатки (необов'язково)",
+  "@addExerciseDialogNotesLabel": {
+    "description": "Мітка для поля вводу нотаток у діалоговому вікні додавання вправи"
+  },
+  "addExerciseDialogNotesHint": "Напр., фокус на формі, пірамідні підходи",
+  "@addExerciseDialogNotesHint": {
+    "description": "Підказка для поля вводу нотаток у діалоговому вікні додавання вправи"
+  },
+  "addExerciseDialogButtonCancel": "Скасувати",
+  "@addExerciseDialogButtonCancel": {
+    "description": "Кнопка скасування в діалоговому вікні додавання вправи"
+  },
+  "addExerciseDialogButtonAdd": "Додати Вправу",
+  "@addExerciseDialogButtonAdd": {
+    "description": "Кнопка додавання в діалоговому вікні додавання вправи"
+  },
+  "editExerciseDialogTitle": "Редагувати \"{exerciseName}\"",
+  "@editExerciseDialogTitle": {
+    "description": "Заголовок для редагування вправи в рамках програми",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "editExerciseDialogButtonUpdate": "Оновити",
+  "@editExerciseDialogButtonUpdate": {
+    "description": "Кнопка оновлення в діалоговому вікні редагування вправи"
+  },
+  "exerciseExplorerScreenTitleSelect": "Обрати Вправу",
+  "@exerciseExplorerScreenTitleSelect": {
+    "description": "Заголовок AppBar для оглядача вправ в режимі вибору"
+  },
+  "exerciseExplorerScreenTitleLibrary": "Бібліотека Вправ",
+  "@exerciseExplorerScreenTitleLibrary": {
+    "description": "Заголовок AppBar для оглядача вправ в режимі перегляду"
+  },
+  "exerciseExplorerErrorLoad": "Помилка завантаження вправ: {message}",
+  "@exerciseExplorerErrorLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні вправ в оглядачі",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "exerciseExplorerEmpty": "У бібліотеці ще немає вправ. Вміст додається!",
+  "@exerciseExplorerEmpty": {
+    "description": "Повідомлення, що відображається, коли бібліотека вправ порожня"
+  },
+  "exerciseExplorerButtonTryAgain": "Спробувати Ще Раз",
+  "@exerciseExplorerButtonTryAgain": {
+    "description": "Кнопка для повторної спроби завантаження вправ"
+  },
+  "exerciseExplorerLoading": "Завантаження вправ...",
+  "@exerciseExplorerLoading": {
+    "description": "Повідомлення, що відображається під час завантаження вправ"
+  },
+  "dashboardButtonSendTestNotifications": "Надіслати тестові сповіщення",
+  "@dashboardButtonSendTestNotifications": {
+    "description": "Кнопка на панелі приладів для надсилання тестових сповіщень"
+  },
+  "leagueScreenButtonBackTooltip": "Назад",
+  "@leagueScreenButtonBackTooltip": {
+    "description": "Підказка для кнопки 'Назад' на екрані ліги"
+  },
+  "leagueScreenLeaderboardTitle": "ТАБЛИЦЯ ЛІДЕРІВ",
+  "@leagueScreenLeaderboardTitle": {
+    "description": "Заголовок для розділу таблиці лідерів на екрані ліги"
+  },
+  "leagueScreenErrorLoad": "Помилка: {errorMessage}",
+  "@leagueScreenErrorLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні даних ліги",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueScreenNoPlayers": "У цій лізі ще немає гравців.",
+  "@leagueScreenNoPlayers": {
+    "description": "Повідомлення, що відображається, коли ліга не має гравців"
+  },
+  "leagueScreenButtonTryAgain": "Спробувати ще",
+  "@leagueScreenButtonTryAgain": {
+    "description": "Текст кнопки для повторного завантаження даних ліги"
+  },
+  "notificationDetailRelatedInfoTitle": "Пов'язана інформація:",
+  "@notificationDetailRelatedInfoTitle": {
+    "description": "Заголовок для розділу пов'язаної інформації в деталях сповіщення"
+  },
+  "notificationDetailRelatedInfoTypeLabel": "Тип:",
+  "@notificationDetailRelatedInfoTypeLabel": {
+    "description": "Мітка для типу пов'язаної сутності в деталях сповіщення"
+  },
+  "notificationDetailRelatedInfoIdLabel": "ID:",
+  "@notificationDetailRelatedInfoIdLabel": {
+    "description": "Мітка для ID пов'язаної сутності в деталях сповіщення"
+  },
+  "notificationDetailStatusRead": "Прочитано",
+  "@notificationDetailStatusRead": {
+    "description": "Статус, що вказує на те, що сповіщення прочитано"
+  },
+  "notificationListItemSnackbarRemoved": "Сповіщення \"{notificationTitle}\" видалено.",
+  "@notificationListItemSnackbarRemoved": {
+    "description": "Повідомлення снекбару після видалення сповіщення",
+    "placeholders": {
+      "notificationTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationListItemSnackbarUndo": "ВІДМІНИТИ",
+  "@notificationListItemSnackbarUndo": {
+    "description": "Текст дії для скасування видалення сповіщення"
+  },
+  "notificationListItemDismissDelete": "Видалити",
+  "@notificationListItemDismissDelete": {
+    "description": "Текст, що відображається на фоні при видаленні сповіщення"
+  },
+  "profileScreenLogoutConfirmTitle": "Підтвердити вихід",
+  "@profileScreenLogoutConfirmTitle": {
+    "description": "Заголовок діалогового вікна підтвердження виходу"
+  },
+  "profileScreenLogoutConfirmMessage": "Ви впевнені, що хочете вийти?",
+  "@profileScreenLogoutConfirmMessage": {
+    "description": "Повідомлення в діалоговому вікні підтвердження виходу"
+  },
+  "profileScreenLogoutConfirmButtonCancel": "Скасувати",
+  "@profileScreenLogoutConfirmButtonCancel": {
+    "description": "Кнопка скасування в діалоговому вікні підтвердження виходу"
+  },
+  "profileScreenLogoutConfirmButtonLogOut": "Вийти",
+  "@profileScreenLogoutConfirmButtonLogOut": {
+    "description": "Кнопка виходу в діалоговому вікні підтвердження виходу"
+  },
+  "profileScreenLogoutErrorSnackbar": "Помилка виходу: {errorDetails}",
+  "@profileScreenLogoutErrorSnackbar": {
+    "description": "Повідомлення снекбару при невдалому виході",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileScreenNameFallbackUser": "Користувач",
+  "@profileScreenNameFallbackUser": {
+    "description": "Запасне ім'я, якщо ім'я для відображення або ім'я користувача не встановлені"
+  },
+  "profileScreenStatLabelFollowers": "ПІДПИСНИКИ",
+  "@profileScreenStatLabelFollowers": {
+    "description": "Мітка для кількості підписників на екрані профілю"
+  },
+  "profileScreenStatLabelFollowing": "ПІДПИСКИ",
+  "@profileScreenStatLabelFollowing": {
+    "description": "Мітка для кількості підписок на екрані профілю"
+  },
+  "profileScreenStatLabelBestStreak": "КРАЩИЙ СТРІК",
+  "@profileScreenStatLabelBestStreak": {
+    "description": "Мітка для кращого стріку на екрані профілю"
+  },
+  "profileScreenStatLabelWeight": "ВАГА",
+  "@profileScreenStatLabelWeight": {
+    "description": "Мітка для ваги на екрані профілю"
+  },
+  "profileScreenUnitKg": "КГ",
+  "@profileScreenUnitKg": {
+    "description": "Одиниця для кілограмів"
+  },
+  "profileScreenGoalLabel": "ЦІЛЬ: ",
+  "@profileScreenGoalLabel": {
+    "description": "Префікс для фітнес-цілі на екрані профілю"
+  },
+  "profileScreenLastTrainingLabel": "ОСТАННЄ ТРЕНУВАННЯ: ",
+  "@profileScreenLastTrainingLabel": {
+    "description": "Префікс для дати останнього тренування на екрані профілю"
+  },
+  "profileScreenRewardsTitle": "НАГОРОДИ",
+  "@profileScreenRewardsTitle": {
+    "description": "Заголовок для розділу нагород на екрані профілю"
+  },
+  "profileScreenNoRewards": "Нагород ще не розблоковано. Продовжуйте тренуватися!",
+  "@profileScreenNoRewards": {
+    "description": "Повідомлення, коли користувач не має нагород"
+  },
+  "profileScreenMyPostsTitle": "МОЇ ДОПИСИ",
+  "@profileScreenMyPostsTitle": {
+    "description": "Заголовок для розділу дописів користувача на екрані профілю"
+  },
+  "profileScreenNoPosts": "Ви ще не зробили жодного допису.",
+  "@profileScreenNoPosts": {
+    "description": "Повідомлення, коли користувач не має дописів"
+  },
+  "profileScreenButtonEditProfile": "РЕДАГУВАТИ ПРОФІЛЬ",
+  "@profileScreenButtonEditProfile": {
+    "description": "Текст кнопки для редагування профілю"
+  },
+  "profileScreenButtonLogOut": "ВИЙТИ",
+  "@profileScreenButtonLogOut": {
+    "description": "Текст кнопки для виходу"
+  },
+  "profileScreenErrorLoadProfile": "Помилка завантаження профілю: {errorMessage}",
+  "@profileScreenErrorLoadProfile": {
+    "description": "Повідомлення про помилку при невдалому завантаженні профілю на екрані профілю",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "profileScreenErrorUnexpected": "Сталася неочікувана помилка під час завантаження вашого профілю.",
+  "@profileScreenErrorUnexpected": {
+    "description": "Загальне повідомлення про помилку для екрана профілю"
+  },
+  "createPostScreenLabelPostType": "Тип допису: {postType}",
+  "@createPostScreenLabelPostType": {
+    "description": "Мітка, що показує тип допису при редагуванні",
+    "placeholders": {
+      "postType": {
+        "type": "String"
+      }
+    }
+  },
+  "createPostSegmentStandard": "Стандартний",
+  "@createPostSegmentStandard": {
+    "description": "Опція сегментованої кнопки для стандартного типу допису"
+  },
+  "createPostSegmentRoutine": "Програма",
+  "@createPostSegmentRoutine": {
+    "description": "Опція сегментованої кнопки для типу допису 'поділитися програмою'"
+  },
+  "createPostSegmentRecord": "Рекорд",
+  "@createPostSegmentRecord": {
+    "description": "Опція сегментованої кнопки для типу допису 'заявити рекорд'"
+  },
+  "createPostLabelSharedRoutine": "Поширена програма:",
+  "@createPostLabelSharedRoutine": {
+    "description": "Мітка для розділу поширеної програми при редагуванні"
+  },
+  "createPostErrorRoutineUnavailable": "Деталі програми недоступні",
+  "@createPostErrorRoutineUnavailable": {
+    "description": "Текст помилки, якщо деталі програми недоступні для поширення"
+  },
+  "createPostRoutineExerciseCountSuffix": " вправ(и)",
+  "@createPostRoutineExerciseCountSuffix": {
+    "description": "Суфікс для кількості вправ у відображенні поширеної програми"
+  },
+  "createPostLabelRecordDetailsReadOnly": "Деталі рекорду (тільки для читання):",
+  "@createPostLabelRecordDetailsReadOnly": {
+    "description": "Мітка для деталей рекорду тільки для читання при редагуванні"
+  },
+  "createPostLabelRecordExercise": "Вправа: ",
+  "@createPostLabelRecordExercise": {
+    "description": "Префікс для назви вправи в деталях рекорду"
+  },
+  "createPostLabelRecordWeight": "Вага: ",
+  "@createPostLabelRecordWeight": {
+    "description": "Префікс для ваги в деталях рекорду"
+  },
+  "createPostUnitKgSuffix": " кг",
+  "@createPostUnitKgSuffix": {
+    "description": "Суфікс для одиниці кілограмів"
+  },
+  "createPostLabelRecordReps": "Повтори: ",
+  "@createPostLabelRecordReps": {
+    "description": "Префікс для повторень у деталях рекорду"
+  },
+  "createPostLabelRecordVideo": "Відео: ",
+  "@createPostLabelRecordVideo": {
+    "description": "Префікс для URL відео в деталях рекорду"
+  },
+  "createPostLabelRecordDetails": "Деталі рекорду:",
+  "@createPostLabelRecordDetails": {
+    "description": "Мітка для розділу деталей рекорду при створенні нової заяви на рекорд"
+  },
+  "createPostHintSelectExercise": "Оберіть вправу*",
+  "@createPostHintSelectExercise": {
+    "description": "Підказка для вибору вправи в заяві на рекорд"
+  },
+  "createPostHintRecordWeight": "Вага (кг)*",
+  "@createPostHintRecordWeight": {
+    "description": "Підказка для введення ваги в заяві на рекорд"
+  },
+  "createPostErrorRecordWeightInvalid": "Некоректна вага",
+  "@createPostErrorRecordWeightInvalid": {
+    "description": "Помилка валідації для ваги в заяві на рекорд"
+  },
+  "createPostHintRecordReps": "Повторення*",
+  "@createPostHintRecordReps": {
+    "description": "Підказка для введення повторень в заяві на рекорд"
+  },
+  "createPostErrorRecordRepsInvalid": "Некоректні повторення",
+  "@createPostErrorRecordRepsInvalid": {
+    "description": "Помилка валідації для повторень в заяві на рекорд"
+  },
+  "createPostHintRecordVideoUrl": "URL відео (необов'язково)",
+  "@createPostHintRecordVideoUrl": {
+    "description": "Підказка для введення URL відео в заяві на рекорд"
+  },
+  "createPostErrorRecordVideoUrlInvalid": "Введіть дійсний URL",
+  "@createPostErrorRecordVideoUrlInvalid": {
+    "description": "Помилка валідації для URL відео в заяві на рекорд"
+  },
+  "createPostLabelAttachImageOptionalReplace": "Прикріпити зображення (необов'язково - замінить існуюче)",
+  "@createPostLabelAttachImageOptionalReplace": {
+    "description": "Мітка для прикріплення зображення при редагуванні, якщо зображення вже існує"
+  },
+  "createPostLabelAttachImageOptional": "Прикріпити зображення (необов'язково)",
+  "@createPostLabelAttachImageOptional": {
+    "description": "Мітка для прикріплення зображення при створенні нового або якщо зображення немає"
+  },
+  "createPostButtonAddImage": "Додати зображення",
+  "@createPostButtonAddImage": {
+    "description": "Текст кнопки для додавання зображення до допису"
+  },
+  "createPostTooltipRemoveImage": "Видалити зображення",
+  "@createPostTooltipRemoveImage": {
+    "description": "Підказка для видалення новообраного зображення"
+  },
+  "createPostTooltipRemoveExistingImage": "Видалити існуюче зображення",
+  "@createPostTooltipRemoveExistingImage": {
+    "description": "Підказка для видалення існуючого зображення при редагуванні"
+  },
+  "createPostToggleEnableComments": "Увімкнути коментарі",
+  "@createPostToggleEnableComments": {
+    "description": "Мітка перемикача для увімкнення/вимкнення коментарів"
+  },
+  "createPostCommentsEnabledSubtitle": "Користувачі можуть коментувати цей допис",
+  "@createPostCommentsEnabledSubtitle": {
+    "description": "Підзаголовок, коли коментарі увімкнені"
+  },
+  "createPostCommentsDisabledSubtitle": "Коментарі вимкнені",
+  "@createPostCommentsDisabledSubtitle": {
+    "description": "Підзаголовок, коли коментарі вимкнені"
+  },
+  "createPostHintTextContent": "Що у вас на думці?",
+  "@createPostHintTextContent": {
+    "description": "Підказка для основного поля вмісту допису"
+  },
+  "createPostErrorContentOrImageRequired": "Вміст допису або зображення обов'язкові.",
+  "@createPostErrorContentOrImageRequired": {
+    "description": "Помилка валідації, якщо стандартний допис не має вмісту та зображення"
+  },
+  "createPostAppBarTitleEdit": "Редагувати допис",
+  "@createPostAppBarTitleEdit": {
+    "description": "Заголовок AppBar при редагуванні допису"
+  },
+  "createPostAppBarTitleShareRoutine": "Поділитися програмою",
+  "@createPostAppBarTitleShareRoutine": {
+    "description": "Заголовок AppBar при поширенні програми як допису"
+  },
+  "createPostAppBarTitleCreate": "Створити допис",
+  "@createPostAppBarTitleCreate": {
+    "description": "Заголовок AppBar при створенні нового допису"
+  },
+  "createPostButtonSaveChanges": "Зберегти зміни",
+  "@createPostButtonSaveChanges": {
+    "description": "Текст кнопки для збереження змін при редагуванні допису"
+  },
+  "createPostButtonPublish": "Опублікувати",
+  "@createPostButtonPublish": {
+    "description": "Текст кнопки для публікації нового допису"
+  },
+  "createPostSnackbarSuccess": "Допис успішно {status}!",
+  "@createPostSnackbarSuccess": {
+    "description": "Повідомлення снекбару при успішному створенні/оновленні допису",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "createPostSnackbarError": "Помилка: {errorDetails}",
+  "@createPostSnackbarError": {
+    "description": "Повідомлення снекбару при невдалому створенні/оновленні допису",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "createPostStatusUpdated": "оновлено",
+  "@createPostStatusUpdated": {
+    "description": "Текст статусу для успішного оновлення допису"
+  },
+  "createPostStatusPublished": "опубліковано",
+  "@createPostStatusPublished": {
+    "description": "Текст статусу для успішного створення допису"
+  },
+  "createPostLoadingUpdating": "Оновлення допису...",
+  "@createPostLoadingUpdating": {
+    "description": "Повідомлення про завантаження при оновленні допису"
+  },
+  "createPostLoadingPublishing": "Публікація допису...",
+  "@createPostLoadingPublishing": {
+    "description": "Повідомлення про завантаження при публікації нового допису"
+  },
+  "createPostErrorUserNotLoggedIn": "Користувач не увійшов.",
+  "@createPostErrorUserNotLoggedIn": {
+    "description": "Повідомлення про помилку, якщо користувач не увійшов під час створення допису"
+  },
+  "createPostErrorContentEmptyStandard": "Вміст допису не може бути порожнім для стандартного допису без зображення.",
+  "@createPostErrorContentEmptyStandard": {
+    "description": "Повідомлення про помилку, якщо вміст та зображення порожні для стандартного допису"
+  },
+  "createPostErrorFetchProfile": "Не вдалося отримати профіль користувача.",
+  "@createPostErrorFetchProfile": {
+    "description": "Повідомлення про помилку, якщо не вдалося отримати профіль користувача під час створення допису"
+  },
+  "createPostErrorUploadMedia": "Не вдалося завантажити медіа.",
+  "@createPostErrorUploadMedia": {
+    "description": "Повідомлення про помилку, якщо не вдалося завантажити медіа під час створення допису"
+  },
+  "exploreScreenEmptyTitle": "Ще нічого немає.",
+  "@exploreScreenEmptyTitle": {
+    "description": "Текст заголовка, коли стрічка Огляду порожня"
+  },
+  "exploreScreenEmptySubtitle": "Будьте першим, хто чимось поділиться!",
+  "@exploreScreenEmptySubtitle": {
+    "description": "Текст підзаголовка, що заохочує користувачів публікувати, коли стрічка Огляду порожня"
+  },
+  "exploreScreenErrorLoad": "Помилка завантаження дописів: {message}",
+  "@exploreScreenErrorLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні дописів для стрічки Огляду",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreScreenButtonTryAgain": "Спробувати ще",
+  "@exploreScreenButtonTryAgain": {
+    "description": "Текст кнопки для повторного завантаження дописів для стрічки Огляду"
+  },
+  "exploreScreenFabTooltipCreatePost": "Створити допис",
+  "@exploreScreenFabTooltipCreatePost": {
+    "description": "Підказка для плаваючої кнопки дії для створення нового допису"
+  },
+  "followListScreenTitleFollowers": "Підписники",
+  "@followListScreenTitleFollowers": {
+    "description": "Заголовок AppBar для екрана списку підписників"
+  },
+  "followListScreenTitleFollowing": "Підписки",
+  "@followListScreenTitleFollowing": {
+    "description": "Заголовок AppBar для екрана списку підписок"
+  },
+  "followListScreenErrorLoad": "Помилка: {message}",
+  "@followListScreenErrorLoad": {
+    "description": "Повідомлення про помилку при невдалому завантаженні списку підписок/підписників",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "followListScreenEmptyFollowers": "Цей користувач ще не має підписників.",
+  "@followListScreenEmptyFollowers": {
+    "description": "Повідомлення, що відображається, коли список підписників порожній"
+  },
+  "followListScreenEmptyFollowing": "Цей користувач ні на кого не підписаний.",
+  "@followListScreenEmptyFollowing": {
+    "description": "Повідомлення, що відображається, коли список підписок порожній"
+  },
+  "followListScreenButtonTryAgain": "Спробувати ще",
+  "@followListScreenButtonTryAgain": {
+    "description": "Текст кнопки для повторного завантаження списку підписок/підписників"
+  },
+  "followListScreenErrorUnexpected": "Щось пішло не так.",
+  "@followListScreenErrorUnexpected": {
+    "description": "Загальне повідомлення про помилку для екрана списку підписок/підписників"
+  },
+  "postDetailScreenAppBarTitleFallback": "Допис",
+  "@postDetailScreenAppBarTitleFallback": {
+    "description": "Запасний заголовок AppBar для екрана деталей допису"
+  },
+  "postDetailMenuEditPost": "Редагувати допис",
+  "@postDetailMenuEditPost": {
+    "description": "Опція меню для редагування допису"
+  },
+  "postDetailMenuDisableComments": "Вимкнути коментарі",
+  "@postDetailMenuDisableComments": {
+    "description": "Опція меню для вимкнення коментарів до допису"
+  },
+  "postDetailMenuEnableComments": "Увімкнути коментарі",
+  "@postDetailMenuEnableComments": {
+    "description": "Опція меню для увімкнення коментарів до допису"
+  },
+  "postDetailMenuDeletePost": "Видалити допис",
+  "@postDetailMenuDeletePost": {
+    "description": "Опція меню для видалення допису"
+  },
+  "postDetailDeleteConfirmTitle": "Видалити допис?",
+  "@postDetailDeleteConfirmTitle": {
+    "description": "Заголовок діалогового вікна підтвердження видалення допису"
+  },
+  "postDetailDeleteConfirmMessage": "Ви впевнені, що хочете видалити цей допис? Цю дію неможливо буде скасувати, і вона видалить усі пов'язані коментарі та медіа.",
+  "@postDetailDeleteConfirmMessage": {
+    "description": "Повідомлення підтвердження для видалення допису"
+  },
+  "postDetailDeleteConfirmButtonCancel": "Скасувати",
+  "@postDetailDeleteConfirmButtonCancel": {
+    "description": "Кнопка скасування в діалоговому вікні підтвердження видалення допису"
+  },
+  "postDetailDeleteConfirmButtonDelete": "Видалити",
+  "@postDetailDeleteConfirmButtonDelete": {
+    "description": "Кнопка видалення в діалоговому вікні підтвердження видалення допису"
+  },
+  "postDetailSnackbarErrorGeneric": "Помилка: {errorDetails}",
+  "@postDetailSnackbarErrorGeneric": {
+    "description": "Загальне повідомлення снекбару про помилку для екрана деталей допису",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "postDetailSnackbarPostDeleted": "Допис \"{postId}\" видалено.",
+  "@postDetailSnackbarPostDeleted": {
+    "description": "Повідомлення снекбару після успішного видалення допису",
+    "placeholders": {
+      "postId": {
+        "type": "String"
+      }
+    }
+  },
+  "postDetailErrorPostNotFound": "Допис не знайдено або не вдалося завантажити.",
+  "@postDetailErrorPostNotFound": {
+    "description": "Повідомлення про помилку, коли деталі допису не вдалося завантажити"
+  },
+  "postDetailLoading": "Завантаження деталей допису...",
+  "@postDetailLoading": {
+    "description": "Повідомлення, що відображається під час завантаження деталей допису"
+  },
+  "postDetailLikesSuffixSingular": " Вподобайка",
+  "@postDetailLikesSuffixSingular": {
+    "description": "Суфікс для однини кількості вподобайок"
+  },
+  "postDetailLikesSuffixPlural": " Вподобайок",
+  "@postDetailLikesSuffixPlural": {
+    "description": "Суфікс для множини кількості вподобайок"
+  },
+  "postDetailCommentsSuffixSingular": " Коментар",
+  "@postDetailCommentsSuffixSingular": {
+    "description": "Суфікс для однини кількості коментарів"
+  },
+  "postDetailCommentsSuffixPlural": " Коментарів",
+  "@postDetailCommentsSuffixPlural": {
+    "description": "Суфікс для множини кількості коментарів"
+  },
+  "postDetailCommentsSectionTitle": "Коментарі",
+  "@postDetailCommentsSectionTitle": {
+    "description": "Заголовок для розділу коментарів у деталях допису"
+  },
+  "postDetailCommentsDisabledMessage": "Коментарі до цього допису вимкнені.",
+  "@postDetailCommentsDisabledMessage": {
+    "description": "Повідомлення, що відображається, коли коментарі до допису вимкнені"
+  },
+  "postDetailCommentsEmptyMessage": "Коментарів ще немає. Будьте першим!",
+  "@postDetailCommentsEmptyMessage": {
+    "description": "Повідомлення, що відображається, коли допис не має коментарів"
+  },
+  "postDetailCommentInputHint": "Написати коментар...",
+  "@postDetailCommentInputHint": {
+    "description": "Підказка для поля вводу коментаря"
+  },
+  "postDetailButtonValidate": "ПІДТВЕРДИТИ",
+  "@postDetailButtonValidate": {
+    "description": "Текст кнопки для підтвердження заяви на рекорд"
+  },
+  "postDetailButtonDispute": "ОСКАРЖИТИ",
+  "@postDetailButtonDispute": {
+    "description": "Текст кнопки для оскарження заяви на рекорд"
+  },
+  "recordStatusVerified": "ПІДТВЕРДЖЕНО",
+  "@recordStatusVerified": {
+    "description": "Статус заяви на рекорд: Підтверджено"
+  },
+  "recordStatusRejected": "ВІДХИЛЕНО",
+  "@recordStatusRejected": {
+    "description": "Статус заяви на рекорд: Відхилено"
+  },
+  "recordStatusExpired": "ПРОСРОЧЕНО",
+  "@recordStatusExpired": {
+    "description": "Статус заяви на рекорд: Просрочено"
+  },
+  "recordStatusPending": "ОЧІКУЄ ГОЛОСУВАННЯ",
+  "@recordStatusPending": {
+    "description": "Статус заяви на рекорд: Очікує голосування"
+  },
+  "recordStatusContested": "ОСКАРЖЕНО",
+  "@recordStatusContested": {
+    "description": "Статус заяви на рекорд: Оскаржено"
+  },
+  "recordStatusUnknown": "НЕВІДОМО",
+  "@recordStatusUnknown": {
+    "description": "Статус заяви на рекорд: Невідомо"
+  },
+  "postDetailButtonWatchProof": "Дивитися доказ",
+  "@postDetailButtonWatchProof": {
+    "description": "Текст кнопки для перегляду відеодоказу заяви на рекорд"
+  },
+  "viewUserProfileAppBarTitleFallback": "Профіль користувача",
+  "@viewUserProfileAppBarTitleFallback": {
+    "description": "Запасний заголовок AppBar для перегляду профілю іншого користувача"
+  },
+  "viewUserProfileErrorNotAuth": "Користувач не автентифікований.",
+  "@viewUserProfileErrorNotAuth": {
+    "description": "Повідомлення про помилку, якщо поточний користувач не автентифікований під час перегляду профілю"
+  },
+  "viewUserProfileErrorLoadProfile": "Не вдалося завантажити профіль: {message}",
+  "@viewUserProfileErrorLoadProfile": {
+    "description": "Повідомлення про помилку при невдалому завантаженні профілю цільового користувача",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorInit": "Не вдалося ініціалізувати: {message}",
+  "@viewUserProfileErrorInit": {
+    "description": "Повідомлення про помилку під час ініціалізації екрана перегляду профілю користувача",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorFollowInvalidOp": "Не вдалося підписатися/відписатися: Недійсна операція.",
+  "@viewUserProfileErrorFollowInvalidOp": {
+    "description": "Повідомлення про помилку для недійсної операції підписки/відписки (наприклад, підписка на себе)"
+  },
+  "viewUserProfileErrorFollowGeneric": "Не вдалося {action}: {errorDetails}",
+  "@viewUserProfileErrorFollowGeneric": {
+    "description": "Загальне повідомлення про помилку для невдалої підписки/відписки",
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorFollowActionFollow": "підписатися",
+  "@viewUserProfileErrorFollowActionFollow": {
+    "description": "Частина помилки підписки/відписки: підписатися"
+  },
+  "viewUserProfileErrorFollowActionUnfollow": "відписатися",
+  "@viewUserProfileErrorFollowActionUnfollow": {
+    "description": "Частина помилки підписки/відписки: відписатися"
+  },
+  "viewUserProfileErrorInvalidStateFollow": "Неможливо обробити підписку/відписку в поточному стані: {currentState}",
+  "@viewUserProfileErrorInvalidStateFollow": {
+    "description": "Повідомлення про помилку, якщо спроба підписатися/відписатися відбувається з недійсного стану",
+    "placeholders": {
+      "currentState": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileStatLabelLevel": "Рівень",
+  "@viewUserProfileStatLabelLevel": {
+    "description": "Мітка для статистики рівня на екрані перегляду профілю користувача"
+  },
+  "viewUserProfileButtonUnfollow": "ВІДПИСАТИСЯ",
+  "@viewUserProfileButtonUnfollow": {
+    "description": "Текст кнопки для відписки від користувача"
+  },
+  "viewUserProfileButtonFollow": "ПІДПИСАТИСЯ",
+  "@viewUserProfileButtonFollow": {
+    "description": "Текст кнопки для підписки на користувача"
+  },
+  "viewUserProfilePostsTitle": "Дописи користувача",
+  "@viewUserProfilePostsTitle": {
+    "description": "Заголовок для розділу дописів на екрані перегляду профілю користувача"
+  },
+  "viewUserProfileNoPosts": "Дописи користувача @{username} з'являться тут.",
+  "@viewUserProfileNoPosts": {
+    "description": "Повідомлення, що відображається, коли переглянутий користувач не має дописів",
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorProfileNotAvailable": "Профіль недоступний.",
+  "@viewUserProfileErrorProfileNotAvailable": {
+    "description": "Повідомлення про помилку, коли профіль переглянутого користувача недоступний"
+  },
+  "commentListItemEditDialogTitle": "Редагувати коментар",
+  "@commentListItemEditDialogTitle": {
+    "description": "Заголовок для діалогового вікна редагування коментаря"
+  },
+  "commentListItemDeleteDialogTitle": "Видалити коментар?",
+  "@commentListItemDeleteDialogTitle": {
+    "description": "Заголовок для діалогового вікна підтвердження видалення коментаря"
+  },
+  "commentListItemEditDialogHint": "Ваш коментар...",
+  "@commentListItemEditDialogHint": {
+    "description": "Підказка для поля вводу коментаря в діалоговому вікні редагування"
+  },
+  "commentListItemDeleteDialogMessage": "Ви впевнені, що хочете видалити цей коментар? Цю дію неможливо буде скасувати.",
+  "@commentListItemDeleteDialogMessage": {
+    "description": "Повідомлення підтвердження для видалення коментаря"
+  },
+  "commentListItemDialogButtonCancel": "Скасувати",
+  "@commentListItemDialogButtonCancel": {
+    "description": "Кнопка скасування в діалогових вікнах коментарів"
+  },
+  "commentListItemDialogButtonSave": "Зберегти",
+  "@commentListItemDialogButtonSave": {
+    "description": "Кнопка збереження в діалоговому вікні редагування коментаря"
+  },
+  "commentListItemDialogButtonDelete": "Видалити",
+  "@commentListItemDialogButtonDelete": {
+    "description": "Кнопка видалення в діалоговому вікні видалення коментаря"
+  },
+  "commentListItemSnackbarDeleted": "Коментар видалено.",
+  "@commentListItemSnackbarDeleted": {
+    "description": "Повідомлення снекбару після видалення коментаря"
+  },
+  "commentListItemMenuEdit": "Редагувати",
+  "@commentListItemMenuEdit": {
+    "description": "Опція меню для редагування коментаря"
+  },
+  "commentListItemMenuDelete": "Видалити",
+  "@commentListItemMenuDelete": {
+    "description": "Опція меню для видалення коментаря"
+  },
+  "activeWorkoutAppBarTitleFallback": "Активне Тренування",
+  "@activeWorkoutAppBarTitleFallback": {
+    "description": "Запасний заголовок AppBar для екрана активного тренування"
+  },
+  "activeWorkoutDialogCancelTitle": "Скасувати тренування?",
+  "@activeWorkoutDialogCancelTitle": {
+    "description": "Заголовок діалогового вікна підтвердження скасування тренування"
+  },
+  "activeWorkoutDialogCompleteTitle": "Завершити тренування?",
+  "@activeWorkoutDialogCompleteTitle": {
+    "description": "Заголовок діалогового вікна підтвердження завершення тренування"
+  },
+  "activeWorkoutDialogCancelMessage": "Ви впевнені, що хочете скасувати це тренування? Прогрес не буде збережено.",
+  "@activeWorkoutDialogCancelMessage": {
+    "description": "Повідомлення для діалогового вікна підтвердження скасування тренування"
+  },
+  "activeWorkoutDialogCompleteMessage": "Ви впевнені, що хочете завершити та зберегти це тренування?",
+  "@activeWorkoutDialogCompleteMessage": {
+    "description": "Повідомлення для діалогового вікна підтвердження завершення тренування"
+  },
+  "activeWorkoutDialogButtonNo": "Ні",
+  "@activeWorkoutDialogButtonNo": {
+    "description": "Кнопка 'Ні' в діалоговому вікні скасування тренування"
+  },
+  "activeWorkoutDialogButtonYesCancel": "Так, скасувати",
+  "@activeWorkoutDialogButtonYesCancel": {
+    "description": "Кнопка підтвердження скасування в діалоговому вікні скасування тренування"
+  },
+  "activeWorkoutDialogButtonNoContinue": "Ні, продовжити",
+  "@activeWorkoutDialogButtonNoContinue": {
+    "description": "Кнопка 'Ні/Продовжити' в діалоговому вікні завершення тренування"
+  },
+  "activeWorkoutDialogButtonYesComplete": "Так, завершити",
+  "@activeWorkoutDialogButtonYesComplete": {
+    "description": "Кнопка підтвердження завершення в діалоговому вікні завершення тренування"
+  },
+  "activeWorkoutLoading": "Завантаження тренування...",
+  "@activeWorkoutLoading": {
+    "description": "Загальне повідомлення про завантаження для екрана активного тренування"
+  },
+  "activeWorkoutLoadingStartingNew": "Початок нового тренування...",
+  "@activeWorkoutLoadingStartingNew": {
+    "description": "Повідомлення про завантаження при початку нового тренування"
+  },
+  "activeWorkoutNoneMessage": "Активного тренування не знайдено.",
+  "@activeWorkoutNoneMessage": {
+    "description": "Повідомлення, коли активного тренування не знайдено"
+  },
+  "activeWorkoutButtonBackToRoutines": "Назад до програм",
+  "@activeWorkoutButtonBackToRoutines": {
+    "description": "Текст кнопки для повернення, якщо активного тренування немає"
+  },
+  "activeWorkoutErrorNoExercises": "Це тренування не містить вправ.",
+  "@activeWorkoutErrorNoExercises": {
+    "description": "Повідомлення про помилку, якщо активне тренування не має вправ"
+  },
+  "activeWorkoutButtonAddFirstExercise": "Додати першу вправу",
+  "@activeWorkoutButtonAddFirstExercise": {
+    "description": "Текст кнопки для додавання першої вправи до порожнього тренування"
+  },
+  "activeWorkoutButtonFinishEmpty": "Завершити порожнє тренування",
+  "@activeWorkoutButtonFinishEmpty": {
+    "description": "Текст кнопки для завершення порожнього тренування"
+  },
+  "activeWorkoutErrorExerciseNoSets": "Помилка: Вправа ''{exerciseName}'' не має підходів.",
+  "@activeWorkoutErrorExerciseNoSets": {
+    "description": "Повідомлення про помилку, якщо конкретна вправа не має підходів під час тренування",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "activeWorkoutErrorExerciseNoSetsHelp": "Будь ласка, відредагуйте програму або зверніться до підтримки.",
+  "@activeWorkoutErrorExerciseNoSetsHelp": {
+    "description": "Допоміжний текст для помилки, коли вправа не має підходів"
+  },
+  "activeWorkoutButtonGoBack": "Повернутися назад",
+  "@activeWorkoutButtonGoBack": {
+    "description": "Текст кнопки для повернення назад"
+  },
+  "activeWorkoutErrorUnexpected": "Сталася неочікувана помилка. Будь ласка, перезапустіть.",
+  "@activeWorkoutErrorUnexpected": {
+    "description": "Загальне неочікуване повідомлення про помилку для екрана активного тренування"
+  },
+  "workoutCompleteTitleLevelUp": "НОВИЙ РІВЕНЬ!",
+  "@workoutCompleteTitleLevelUp": {
+    "description": "Заголовок на екрані завершення тренування, якщо користувач підвищив рівень"
+  },
+  "workoutCompleteTitleDefault": "Тренування Завершено!",
+  "@workoutCompleteTitleDefault": {
+    "description": "Стандартний заголовок на екрані завершення тренування"
+  },
+  "workoutCompleteSubtitleLevelUp": "Ви досягли {level} рівня!",
+  "@workoutCompleteSubtitleLevelUp": {
+    "description": "Підзаголовок на екрані завершення тренування, якщо користувач підвищив рівень",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteStatDuration": "Тривалість: {durationMinutes} хв",
+  "@workoutCompleteStatDuration": {
+    "description": "Статистика тривалості тренування на екрані завершення",
+    "placeholders": {
+      "durationMinutes": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteStatVolume": "Загальний об'єм: {volume} КГ",
+  "@workoutCompleteStatVolume": {
+    "description": "Статистика загального об'єму тренування на екрані завершення",
+    "placeholders": {
+      "volume": {
+        "type": "String"
+      }
+    }
+  },
+  "workoutCompleteStatXpGained": "+{xpGained} XP НАБУТО",
+  "@workoutCompleteStatXpGained": {
+    "description": "Статистика набутого XP на екрані завершення тренування",
+    "placeholders": {
+      "xpGained": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteXpBarLabelLevel": "РІВ {level}",
+  "@workoutCompleteXpBarLabelLevel": {
+    "description": "Мітка для рівня в XP-барі на екрані завершення тренування",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteXpBarText": "{currentXp}/{totalXp} XP",
+  "@workoutCompleteXpBarText": {
+    "description": "Текст прогресу XP в XP-барі на екрані завершення тренування",
+    "placeholders": {
+      "currentXp": {
+        "type": "String"
+      },
+      "totalXp": {
+        "type": "String"
+      }
+    }
+  },
+  "workoutCompleteButtonAwesome": "Чудово!",
+  "@workoutCompleteButtonAwesome": {
+    "description": "Текст кнопки на екрані завершення тренування для закриття"
+  },
+  "currentSetDisplayWeightDialogTitle": "Встановити вагу (КГ)",
+  "@currentSetDisplayWeightDialogTitle": {
+    "description": "Заголовок для діалогового вікна встановлення ваги для підходу"
+  },
+  "currentSetDisplayWeightDialogHint": "Введіть вагу",
+  "@currentSetDisplayWeightDialogHint": {
+    "description": "Підказка для поля вводу ваги в діалоговому вікні встановлення ваги"
+  },
+  "currentSetDisplayWeightDialogButtonCancel": "Скасувати",
+  "@currentSetDisplayWeightDialogButtonCancel": {
+    "description": "Кнопка скасування в діалоговому вікні встановлення ваги"
+  },
+  "currentSetDisplayWeightDialogButtonSet": "Встановити",
+  "@currentSetDisplayWeightDialogButtonSet": {
+    "description": "Кнопка встановлення в діалоговому вікні встановлення ваги"
+  },
+  "currentSetDisplaySetLabelPrefix": "ПІДХІД ",
+  "@currentSetDisplaySetLabelPrefix": {
+    "description": "Префікс для відображення номера підходу"
+  },
+  "currentSetDisplayWeightLabelPrefix": "ВАГА: ",
+  "@currentSetDisplayWeightLabelPrefix": {
+    "description": "Префікс для відображення ваги"
+  },
+  "currentSetDisplayUnitKgSuffix": " КГ",
+  "@currentSetDisplayUnitKgSuffix": {
+    "description": "Суфікс для одиниці кілограмів"
+  },
+  "currentSetDisplayRepsLabelSuffix": " ПОВТОРЕНЬ",
+  "@currentSetDisplayRepsLabelSuffix": {
+    "description": "Суфікс для відображення повторень"
+  },
+  "currentSetDisplayRpeHelpText": "Оцініть, наскільки важко було виконати повторення\nза шкалою від 0 до 10.",
+  "@currentSetDisplayRpeHelpText": {
+    "description": "Допоміжний текст для повзунків RPE"
+  },
+  "currentSetDisplayNoRepsPlaceholder": "Додайте повторення",
+  "@currentSetDisplayNoRepsPlaceholder": {
+    "description": "Текст-заповнювач, коли для повзунків RPE не встановлено повторень"
+  },
+  "currentSetDisplayButtonPrevSet": "< ПОПЕРЕД. ПІДХІД",
+  "@currentSetDisplayButtonPrevSet": {
+    "description": "Текст кнопки для переходу до попереднього підходу"
+  },
+  "currentSetDisplayButtonFinishWorkout": "ЗАВЕРШИТИ ТРЕНУВАННЯ",
+  "@currentSetDisplayButtonFinishWorkout": {
+    "description": "Текст кнопки для завершення тренування, коли на останньому підході"
+  },
+  "currentSetDisplayButtonNextExercise": "НАСТУПНА ВПРАВА >",
+  "@currentSetDisplayButtonNextExercise": {
+    "description": "Текст кнопки для переходу до наступної вправи"
+  },
+  "currentSetDisplayButtonNextSet": "НАСТУПНИЙ ПІДХІД >",
+  "@currentSetDisplayButtonNextSet": {
+    "description": "Текст кнопки для переходу до наступного підходу"
+  },
+  "progressScreenLoadingData": "Завантаження даних прогресу...",
+  "@progressScreenLoadingData": {
+    "description": "Повідомлення, що відображається під час початкового завантаження даних екрана прогресу"
+  },
+  "progressScreenRefreshingData": "Оновлення даних прогресу...",
+  "@progressScreenRefreshingData": {
+    "description": "Повідомлення, що відображається під час оновлення даних екрана прогресу"
+  },
+  "progressScreenErrorNotAuthRefresh": "Користувач не автентифікований. Неможливо оновити.",
+  "@progressScreenErrorNotAuthRefresh": {
+    "description": "Повідомлення про помилку, якщо користувач не автентифікований під час оновлення"
+  },
+  "progressScreenErrorProfileNotFoundRefresh": "Профіль користувача не знайдено під час оновлення.",
+  "@progressScreenErrorProfileNotFoundRefresh": {
+    "description": "Повідомлення про помилку, якщо профіль користувача не знайдено під час оновлення"
+  },
+  "progressScreenErrorFailedRefresh": "Не вдалося оновити дані: {errorMessage}",
+  "@progressScreenErrorFailedRefresh": {
+    "description": "Повідомлення про помилку при невдалому оновленні даних",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenLoadingWorkoutStats": "Завантаження статистики тренувань...",
+  "@progressScreenLoadingWorkoutStats": {
+    "description": "Повідомлення при завантаженні саме статистики тренувань"
+  },
+  "progressScreenRefreshingWorkoutStats": "Оновлення статистики тренувань...",
+  "@progressScreenRefreshingWorkoutStats": {
+    "description": "Повідомлення при оновленні саме статистики тренувань"
+  },
+  "progressScreenErrorFailedProcessWorkoutData": "Не вдалося обробити дані тренувань: {errorMessage}",
+  "@progressScreenErrorFailedProcessWorkoutData": {
+    "description": "Повідомлення про помилку при обробці даних тренувань",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenXpToNextLevel": "XP ДО НАСТУПНОГО РІВНЯ!",
+  "@progressScreenXpToNextLevel": {
+    "description": "Текст, що вказує на кількість XP, необхідну для наступного рівня"
+  },
+  "progressScreenVolumeTitle": "ОБ'ЄМ (ОСТАННІ 7 ДНІВ - ПІДХОДИ)",
+  "@progressScreenVolumeTitle": {
+    "description": "Заголовок для розділу карти м'язів за об'ємом"
+  },
+  "progressScreenNoVolumeData": "Немає даних про тренування за останні 7 днів для відображення на карті м'язів.",
+  "@progressScreenNoVolumeData": {
+    "description": "Повідомлення, коли немає даних про об'єм для карти м'язів"
+  },
+  "progressScreenRpeTrendTitle": "НАТРУГА (RPE ТРЕНД - ОСТАННІ {maxWorkouts} ТРЕНУВАНЬ)",
+  "@progressScreenRpeTrendTitle": {
+    "description": "Заголовок для розділу тренду RPE",
+    "placeholders": {
+      "maxWorkouts": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenNoRpeData": "Останнім часом не було зареєстровано даних RPE для жодної вправи.",
+  "@progressScreenNoRpeData": {
+    "description": "Повідомлення, коли немає даних RPE"
+  },
+  "progressScreenAvgRpeLabel": "СЕР. RPE - ",
+  "@progressScreenAvgRpeLabel": {
+    "description": "Префікс мітки для середнього значення RPE"
+  },
+  "progressScreenStrengthTrendTitle": "СИЛА (ТРЕНД ВАГИ - ОСТАННІ {maxWorkouts} ТРЕНУВАНЬ)",
+  "@progressScreenStrengthTrendTitle": {
+    "description": "Заголовок для розділу тренду сили (ваги)",
+    "placeholders": {
+      "maxWorkouts": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenNoWeightData": "Останнім часом не було зареєстровано даних про вагу для жодної вправи.",
+  "@progressScreenNoWeightData": {
+    "description": "Повідомлення, коли немає даних про вагу для тренду"
+  },
+  "progressScreenAvgWeightLabel": "СЕР. ВАГА - ",
+  "@progressScreenAvgWeightLabel": {
+    "description": "Префікс мітки для середнього значення ваги"
+  },
+  "progressScreenAdviceTitle": "ПОРАДИ",
+  "@progressScreenAdviceTitle": {
+    "description": "Заголовок для розділу порад"
+  },
+  "progressScreenNoAdvice": "Наразі нових порад немає. Продовжуйте в тому ж дусі!",
+  "@progressScreenNoAdvice": {
+    "description": "Повідомлення, коли немає доступних порад"
+  },
+  "progressScreenErrorLoadAdvice": "Помилка завантаження порад: {message}",
+  "@progressScreenErrorLoadAdvice": {
+    "description": "Повідомлення про помилку при невдалому завантаженні порад",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenLoadingAdvice": "Завантаження порад...",
+  "@progressScreenLoadingAdvice": {
+    "description": "Повідомлення, що відображається під час завантаження порад"
+  },
+  "progressScreenButtonSendTestAdvice": "Надіслати тестові поради",
+  "@progressScreenButtonSendTestAdvice": {
+    "description": "Текст кнопки для надсилання тестових сповіщень-порад"
+  },
+  "progressScreenButtonTryAgain": "Спробувати ще",
+  "@progressScreenButtonTryAgain": {
+    "description": "Текст кнопки для повторного завантаження даних при помилці"
+  },
+  "progressScreenErrorLoadingProfile": "Помилка завантаження профілю: {errorMessage}",
+  "@progressScreenErrorLoadingProfile": {
+    "description": "Повідомлення про помилку при невдалому завантаженні профілю",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenNoData": "Даних про прогрес ще немає. Почніть тренуватися!",
+  "@progressScreenNoData": {
+    "description": "Повідомлення, коли немає даних про прогрес"
+  },
+  "progressScreenLevelLabel": "РІВ {level}",
+  "@progressScreenLevelLabel": {
+    "description": "Мітка для рівня, наприклад, РІВ 5",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenXpProgressText": "{currentXp}/{totalXp} XP",
+  "@progressScreenXpProgressText": {
+    "description": "Текст, що показує прогрес XP, наприклад, 150/200 XP",
+    "placeholders": {
+      "currentXp": {
+        "type": "String"
+      },
+      "totalXp": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenExercisePlaceholder": "ВПРАВА {placeholder}",
+  "@progressScreenExercisePlaceholder": {
+    "description": "Заповнювач для назви вправи, якщо не знайдено, наприклад, ВПРАВА ABCDE...",
+    "placeholders": {
+      "placeholder": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenKgUnit": "КГ",
+  "@progressScreenKgUnit": {
+    "description": "Одиниця для кілограмів, скорочена форма"
   }
 }

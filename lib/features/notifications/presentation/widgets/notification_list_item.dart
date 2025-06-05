@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 import '../../../../core/domain/entities/app_notification.dart';
 import '../cubit/notifications_cubit.dart';
-import '../screens/notification_detail_screen.dart'; 
+import '../screens/notification_detail_screen.dart';
 
 class NotificationListItem extends StatelessWidget {
   final AppNotification notification;
@@ -101,6 +102,7 @@ class NotificationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!; // For localization
     final timeAgo = DateFormat.MMMd().add_jm().format(notification.timestamp.toDate());
     final bool isUnread = !notification.isRead;
 
@@ -112,10 +114,10 @@ class NotificationListItem extends StatelessWidget {
         context.read<NotificationsCubit>().deleteNotification(notification.id);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${notification.title} removed.'),
+            content: Text(loc.notificationListItemSnackbarRemoved(notification.title)), // LOCALIZED
             duration: const Duration(seconds: 2),
             action: SnackBarAction(
-              label: 'UNDO',
+              label: loc.notificationListItemSnackbarUndo, // LOCALIZED
               onPressed: () {
                 developer.log('UNDO pressed for ${notification.id} - not implemented', name: 'NotificationListItem');
               },
@@ -127,12 +129,12 @@ class NotificationListItem extends StatelessWidget {
         color: Colors.red.shade700,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Icon(Icons.delete_forever, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const Icon(Icons.delete_forever, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(loc.notificationListItemDismissDelete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // LOCALIZED
           ],
         ),
       ),
@@ -140,12 +142,12 @@ class NotificationListItem extends StatelessWidget {
         color: Colors.red.shade700,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            SizedBox(width: 8),
-            Icon(Icons.delete_forever, color: Colors.white),
+            Text(loc.notificationListItemDismissDelete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // LOCALIZED
+            const SizedBox(width: 8),
+            const Icon(Icons.delete_forever, color: Colors.white),
           ],
         ),
       ),

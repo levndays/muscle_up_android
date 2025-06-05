@@ -77,7 +77,7 @@ class DashboardScreen extends StatelessWidget {
         BlocProvider(
           create: (cubitContext) => DashboardStatsCubit(
             RepositoryProvider.of<WorkoutLogRepository>(cubitContext),
-            RepositoryProvider.of<RoutineRepository>(cubitContext), 
+            RepositoryProvider.of<RoutineRepository>(cubitContext),
             RepositoryProvider.of<fb_auth.FirebaseAuth>(cubitContext),
           ),
         ),
@@ -92,7 +92,7 @@ class DashboardScreen extends StatelessWidget {
         builder: (context, userState) {
           developer.log("DashboardScreen: UserProfileCubit state: $userState", name: "DashboardScreen");
 
-          String greetingName = 'User';
+          String greetingName = 'User'; // Fallback
           String weightStat = '-- KG';
           String streakStat = '0 DAY';
           String currentStreakForIcon = "0";
@@ -103,19 +103,19 @@ class DashboardScreen extends StatelessWidget {
                 ? userProfile.displayName!.split(' ').first
                 : userProfile.username?.isNotEmpty == true
                     ? userProfile.username!
-                    : userProfile.email?.split('@').first ?? 'User';
+                    : userProfile.email?.split('@').first ?? loc.profileScreenNameFallbackUser; // LOCALIZED FALLBACK
             weightStat = userProfile.weightKg != null
-                ? '${userProfile.weightKg!.toStringAsFixed(1)} KG'
-                : '-- KG';
-            streakStat = '${userProfile.currentStreak} DAY';
+                ? '${userProfile.weightKg!.toStringAsFixed(1)} ${loc.profileScreenUnitKg}' // LOCALIZED UNIT
+                : '-- ${loc.profileScreenUnitKg}'; // LOCALIZED UNIT
+            streakStat = '${userProfile.currentStreak} DAY'; // "DAY" could be localized if needed for pluralization
             currentStreakForIcon = userProfile.currentStreak.toString();
           } else if (userState is UserProfileLoading) {
-            greetingName = 'Loading...';
-            weightStat = '... KG';
+            greetingName = loc.dashboardNotificationsLoading.split(' ').first; // "Loading..."
+            weightStat = '... ${loc.profileScreenUnitKg}'; // LOCALIZED UNIT
             streakStat = '... DAY';
             currentStreakForIcon = "...";
           } else if (userState is UserProfileError) {
-            greetingName = 'Error';
+            greetingName = 'Error'; // This can be localized as loc.errorGeneric or similar
             weightStat = 'N/A';
             streakStat = 'N/A';
             currentStreakForIcon = "!";
@@ -128,7 +128,7 @@ class DashboardScreen extends StatelessWidget {
                 context.read<UserProfileCubit>().fetchUserProfile(userId, forceRemote: true);
                 context.read<NotificationsCubit>().refreshNotifications();
               }
-              context.read<DashboardStatsCubit>().fetchAllDashboardStats(); 
+              context.read<DashboardStatsCubit>().fetchAllDashboardStats();
               context.read<UpcomingScheduleCubit>().fetchUpcomingSchedule();
             },
             child: SingleChildScrollView(
@@ -222,7 +222,7 @@ class DashboardScreen extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                loc.volumeTrendChartError(statsState.message),
+                                loc.volumeTrendChartError(statsState.message), // LOCALIZED
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
                               ),
@@ -238,7 +238,7 @@ class DashboardScreen extends StatelessWidget {
                               : Colors.grey[200]?.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Center(child: Text(loc.volumeTrendChartLoading, style: const TextStyle(color: Colors.grey))),
+                        child: Center(child: Text(loc.volumeTrendChartLoading, style: const TextStyle(color: Colors.grey))), // LOCALIZED
                       );
                     },
                   ),
@@ -377,7 +377,7 @@ class DashboardScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.send_to_mobile_outlined),
-                      label: const Text("Send Test Notifications"),
+                      label: Text(loc.dashboardButtonSendTestNotifications), // LOCALIZED
                       onPressed: () => _createTestNotifications(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.tealAccent.shade700,

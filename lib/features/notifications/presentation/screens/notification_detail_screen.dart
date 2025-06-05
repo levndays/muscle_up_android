@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:muscle_up/core/domain/entities/app_notification.dart';
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 class NotificationDetailScreen extends StatelessWidget {
   final AppNotification notification;
@@ -97,6 +98,7 @@ class NotificationDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+    final loc = AppLocalizations.of(context)!; // For localization
 
     return Scaffold(
       appBar: AppBar(
@@ -153,7 +155,7 @@ class NotificationDetailScreen extends StatelessWidget {
                 if (notification.relatedEntityId != null || notification.relatedEntityType != null) ...[
                   const Divider(height: 24, thickness: 0.8),
                   Text(
-                    'Related Information:',
+                    loc.notificationDetailRelatedInfoTitle, // LOCALIZED
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: onSurfaceColor,
@@ -161,9 +163,9 @@ class NotificationDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   if (notification.relatedEntityType != null)
-                    _buildInfoRow(context, 'Type:', notification.relatedEntityType!),
+                    _buildInfoRow(context, loc.notificationDetailRelatedInfoTypeLabel, notification.relatedEntityType!), // LOCALIZED
                   if (notification.relatedEntityId != null)
-                    _buildInfoRow(context, 'ID:', notification.relatedEntityId!),
+                    _buildInfoRow(context, loc.notificationDetailRelatedInfoIdLabel, notification.relatedEntityId!), // LOCALIZED
                   const SizedBox(height: 10),
                 ],
                 if (notification.isRead) ...[
@@ -174,7 +176,7 @@ class NotificationDetailScreen extends StatelessWidget {
                       Icon(Icons.check_circle_outline, color: Colors.green.shade600, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        'Read',
+                        loc.notificationDetailStatusRead, // LOCALIZED
                         style: TextStyle(color: Colors.green.shade700, fontSize: 12),
                       ),
                     ],

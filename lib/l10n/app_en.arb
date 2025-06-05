@@ -268,6 +268,10 @@
   "@profileSetupOptionalFieldSuffix": {
     "description": "Suffix for optional field labels"
   },
+  "authGateFinalizingAccountSetup": "Finalizing account setup...",
+  "@authGateFinalizingAccountSetup": {
+    "description": "Message shown in AuthGate while waiting for profile sync"
+  },
   "dashboardGreetingWelcome": "Welcome,",
   "@dashboardGreetingWelcome": {
     "description": "Greeting text on the dashboard, part 1. Name will be appended."
@@ -374,26 +378,26 @@
   "@startWorkoutButton": {
     "description": "Text for the main floating action button to start a workout"
   },
-   "startWorkoutFabErrorLogin": "Please log in to start a workout.",
-   "@startWorkoutFabErrorLogin": {
+  "startWorkoutFabErrorLogin": "Please log in to start a workout.",
+  "@startWorkoutFabErrorLogin": {
     "description": "Error message if user tries to start workout without being logged in."
   },
   "startWorkoutFabErrorActiveSession": "Error checking active session: {errorDetails}",
   "@startWorkoutFabErrorActiveSession": {
     "description": "Error message when checking for an active workout session fails for FAB.",
     "placeholders": {
-        "errorDetails": {
-            "type": "String"
-        }
+      "errorDetails": {
+        "type": "String"
+      }
     }
   },
   "startWorkoutFabErrorLoadRoutines": "Could not load routines. Please try again. Error: {errorDetails}",
   "@startWorkoutFabErrorLoadRoutines": {
     "description": "Error message when fetching routines fails for FAB logic.",
     "placeholders": {
-        "errorDetails": {
-            "type": "String"
-        }
+      "errorDetails": {
+        "type": "String"
+      }
     }
   },
   "startWorkoutFabNewRoutineCreatedSnackbar": "New routine created! Select it from the list to start.",
@@ -415,5 +419,1321 @@
   "dashboardTabProfile": "PROFILE",
   "@dashboardTabProfile": {
     "description": "Label for the Profile tab in the BottomNavigationBar"
+  },
+  "userRoutinesScreenTitle": "My Routines",
+  "@userRoutinesScreenTitle": {
+    "description": "App bar title for the user's routines list screen when in selection mode"
+  },
+  "userRoutinesErrorLoad": "Error loading routines: {message}",
+  "@userRoutinesErrorLoad": {
+    "description": "Error message when routines fail to load",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "userRoutinesEmptyTitle": "You have no routines yet.",
+  "@userRoutinesEmptyTitle": {
+    "description": "Title text when the user has no routines"
+  },
+  "userRoutinesEmptySubtitle": "Create a routine to start organizing your workouts!",
+  "@userRoutinesEmptySubtitle": {
+    "description": "Subtitle text encouraging user to create a routine"
+  },
+  "userRoutinesButtonCreateFirst": "Create Your First Routine",
+  "@userRoutinesButtonCreateFirst": {
+    "description": "Button text to create the first routine when the list is empty"
+  },
+  "userRoutinesFabNewRoutine": "NEW ROUTINE",
+  "@userRoutinesFabNewRoutine": {
+    "description": "Floating action button text to create a new routine"
+  },
+  "routineListItemMenuStartWorkout": "Start Workout",
+  "@routineListItemMenuStartWorkout": {
+    "description": "Menu option to start a workout from a routine"
+  },
+  "routineListItemMenuEditRoutine": "Edit Routine",
+  "@routineListItemMenuEditRoutine": {
+    "description": "Menu option to edit a routine"
+  },
+  "routineListItemMenuShareRoutine": "Share Routine",
+  "@routineListItemMenuShareRoutine": {
+    "description": "Menu option to share a routine"
+  },
+  "routineListItemMenuDeleteRoutine": "Delete Routine",
+  "@routineListItemMenuDeleteRoutine": {
+    "description": "Menu option to delete a routine"
+  },
+  "routineListItemDeleteConfirmTitle": "Confirm Delete",
+  "@routineListItemDeleteConfirmTitle": {
+    "description": "Title of the confirm delete dialog for a routine"
+  },
+  "routineListItemDeleteConfirmMessage": "Are you sure you want to delete \"{routineName}\"? This action cannot be undone.",
+  "@routineListItemDeleteConfirmMessage": {
+    "description": "Confirmation message for deleting a routine",
+    "placeholders": {
+      "routineName": {
+        "type": "String"
+      }
+    }
+  },
+  "routineListItemDeleteConfirmButtonCancel": "Cancel",
+  "@routineListItemDeleteConfirmButtonCancel": {
+    "description": "Cancel button in delete confirmation dialog"
+  },
+  "routineListItemDeleteConfirmButtonDelete": "Delete",
+  "@routineListItemDeleteConfirmButtonDelete": {
+    "description": "Delete button in delete confirmation dialog"
+  },
+  "routineListItemSnackbarDeleted": "Routine \"{routineName}\" deleted.",
+  "@routineListItemSnackbarDeleted": {
+    "description": "Snackbar message after a routine is deleted",
+    "placeholders": {
+      "routineName": {
+        "type": "String"
+      }
+    }
+  },
+  "routineListItemSnackbarErrorDelete": "Error deleting routine: {errorDetails}",
+  "@routineListItemSnackbarErrorDelete": {
+    "description": "Snackbar message on error deleting a routine",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "createEditRoutineScreenTitleEdit": "Edit Routine",
+  "@createEditRoutineScreenTitleEdit": {
+    "description": "App bar title for editing a routine"
+  },
+  "createEditRoutineScreenTitleCreate": "Create Routine",
+  "@createEditRoutineScreenTitleCreate": {
+    "description": "App bar title for creating a new routine"
+  },
+  "createEditRoutineTooltipDelete": "Delete Routine",
+  "@createEditRoutineTooltipDelete": {
+    "description": "Tooltip for the delete routine button"
+  },
+  "createEditRoutineSnackbarFormErrors": "Please correct the errors in the form.",
+  "@createEditRoutineSnackbarFormErrors": {
+    "description": "Snackbar message if form validation fails"
+  },
+  "createEditRoutineSuccessMessage": "{message}",
+  "@createEditRoutineSuccessMessage": {
+    "description": "General success message for routine operations",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "createEditRoutineErrorMessage": "Error: {errorDetails}",
+  "@createEditRoutineErrorMessage": {
+    "description": "General error message for routine operations",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "createEditRoutineStatusUpdated": "Routine updated successfully!",
+  "@createEditRoutineStatusUpdated": {
+    "description": "Part of success message: routine updated"
+  },
+  "createEditRoutineStatusCreated": "Routine created successfully!",
+  "@createEditRoutineStatusCreated": {
+    "description": "Part of success message: routine created"
+  },
+  "createEditRoutineStatusDeleted": "Routine deleted successfully!",
+  "@createEditRoutineStatusDeleted": {
+    "description": "Part of success message: routine deleted"
+  },
+  "createEditRoutineErrorNameEmpty": "Routine name cannot be empty.",
+  "@createEditRoutineErrorNameEmpty": {
+    "description": "Error message if routine name is empty"
+  },
+  "createEditRoutineErrorNoExercises": "Routine must have at least one exercise.",
+  "@createEditRoutineErrorNoExercises": {
+    "description": "Error message if routine has no exercises"
+  },
+  "createEditRoutineErrorDeleteNew": "Cannot delete a new or unsaved routine.",
+  "@createEditRoutineErrorDeleteNew": {
+    "description": "Error message when trying to delete an unsaved routine"
+  },
+  "createEditRoutineLoadingMessageSaving": "Saving routine...",
+  "@createEditRoutineLoadingMessageSaving": {
+    "description": "Loading message when saving a routine"
+  },
+  "createEditRoutineLoadingMessageDeleting": "Deleting routine...",
+  "@createEditRoutineLoadingMessageDeleting": {
+    "description": "Loading message when deleting a routine"
+  },
+  "createEditRoutineNameLabel": "Routine Name*",
+  "@createEditRoutineNameLabel": {
+    "description": "Label for routine name input field"
+  },
+  "createEditRoutineNameErrorEmpty": "Name cannot be empty",
+  "@createEditRoutineNameErrorEmpty": {
+    "description": "Validation error for empty routine name"
+  },
+  "createEditRoutineDescriptionLabel": "Description (optional)",
+  "@createEditRoutineDescriptionLabel": {
+    "description": "Label for routine description input field"
+  },
+  "createEditRoutineScheduledDaysLabel": "Scheduled Days:",
+  "@createEditRoutineScheduledDaysLabel": {
+    "description": "Label for scheduled days selection"
+  },
+  "createEditRoutineExercisesLabel": "Exercises ({count}):",
+  "@createEditRoutineExercisesLabel": {
+    "description": "Label for exercises list, shows count of exercises",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createEditRoutineButtonAddExercise": "Add",
+  "@createEditRoutineButtonAddExercise": {
+    "description": "Button text to add an exercise to the routine"
+  },
+  "createEditRoutineNoExercisesPlaceholder": "No exercises added yet. Tap \"Add\" to begin.",
+  "@createEditRoutineNoExercisesPlaceholder": {
+    "description": "Placeholder text when no exercises are added to a routine"
+  },
+  "createEditRoutineButtonSaveChanges": "Save Changes",
+  "@createEditRoutineButtonSaveChanges": {
+    "description": "Button text to save changes when editing a routine"
+  },
+  "createEditRoutineButtonCreateRoutine": "Create Routine",
+  "@createEditRoutineButtonCreateRoutine": {
+    "description": "Button text to create a new routine"
+  },
+  "addExerciseDialogTitle": "Add \"{exerciseName}\"",
+  "@addExerciseDialogTitle": {
+    "description": "Title for the dialog to add an exercise to a routine",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "addExerciseDialogSetsLabel": "Number of Sets",
+  "@addExerciseDialogSetsLabel": {
+    "description": "Label for number of sets input field in add exercise dialog"
+  },
+  "addExerciseDialogSetsErrorEmpty": "Cannot be empty",
+  "@addExerciseDialogSetsErrorEmpty": {
+    "description": "Validation error for empty sets count"
+  },
+  "addExerciseDialogSetsErrorInvalid": "Must be a positive number",
+  "@addExerciseDialogSetsErrorInvalid": {
+    "description": "Validation error for invalid sets count"
+  },
+  "addExerciseDialogNotesLabel": "Notes (optional)",
+  "@addExerciseDialogNotesLabel": {
+    "description": "Label for notes input field in add exercise dialog"
+  },
+  "addExerciseDialogNotesHint": "E.g., focus on form, pyramid sets",
+  "@addExerciseDialogNotesHint": {
+    "description": "Hint text for notes input field in add exercise dialog"
+  },
+  "addExerciseDialogButtonCancel": "Cancel",
+  "@addExerciseDialogButtonCancel": {
+    "description": "Cancel button in add exercise dialog"
+  },
+  "addExerciseDialogButtonAdd": "Add Exercise",
+  "@addExerciseDialogButtonAdd": {
+    "description": "Add button in add exercise dialog"
+  },
+  "editExerciseDialogTitle": "Edit \"{exerciseName}\"",
+  "@editExerciseDialogTitle": {
+    "description": "Title for editing an exercise within a routine",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "editExerciseDialogButtonUpdate": "Update",
+  "@editExerciseDialogButtonUpdate": {
+    "description": "Update button in edit exercise dialog"
+  },
+  "exerciseExplorerScreenTitleSelect": "Select Exercise",
+  "@exerciseExplorerScreenTitleSelect": {
+    "description": "App bar title for exercise explorer when in selection mode"
+  },
+  "exerciseExplorerScreenTitleLibrary": "Exercise Library",
+  "@exerciseExplorerScreenTitleLibrary": {
+    "description": "App bar title for exercise explorer when browsing"
+  },
+  "exerciseExplorerErrorLoad": "Error loading exercises: {message}",
+  "@exerciseExplorerErrorLoad": {
+    "description": "Error message when exercises fail to load in explorer",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "exerciseExplorerEmpty": "No exercises found in the library yet. Content is being added!",
+  "@exerciseExplorerEmpty": {
+    "description": "Message shown when exercise library is empty"
+  },
+  "exerciseExplorerButtonTryAgain": "Try Again",
+  "@exerciseExplorerButtonTryAgain": {
+    "description": "Button to retry fetching exercises"
+  },
+  "exerciseExplorerLoading": "Loading exercises...",
+  "@exerciseExplorerLoading": {
+    "description": "Message shown while loading exercises"
+  },
+  "dashboardButtonSendTestNotifications": "Send Test Notifications",
+  "@dashboardButtonSendTestNotifications": {
+    "description": "Button on dashboard to send test notifications"
+  },
+  "leagueScreenButtonBackTooltip": "Back",
+  "@leagueScreenButtonBackTooltip": {
+    "description": "Tooltip for the back button on the league screen"
+  },
+  "leagueScreenLeaderboardTitle": "LEADERBOARD",
+  "@leagueScreenLeaderboardTitle": {
+    "description": "Title for the leaderboard section on the league screen"
+  },
+  "leagueScreenErrorLoad": "Error: {errorMessage}",
+  "@leagueScreenErrorLoad": {
+    "description": "Error message when loading league data fails",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueScreenNoPlayers": "No players in this league yet.",
+  "@leagueScreenNoPlayers": {
+    "description": "Message shown when a league has no players"
+  },
+  "leagueScreenButtonTryAgain": "Try Again",
+  "@leagueScreenButtonTryAgain": {
+    "description": "Button text to retry loading league data"
+  },
+  "notificationDetailRelatedInfoTitle": "Related Information:",
+  "@notificationDetailRelatedInfoTitle": {
+    "description": "Title for the related information section in notification details"
+  },
+  "notificationDetailRelatedInfoTypeLabel": "Type:",
+  "@notificationDetailRelatedInfoTypeLabel": {
+    "description": "Label for related entity type in notification details"
+  },
+  "notificationDetailRelatedInfoIdLabel": "ID:",
+  "@notificationDetailRelatedInfoIdLabel": {
+    "description": "Label for related entity ID in notification details"
+  },
+  "notificationDetailStatusRead": "Read",
+  "@notificationDetailStatusRead": {
+    "description": "Status indicating a notification has been read"
+  },
+  "notificationListItemSnackbarRemoved": "{notificationTitle} removed.",
+  "@notificationListItemSnackbarRemoved": {
+    "description": "Snackbar message after a notification is removed",
+    "placeholders": {
+      "notificationTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationListItemSnackbarUndo": "UNDO",
+  "@notificationListItemSnackbarUndo": {
+    "description": "Action text to undo a notification removal"
+  },
+  "notificationListItemDismissDelete": "Delete",
+  "@notificationListItemDismissDelete": {
+    "description": "Text shown on dismissible background for deleting notification"
+  },
+  "profileScreenLogoutConfirmTitle": "Confirm Logout",
+  "@profileScreenLogoutConfirmTitle": {
+    "description": "Title for the logout confirmation dialog"
+  },
+  "profileScreenLogoutConfirmMessage": "Are you sure you want to log out?",
+  "@profileScreenLogoutConfirmMessage": {
+    "description": "Message in the logout confirmation dialog"
+  },
+  "profileScreenLogoutConfirmButtonCancel": "Cancel",
+  "@profileScreenLogoutConfirmButtonCancel": {
+    "description": "Cancel button in the logout confirmation dialog"
+  },
+  "profileScreenLogoutConfirmButtonLogOut": "Log Out",
+  "@profileScreenLogoutConfirmButtonLogOut": {
+    "description": "Log out button in the logout confirmation dialog"
+  },
+  "profileScreenLogoutErrorSnackbar": "Error logging out: {errorDetails}",
+  "@profileScreenLogoutErrorSnackbar": {
+    "description": "Snackbar message if logging out fails",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "profileScreenNameFallbackUser": "User",
+  "@profileScreenNameFallbackUser": {
+    "description": "Fallback name if user's display name or username is not set"
+  },
+  "profileScreenStatLabelFollowers": "FOLLOWERS",
+  "@profileScreenStatLabelFollowers": {
+    "description": "Label for followers count on profile screen"
+  },
+  "profileScreenStatLabelFollowing": "FOLLOWING",
+  "@profileScreenStatLabelFollowing": {
+    "description": "Label for following count on profile screen"
+  },
+  "profileScreenStatLabelBestStreak": "BEST STREAK",
+  "@profileScreenStatLabelBestStreak": {
+    "description": "Label for best streak on profile screen"
+  },
+  "profileScreenStatLabelWeight": "WEIGHT",
+  "@profileScreenStatLabelWeight": {
+    "description": "Label for weight on profile screen"
+  },
+  "profileScreenUnitKg": "KG",
+  "@profileScreenUnitKg": {
+    "description": "Unit for kilograms"
+  },
+  "profileScreenGoalLabel": "GOAL: ",
+  "@profileScreenGoalLabel": {
+    "description": "Prefix for fitness goal on profile screen"
+  },
+  "profileScreenLastTrainingLabel": "LAST TRAINING: ",
+  "@profileScreenLastTrainingLabel": {
+    "description": "Prefix for last training date on profile screen"
+  },
+  "profileScreenRewardsTitle": "REWARDS",
+  "@profileScreenRewardsTitle": {
+    "description": "Title for rewards section on profile screen"
+  },
+  "profileScreenNoRewards": "No rewards unlocked yet. Keep training!",
+  "@profileScreenNoRewards": {
+    "description": "Message when user has no rewards"
+  },
+  "profileScreenMyPostsTitle": "MY POSTS",
+  "@profileScreenMyPostsTitle": {
+    "description": "Title for user's posts section on profile screen"
+  },
+  "profileScreenNoPosts": "You haven't made any posts yet.",
+  "@profileScreenNoPosts": {
+    "description": "Message when user has no posts"
+  },
+  "profileScreenButtonEditProfile": "EDIT PROFILE",
+  "@profileScreenButtonEditProfile": {
+    "description": "Button text to edit profile"
+  },
+  "profileScreenButtonLogOut": "LOG OUT",
+  "@profileScreenButtonLogOut": {
+    "description": "Button text to log out"
+  },
+  "profileScreenErrorLoadProfile": "Error loading profile: {errorMessage}",
+  "@profileScreenErrorLoadProfile": {
+    "description": "Error message when profile loading fails on profile screen",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "profileScreenErrorUnexpected": "An unexpected error occurred loading your profile.",
+  "@profileScreenErrorUnexpected": {
+    "description": "Generic error message for profile screen"
+  },
+  "createPostScreenLabelPostType": "Post Type: {postType}",
+  "@createPostScreenLabelPostType": {
+    "description": "Label showing the post type when editing",
+    "placeholders": {
+      "postType": {
+        "type": "String"
+      }
+    }
+  },
+  "createPostSegmentStandard": "Standard",
+  "@createPostSegmentStandard": {
+    "description": "Segmented button option for standard post type"
+  },
+  "createPostSegmentRoutine": "Routine",
+  "@createPostSegmentRoutine": {
+    "description": "Segmented button option for routine share post type"
+  },
+  "createPostSegmentRecord": "Record",
+  "@createPostSegmentRecord": {
+    "description": "Segmented button option for record claim post type"
+  },
+  "createPostLabelSharedRoutine": "Shared Routine:",
+  "@createPostLabelSharedRoutine": {
+    "description": "Label for shared routine section when editing"
+  },
+  "createPostErrorRoutineUnavailable": "Routine details unavailable",
+  "@createPostErrorRoutineUnavailable": {
+    "description": "Error text if routine details are not available for shared routine"
+  },
+  "createPostRoutineExerciseCountSuffix": " exercises",
+  "@createPostRoutineExerciseCountSuffix": {
+    "description": "Suffix for exercise count in shared routine display"
+  },
+  "createPostLabelRecordDetailsReadOnly": "Record Details (Read-only):",
+  "@createPostLabelRecordDetailsReadOnly": {
+    "description": "Label for read-only record details when editing"
+  },
+  "createPostLabelRecordExercise": "Exercise: ",
+  "@createPostLabelRecordExercise": {
+    "description": "Prefix for exercise name in record details"
+  },
+  "createPostLabelRecordWeight": "Weight: ",
+  "@createPostLabelRecordWeight": {
+    "description": "Prefix for weight in record details"
+  },
+  "createPostUnitKgSuffix": " kg",
+  "@createPostUnitKgSuffix": {
+    "description": "Suffix for kilograms unit"
+  },
+  "createPostLabelRecordReps": "Reps: ",
+  "@createPostLabelRecordReps": {
+    "description": "Prefix for repetitions in record details"
+  },
+  "createPostLabelRecordVideo": "Video: ",
+  "@createPostLabelRecordVideo": {
+    "description": "Prefix for video URL in record details"
+  },
+  "createPostLabelRecordDetails": "Record Details:",
+  "@createPostLabelRecordDetails": {
+    "description": "Label for record details section when creating a new record claim"
+  },
+  "createPostHintSelectExercise": "Select Exercise*",
+  "@createPostHintSelectExercise": {
+    "description": "Hint text for exercise selection in record claim"
+  },
+  "createPostHintRecordWeight": "Weight (kg)*",
+  "@createPostHintRecordWeight": {
+    "description": "Hint text for weight input in record claim"
+  },
+  "createPostErrorRecordWeightInvalid": "Invalid weight",
+  "@createPostErrorRecordWeightInvalid": {
+    "description": "Validation error for weight in record claim"
+  },
+  "createPostHintRecordReps": "Repetitions*",
+  "@createPostHintRecordReps": {
+    "description": "Hint text for repetitions input in record claim"
+  },
+  "createPostErrorRecordRepsInvalid": "Invalid repetitions",
+  "@createPostErrorRecordRepsInvalid": {
+    "description": "Validation error for repetitions in record claim"
+  },
+  "createPostHintRecordVideoUrl": "Video URL (optional)",
+  "@createPostHintRecordVideoUrl": {
+    "description": "Hint text for video URL input in record claim"
+  },
+  "createPostErrorRecordVideoUrlInvalid": "Enter a valid URL",
+  "@createPostErrorRecordVideoUrlInvalid": {
+    "description": "Validation error for video URL in record claim"
+  },
+  "createPostLabelAttachImageOptionalReplace": "Attach Image (Optional - Replaces Existing)",
+  "@createPostLabelAttachImageOptionalReplace": {
+    "description": "Label for image attachment when editing and an image exists"
+  },
+  "createPostLabelAttachImageOptional": "Attach Image (Optional)",
+  "@createPostLabelAttachImageOptional": {
+    "description": "Label for image attachment when creating new or no existing image"
+  },
+  "createPostButtonAddImage": "Add Image",
+  "@createPostButtonAddImage": {
+    "description": "Button text to add an image to the post"
+  },
+  "createPostTooltipRemoveImage": "Remove Image",
+  "@createPostTooltipRemoveImage": {
+    "description": "Tooltip for removing a newly selected image"
+  },
+  "createPostTooltipRemoveExistingImage": "Remove Existing Image",
+  "@createPostTooltipRemoveExistingImage": {
+    "description": "Tooltip for removing an existing image when editing"
+  },
+  "createPostToggleEnableComments": "Enable Comments",
+  "@createPostToggleEnableComments": {
+    "description": "Toggle switch label to enable/disable comments"
+  },
+  "createPostCommentsEnabledSubtitle": "Users can comment on this post",
+  "@createPostCommentsEnabledSubtitle": {
+    "description": "Subtitle when comments are enabled"
+  },
+  "createPostCommentsDisabledSubtitle": "Comments are disabled",
+  "@createPostCommentsDisabledSubtitle": {
+    "description": "Subtitle when comments are disabled"
+  },
+  "createPostHintTextContent": "What's on your mind?",
+  "@createPostHintTextContent": {
+    "description": "Hint text for the main post content field"
+  },
+  "createPostErrorContentOrImageRequired": "Post content or image is required.",
+  "@createPostErrorContentOrImageRequired": {
+    "description": "Validation error if standard post has no content and no image"
+  },
+  "createPostAppBarTitleEdit": "Edit Post",
+  "@createPostAppBarTitleEdit": {
+    "description": "App bar title when editing a post"
+  },
+  "createPostAppBarTitleShareRoutine": "Share Routine",
+  "@createPostAppBarTitleShareRoutine": {
+    "description": "App bar title when sharing a routine as a post"
+  },
+  "createPostAppBarTitleCreate": "Create Post",
+  "@createPostAppBarTitleCreate": {
+    "description": "App bar title when creating a new post"
+  },
+  "createPostButtonSaveChanges": "Save Changes",
+  "@createPostButtonSaveChanges": {
+    "description": "Button text to save changes when editing a post"
+  },
+  "createPostButtonPublish": "Publish",
+  "@createPostButtonPublish": {
+    "description": "Button text to publish a new post"
+  },
+  "createPostSnackbarSuccess": "Post {status} successfully!",
+  "@createPostSnackbarSuccess": {
+    "description": "Snackbar message on successful post creation/update",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "createPostSnackbarError": "Error: {errorDetails}",
+  "@createPostSnackbarError": {
+    "description": "Snackbar message on post creation/update failure",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "createPostStatusUpdated": "updated",
+  "@createPostStatusUpdated": {
+    "description": "Status text for successful post update"
+  },
+  "createPostStatusPublished": "published",
+  "@createPostStatusPublished": {
+    "description": "Status text for successful post creation"
+  },
+  "createPostLoadingUpdating": "Updating post...",
+  "@createPostLoadingUpdating": {
+    "description": "Loading message when updating a post"
+  },
+  "createPostLoadingPublishing": "Publishing post...",
+  "@createPostLoadingPublishing": {
+    "description": "Loading message when publishing a new post"
+  },
+  "createPostErrorUserNotLoggedIn": "User not logged in.",
+  "@createPostErrorUserNotLoggedIn": {
+    "description": "Error message if user is not logged in during post creation"
+  },
+  "createPostErrorContentEmptyStandard": "Post content cannot be empty for a standard post without media.",
+  "@createPostErrorContentEmptyStandard": {
+    "description": "Error message if content and media are empty for standard post"
+  },
+  "createPostErrorFetchProfile": "Could not fetch user profile.",
+  "@createPostErrorFetchProfile": {
+    "description": "Error message if user profile fetch fails during post creation"
+  },
+  "createPostErrorUploadMedia": "Failed to upload media.",
+  "@createPostErrorUploadMedia": {
+    "description": "Error message if media upload fails during post creation"
+  },
+  "exploreScreenEmptyTitle": "Nothing to explore yet.",
+  "@exploreScreenEmptyTitle": {
+    "description": "Title text when the explore feed is empty"
+  },
+  "exploreScreenEmptySubtitle": "Be the first to share something!",
+  "@exploreScreenEmptySubtitle": {
+    "description": "Subtitle text encouraging users to post when explore feed is empty"
+  },
+  "exploreScreenErrorLoad": "Error loading posts: {message}",
+  "@exploreScreenErrorLoad": {
+    "description": "Error message when loading posts for explore feed fails",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "exploreScreenButtonTryAgain": "Try Again",
+  "@exploreScreenButtonTryAgain": {
+    "description": "Button text to retry loading posts for explore feed"
+  },
+  "exploreScreenFabTooltipCreatePost": "Create Post",
+  "@exploreScreenFabTooltipCreatePost": {
+    "description": "Tooltip for the floating action button to create a new post"
+  },
+  "followListScreenTitleFollowers": "Followers",
+  "@followListScreenTitleFollowers": {
+    "description": "App bar title for the followers list screen"
+  },
+  "followListScreenTitleFollowing": "Following",
+  "@followListScreenTitleFollowing": {
+    "description": "App bar title for the following list screen"
+  },
+  "followListScreenErrorLoad": "Error: {message}",
+  "@followListScreenErrorLoad": {
+    "description": "Error message when loading follow list fails",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "followListScreenEmptyFollowers": "This user has no followers yet.",
+  "@followListScreenEmptyFollowers": {
+    "description": "Message shown when the followers list is empty"
+  },
+  "followListScreenEmptyFollowing": "This user is not following anyone yet.",
+  "@followListScreenEmptyFollowing": {
+    "description": "Message shown when the following list is empty"
+  },
+  "followListScreenButtonTryAgain": "Try Again",
+  "@followListScreenButtonTryAgain": {
+    "description": "Button text to retry loading follow list"
+  },
+  "followListScreenErrorUnexpected": "Something went wrong.",
+  "@followListScreenErrorUnexpected": {
+    "description": "Generic error message for follow list screen"
+  },
+  "postDetailScreenAppBarTitleFallback": "Post",
+  "@postDetailScreenAppBarTitleFallback": {
+    "description": "Fallback app bar title for post detail screen"
+  },
+  "postDetailMenuEditPost": "Edit Post",
+  "@postDetailMenuEditPost": {
+    "description": "Menu option to edit a post"
+  },
+  "postDetailMenuDisableComments": "Disable Comments",
+  "@postDetailMenuDisableComments": {
+    "description": "Menu option to disable comments on a post"
+  },
+  "postDetailMenuEnableComments": "Enable Comments",
+  "@postDetailMenuEnableComments": {
+    "description": "Menu option to enable comments on a post"
+  },
+  "postDetailMenuDeletePost": "Delete Post",
+  "@postDetailMenuDeletePost": {
+    "description": "Menu option to delete a post"
+  },
+  "postDetailDeleteConfirmTitle": "Delete Post?",
+  "@postDetailDeleteConfirmTitle": {
+    "description": "Title of the confirm delete dialog for a post"
+  },
+  "postDetailDeleteConfirmMessage": "Are you sure you want to delete this post? This action cannot be undone and will remove all associated comments and media.",
+  "@postDetailDeleteConfirmMessage": {
+    "description": "Confirmation message for deleting a post"
+  },
+  "postDetailDeleteConfirmButtonCancel": "Cancel",
+  "@postDetailDeleteConfirmButtonCancel": {
+    "description": "Cancel button in delete post confirmation dialog"
+  },
+  "postDetailDeleteConfirmButtonDelete": "Delete",
+  "@postDetailDeleteConfirmButtonDelete": {
+    "description": "Delete button in delete post confirmation dialog"
+  },
+  "postDetailSnackbarErrorGeneric": "Error: {errorDetails}",
+  "@postDetailSnackbarErrorGeneric": {
+    "description": "Generic error snackbar message for post detail screen",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "postDetailSnackbarPostDeleted": "Post \"{postId}\" has been deleted.",
+  "@postDetailSnackbarPostDeleted": {
+    "description": "Snackbar message after a post is successfully deleted",
+    "placeholders": {
+      "postId": {
+        "type": "String"
+      }
+    }
+  },
+  "postDetailErrorPostNotFound": "Post not found or could not be loaded.",
+  "@postDetailErrorPostNotFound": {
+    "description": "Error message when post detail cannot be loaded"
+  },
+  "postDetailLoading": "Loading post details...",
+  "@postDetailLoading": {
+    "description": "Message shown while loading post details"
+  },
+  "postDetailLikesSuffixSingular": " Like",
+  "@postDetailLikesSuffixSingular": {
+    "description": "Suffix for singular like count"
+  },
+  "postDetailLikesSuffixPlural": " Likes",
+  "@postDetailLikesSuffixPlural": {
+    "description": "Suffix for plural like count"
+  },
+  "postDetailCommentsSuffixSingular": " Comment",
+  "@postDetailCommentsSuffixSingular": {
+    "description": "Suffix for singular comment count"
+  },
+  "postDetailCommentsSuffixPlural": " Comments",
+  "@postDetailCommentsSuffixPlural": {
+    "description": "Suffix for plural comment count"
+  },
+  "postDetailCommentsSectionTitle": "Comments",
+  "@postDetailCommentsSectionTitle": {
+    "description": "Title for the comments section in post detail"
+  },
+  "postDetailCommentsDisabledMessage": "Comments are disabled for this post.",
+  "@postDetailCommentsDisabledMessage": {
+    "description": "Message shown when comments are disabled for a post"
+  },
+  "postDetailCommentsEmptyMessage": "No comments yet. Be the first!",
+  "@postDetailCommentsEmptyMessage": {
+    "description": "Message shown when a post has no comments"
+  },
+  "postDetailCommentInputHint": "Write a comment...",
+  "@postDetailCommentInputHint": {
+    "description": "Hint text for the comment input field"
+  },
+  "postDetailButtonValidate": "VALIDATE",
+  "@postDetailButtonValidate": {
+    "description": "Button text to validate a record claim"
+  },
+  "postDetailButtonDispute": "DISPUTE",
+  "@postDetailButtonDispute": {
+    "description": "Button text to dispute a record claim"
+  },
+  "recordStatusVerified": "VERIFIED",
+  "@recordStatusVerified": {
+    "description": "Record claim status: Verified"
+  },
+  "recordStatusRejected": "REJECTED",
+  "@recordStatusRejected": {
+    "description": "Record claim status: Rejected"
+  },
+  "recordStatusExpired": "EXPIRED",
+  "@recordStatusExpired": {
+    "description": "Record claim status: Expired"
+  },
+  "recordStatusPending": "AWAITS VOTING",
+  "@recordStatusPending": {
+    "description": "Record claim status: Pending"
+  },
+  "recordStatusContested": "CONTESTED",
+  "@recordStatusContested": {
+    "description": "Record claim status: Contested"
+  },
+  "recordStatusUnknown": "UNKNOWN",
+  "@recordStatusUnknown": {
+    "description": "Record claim status: Unknown"
+  },
+  "postDetailButtonWatchProof": "Watch Proof",
+  "@postDetailButtonWatchProof": {
+    "description": "Button text to watch proof video for a record claim"
+  },
+  "viewUserProfileAppBarTitleFallback": "User Profile",
+  "@viewUserProfileAppBarTitleFallback": {
+    "description": "Fallback app bar title for viewing another user's profile"
+  },
+  "viewUserProfileErrorNotAuth": "User not authenticated.",
+  "@viewUserProfileErrorNotAuth": {
+    "description": "Error message if current user is not authenticated when viewing a profile"
+  },
+  "viewUserProfileErrorLoadProfile": "Could not load profile: {message}",
+  "@viewUserProfileErrorLoadProfile": {
+    "description": "Error message when failing to load the target user's profile",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorInit": "Failed to initialize: {message}",
+  "@viewUserProfileErrorInit": {
+    "description": "Error message during initialization of view user profile screen",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorFollowInvalidOp": "Cannot follow/unfollow: Invalid operation.",
+  "@viewUserProfileErrorFollowInvalidOp": {
+    "description": "Error message for invalid follow/unfollow operation (e.g., self-follow)"
+  },
+  "viewUserProfileErrorFollowGeneric": "Failed to {action}: {errorDetails}",
+  "@viewUserProfileErrorFollowGeneric": {
+    "description": "Generic error message for follow/unfollow failure",
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorFollowActionFollow": "follow",
+  "@viewUserProfileErrorFollowActionFollow": {
+    "description": "Action part of follow/unfollow error: follow"
+  },
+  "viewUserProfileErrorFollowActionUnfollow": "unfollow",
+  "@viewUserProfileErrorFollowActionUnfollow": {
+    "description": "Action part of follow/unfollow error: unfollow"
+  },
+  "viewUserProfileErrorInvalidStateFollow": "Cannot process follow/unfollow in current state: {currentState}",
+  "@viewUserProfileErrorInvalidStateFollow": {
+    "description": "Error message if trying to follow/unfollow from an invalid state",
+    "placeholders": {
+      "currentState": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileStatLabelLevel": "Level",
+  "@viewUserProfileStatLabelLevel": {
+    "description": "Label for level stat on view user profile screen"
+  },
+  "viewUserProfileButtonUnfollow": "UNFOLLOW",
+  "@viewUserProfileButtonUnfollow": {
+    "description": "Button text to unfollow a user"
+  },
+  "viewUserProfileButtonFollow": "FOLLOW",
+  "@viewUserProfileButtonFollow": {
+    "description": "Button text to follow a user"
+  },
+  "viewUserProfilePostsTitle": "User's Posts",
+  "@viewUserProfilePostsTitle": {
+    "description": "Title for the posts section on view user profile screen"
+  },
+  "viewUserProfileNoPosts": "Posts by @{username} will appear here.",
+  "@viewUserProfileNoPosts": {
+    "description": "Message shown when the viewed user has no posts",
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "viewUserProfileErrorProfileNotAvailable": "Profile not available.",
+  "@viewUserProfileErrorProfileNotAvailable": {
+    "description": "Error message when viewed user's profile is not available"
+  },
+  "commentListItemEditDialogTitle": "Edit Comment",
+  "@commentListItemEditDialogTitle": {
+    "description": "Title for the edit comment dialog"
+  },
+  "commentListItemDeleteDialogTitle": "Delete Comment?",
+  "@commentListItemDeleteDialogTitle": {
+    "description": "Title for the delete comment confirmation dialog"
+  },
+  "commentListItemEditDialogHint": "Your comment...",
+  "@commentListItemEditDialogHint": {
+    "description": "Hint text for the comment input field in edit dialog"
+  },
+  "commentListItemDeleteDialogMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+  "@commentListItemDeleteDialogMessage": {
+    "description": "Confirmation message for deleting a comment"
+  },
+  "commentListItemDialogButtonCancel": "Cancel",
+  "@commentListItemDialogButtonCancel": {
+    "description": "Cancel button in comment dialogs"
+  },
+  "commentListItemDialogButtonSave": "Save",
+  "@commentListItemDialogButtonSave": {
+    "description": "Save button in edit comment dialog"
+  },
+  "commentListItemDialogButtonDelete": "Delete",
+  "@commentListItemDialogButtonDelete": {
+    "description": "Delete button in delete comment dialog"
+  },
+  "commentListItemSnackbarDeleted": "Comment deleted.",
+  "@commentListItemSnackbarDeleted": {
+    "description": "Snackbar message after a comment is deleted"
+  },
+  "commentListItemMenuEdit": "Edit",
+  "@commentListItemMenuEdit": {
+    "description": "Menu option to edit a comment"
+  },
+  "commentListItemMenuDelete": "Delete",
+  "@commentListItemMenuDelete": {
+    "description": "Menu option to delete a comment"
+  },
+  "activeWorkoutAppBarTitleFallback": "Active Workout",
+  "@activeWorkoutAppBarTitleFallback": {
+    "description": "Fallback app bar title for active workout screen"
+  },
+  "activeWorkoutDialogCancelTitle": "Cancel Workout?",
+  "@activeWorkoutDialogCancelTitle": {
+    "description": "Title for cancel workout confirmation dialog"
+  },
+  "activeWorkoutDialogCompleteTitle": "Complete Workout?",
+  "@activeWorkoutDialogCompleteTitle": {
+    "description": "Title for complete workout confirmation dialog"
+  },
+  "activeWorkoutDialogCancelMessage": "Are you sure you want to cancel this workout? Progress will not be saved.",
+  "@activeWorkoutDialogCancelMessage": {
+    "description": "Message for cancel workout confirmation dialog"
+  },
+  "activeWorkoutDialogCompleteMessage": "Are you sure you want to finish and save this workout?",
+  "@activeWorkoutDialogCompleteMessage": {
+    "description": "Message for complete workout confirmation dialog"
+  },
+  "activeWorkoutDialogButtonNo": "No",
+  "@activeWorkoutDialogButtonNo": {
+    "description": "No button in cancel workout dialog"
+  },
+  "activeWorkoutDialogButtonYesCancel": "Yes, Cancel",
+  "@activeWorkoutDialogButtonYesCancel": {
+    "description": "Confirm cancel button in cancel workout dialog"
+  },
+  "activeWorkoutDialogButtonNoContinue": "No, Continue",
+  "@activeWorkoutDialogButtonNoContinue": {
+    "description": "No/Continue button in complete workout dialog"
+  },
+  "activeWorkoutDialogButtonYesComplete": "Yes, Complete",
+  "@activeWorkoutDialogButtonYesComplete": {
+    "description": "Confirm complete button in complete workout dialog"
+  },
+  "activeWorkoutLoading": "Loading Workout...",
+  "@activeWorkoutLoading": {
+    "description": "Generic loading message for active workout screen"
+  },
+  "activeWorkoutLoadingStartingNew": "Starting new workout...",
+  "@activeWorkoutLoadingStartingNew": {
+    "description": "Loading message when starting a new workout"
+  },
+  "activeWorkoutNoneMessage": "No active workout found.",
+  "@activeWorkoutNoneMessage": {
+    "description": "Message when no active workout is found"
+  },
+  "activeWorkoutButtonBackToRoutines": "Back to Routines",
+  "@activeWorkoutButtonBackToRoutines": {
+    "description": "Button text to navigate back if no active workout"
+  },
+  "activeWorkoutErrorNoExercises": "This workout has no exercises.",
+  "@activeWorkoutErrorNoExercises": {
+    "description": "Error message if an active workout has no exercises"
+  },
+  "activeWorkoutButtonAddFirstExercise": "Add First Exercise",
+  "@activeWorkoutButtonAddFirstExercise": {
+    "description": "Button text to add first exercise to an empty workout"
+  },
+  "activeWorkoutButtonFinishEmpty": "Finish Empty Workout",
+  "@activeWorkoutButtonFinishEmpty": {
+    "description": "Button text to finish an empty workout"
+  },
+  "activeWorkoutErrorExerciseNoSets": "Error: Exercise ''{exerciseName}'' has no sets.",
+  "@activeWorkoutErrorExerciseNoSets": {
+    "description": "Error message if a specific exercise has no sets during workout",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "activeWorkoutErrorExerciseNoSetsHelp": "Please edit the routine or contact support.",
+  "@activeWorkoutErrorExerciseNoSetsHelp": {
+    "description": "Help text for error when exercise has no sets"
+  },
+  "activeWorkoutButtonGoBack": "Go Back",
+  "@activeWorkoutButtonGoBack": {
+    "description": "Button text to go back"
+  },
+  "activeWorkoutErrorUnexpected": "An unexpected state occurred. Please restart.",
+  "@activeWorkoutErrorUnexpected": {
+    "description": "Generic unexpected error message for active workout screen"
+  },
+  "workoutCompleteTitleLevelUp": "LEVEL UP!",
+  "@workoutCompleteTitleLevelUp": {
+    "description": "Title on workout complete screen if user leveled up"
+  },
+  "workoutCompleteTitleDefault": "Workout Complete!",
+  "@workoutCompleteTitleDefault": {
+    "description": "Default title on workout complete screen"
+  },
+  "workoutCompleteSubtitleLevelUp": "You reached Level {level}!",
+  "@workoutCompleteSubtitleLevelUp": {
+    "description": "Subtitle on workout complete screen if user leveled up",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteStatDuration": "Duration: {durationMinutes} min",
+  "@workoutCompleteStatDuration": {
+    "description": "Workout duration stat on complete screen",
+    "placeholders": {
+      "durationMinutes": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteStatVolume": "Total Volume: {volume} KG",
+  "@workoutCompleteStatVolume": {
+    "description": "Workout total volume stat on complete screen",
+    "placeholders": {
+      "volume": {
+        "type": "String"
+      }
+    }
+  },
+  "workoutCompleteStatXpGained": "+{xpGained} XP GAINED",
+  "@workoutCompleteStatXpGained": {
+    "description": "XP gained stat on workout complete screen",
+    "placeholders": {
+      "xpGained": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteXpBarLabelLevel": "LVL {level}",
+  "@workoutCompleteXpBarLabelLevel": {
+    "description": "Label for level in XP bar on workout complete screen",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "workoutCompleteXpBarText": "{currentXp}/{totalXp} XP",
+  "@workoutCompleteXpBarText": {
+    "description": "XP progress text in XP bar on workout complete screen",
+    "placeholders": {
+      "currentXp": {
+        "type": "String"
+      },
+      "totalXp": {
+        "type": "String"
+      }
+    }
+  },
+  "workoutCompleteButtonAwesome": "Awesome!",
+  "@workoutCompleteButtonAwesome": {
+    "description": "Button text on workout complete screen to dismiss"
+  },
+  "currentSetDisplayWeightDialogTitle": "Set Weight (KG)",
+  "@currentSetDisplayWeightDialogTitle": {
+    "description": "Title for dialog to set weight for a set"
+  },
+  "currentSetDisplayWeightDialogHint": "Enter weight",
+  "@currentSetDisplayWeightDialogHint": {
+    "description": "Hint text for weight input in set weight dialog"
+  },
+  "currentSetDisplayWeightDialogButtonCancel": "Cancel",
+  "@currentSetDisplayWeightDialogButtonCancel": {
+    "description": "Cancel button in set weight dialog"
+  },
+  "currentSetDisplayWeightDialogButtonSet": "Set",
+  "@currentSetDisplayWeightDialogButtonSet": {
+    "description": "Set button in set weight dialog"
+  },
+  "currentSetDisplaySetLabelPrefix": "SET ",
+  "@currentSetDisplaySetLabelPrefix": {
+    "description": "Prefix for set number display"
+  },
+  "currentSetDisplayWeightLabelPrefix": "WEIGHT: ",
+  "@currentSetDisplayWeightLabelPrefix": {
+    "description": "Prefix for weight display"
+  },
+  "currentSetDisplayUnitKgSuffix": " KG",
+  "@currentSetDisplayUnitKgSuffix": {
+    "description": "Suffix for kilograms unit"
+  },
+  "currentSetDisplayRepsLabelSuffix": " REPETITIONS",
+  "@currentSetDisplayRepsLabelSuffix": {
+    "description": "Suffix for repetitions display"
+  },
+  "currentSetDisplayRpeHelpText": "Describe how hard it was to make a repetition\non a 0-10 scale.",
+  "@currentSetDisplayRpeHelpText": {
+    "description": "Help text for RPE sliders"
+  },
+  "currentSetDisplayNoRepsPlaceholder": "Add reps",
+  "@currentSetDisplayNoRepsPlaceholder": {
+    "description": "Placeholder text when no reps are set for RPE sliders"
+  },
+  "currentSetDisplayButtonPrevSet": "< PREV. SET",
+  "@currentSetDisplayButtonPrevSet": {
+    "description": "Button text to navigate to previous set"
+  },
+  "currentSetDisplayButtonFinishWorkout": "FINISH WORKOUT",
+  "@currentSetDisplayButtonFinishWorkout": {
+    "description": "Button text to finish workout when on the last set"
+  },
+  "currentSetDisplayButtonNextExercise": "NEXT EXERCISE >",
+  "@currentSetDisplayButtonNextExercise": {
+    "description": "Button text to navigate to next exercise"
+  },
+  "currentSetDisplayButtonNextSet": "NEXT SET >",
+  "@currentSetDisplayButtonNextSet": {
+    "description": "Button text to navigate to next set"
+  },
+  "progressScreenLoadingData": "Loading progress data...",
+  "@progressScreenLoadingData": {
+    "description": "Message shown when progress screen data is initially loading"
+  },
+  "progressScreenRefreshingData": "Refreshing progress data...",
+  "@progressScreenRefreshingData": {
+    "description": "Message shown when progress screen data is being refreshed"
+  },
+  "progressScreenErrorNotAuthRefresh": "User not authenticated. Cannot refresh.",
+  "@progressScreenErrorNotAuthRefresh": {
+    "description": "Error message if user is not authenticated during refresh"
+  },
+  "progressScreenErrorProfileNotFoundRefresh": "User profile not found during refresh.",
+  "@progressScreenErrorProfileNotFoundRefresh": {
+    "description": "Error message if user profile is not found during refresh"
+  },
+  "progressScreenErrorFailedRefresh": "Failed to refresh data: {errorMessage}",
+  "@progressScreenErrorFailedRefresh": {
+    "description": "Error message when data refresh fails",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenLoadingWorkoutStats": "Loading workout stats...",
+  "@progressScreenLoadingWorkoutStats": {
+    "description": "Message when loading workout stats specifically"
+  },
+  "progressScreenRefreshingWorkoutStats": "Refreshing workout stats...",
+  "@progressScreenRefreshingWorkoutStats": {
+    "description": "Message when refreshing workout stats specifically"
+  },
+  "progressScreenErrorFailedProcessWorkoutData": "Failed to process workout data: {errorMessage}",
+  "@progressScreenErrorFailedProcessWorkoutData": {
+    "description": "Error message when processing workout data fails",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenXpToNextLevel": "XP TO NEXT LEVEL!",
+  "@progressScreenXpToNextLevel": {
+    "description": "Text indicating XP needed for next level"
+  },
+  "progressScreenVolumeTitle": "VOLUME (LAST 7 DAYS - SETS)",
+  "@progressScreenVolumeTitle": {
+    "description": "Title for the muscle map volume section"
+  },
+  "progressScreenNoVolumeData": "No workout data for the last 7 days to display on muscle map.",
+  "@progressScreenNoVolumeData": {
+    "description": "Message when no volume data is available for muscle map"
+  },
+  "progressScreenRpeTrendTitle": "EXERTION (RPE TREND - LAST {maxWorkouts} WORKOUTS)",
+  "@progressScreenRpeTrendTitle": {
+    "description": "Title for RPE trend section",
+    "placeholders": {
+      "maxWorkouts": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenNoRpeData": "No RPE data logged recently for any exercise.",
+  "@progressScreenNoRpeData": {
+    "description": "Message when no RPE data is available"
+  },
+  "progressScreenAvgRpeLabel": "AVG. RPE - ",
+  "@progressScreenAvgRpeLabel": {
+    "description": "Label prefix for average RPE value"
+  },
+  "progressScreenStrengthTrendTitle": "STRENGTH (WEIGHT TREND - LAST {maxWorkouts} WORKOUTS)",
+  "@progressScreenStrengthTrendTitle": {
+    "description": "Title for strength (weight) trend section",
+    "placeholders": {
+      "maxWorkouts": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenNoWeightData": "No weight data logged recently for any exercise.",
+  "@progressScreenNoWeightData": {
+    "description": "Message when no weight data is available for trend"
+  },
+  "progressScreenAvgWeightLabel": "AVG. WEIGHT - ",
+  "@progressScreenAvgWeightLabel": {
+    "description": "Label prefix for average weight value"
+  },
+  "progressScreenAdviceTitle": "ADVICE",
+  "@progressScreenAdviceTitle": {
+    "description": "Title for the advice section"
+  },
+  "progressScreenNoAdvice": "No new advice at the moment. Keep up the great work!",
+  "@progressScreenNoAdvice": {
+    "description": "Message when no advice notifications are available"
+  },
+  "progressScreenErrorLoadAdvice": "Error loading advice: {message}",
+  "@progressScreenErrorLoadAdvice": {
+    "description": "Error message when loading advice fails",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenLoadingAdvice": "Loading advice...",
+  "@progressScreenLoadingAdvice": {
+    "description": "Message shown while loading advice"
+  },
+  "progressScreenButtonSendTestAdvice": "Send Test Advice",
+  "@progressScreenButtonSendTestAdvice": {
+    "description": "Button text to send test advice notifications"
+  },
+
+  "progressScreenButtonTryAgain": "Try Again",
+  "@progressScreenButtonTryAgain": {
+    "description": "Button text to retry loading data on error"
+  },
+  "progressScreenErrorLoadingProfile": "Error loading profile: {errorMessage}",
+  "@progressScreenErrorLoadingProfile": {
+    "description": "Error message when profile loading fails",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenNoData": "No progress data available yet. Start working out!",
+  "@progressScreenNoData": {
+    "description": "Message when no progress data is available"
+  },
+  "progressScreenLevelLabel": "LVL {level}",
+  "@progressScreenLevelLabel": {
+    "description": "Label for level, e.g., LVL 5",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenXpProgressText": "{currentXp}/{totalXp} XP",
+  "@progressScreenXpProgressText": {
+    "description": "Text showing XP progress, e.g., 150/200 XP",
+    "placeholders": {
+      "currentXp": {
+        "type": "String"
+      },
+      "totalXp": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenExercisePlaceholder": "EXERCISE {placeholder}",
+  "@progressScreenExercisePlaceholder": {
+    "description": "Placeholder for exercise name if not found, e.g., EXERCISE ABCDE...",
+    "placeholders": {
+      "placeholder": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenKgUnit": "KG",
+  "@progressScreenKgUnit": {
+    "description": "Unit for kilograms, short form"
   }
 }

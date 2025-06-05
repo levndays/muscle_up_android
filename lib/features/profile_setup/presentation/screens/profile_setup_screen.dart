@@ -13,7 +13,14 @@ import '../cubit/profile_setup_cubit.dart';
 import '../../../../home_page.dart'; 
 import '../../../profile/presentation/cubit/user_profile_cubit.dart' as global_user_profile_cubit;
 import '../../../../core/services/image_picker_service.dart'; 
-import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
+import 'package:muscle_up/l10n/app_localizations.dart'; 
+
+// Define keys for gender to ensure consistency
+const String _genderKeyMale = 'male';
+const String _genderKeyFemale = 'female';
+const String _genderKeyOther = 'other';
+const String _genderKeyPreferNotToSay = 'prefer_not_to_say';
+
 
 class ProfileSetupScreen extends StatefulWidget {
   final UserProfile? userProfileToEdit; 
@@ -32,7 +39,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
 
-  String? _selectedGender;
+  String? _selectedGender; // Will store keys like _genderKeyMale
   DateTime? _selectedDateOfBirth;
   String? _selectedFitnessGoal;
   String? _selectedActivityLevel;
@@ -60,7 +67,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _displayNameController.text = profile.displayName ?? '';
       _heightController.text = profile.heightCm?.toStringAsFixed(0) ?? '';
       _weightController.text = profile.weightKg?.toStringAsFixed(1) ?? '';
-      _selectedGender = profile.gender;
+      // Ensure _selectedGender is set to one of the defined keys if it exists
+      _selectedGender = _isValidGenderKey(profile.gender) ? profile.gender : null;
       _selectedDateOfBirth = profile.dateOfBirth?.toDate();
       _selectedFitnessGoal = profile.fitnessGoal;
       _selectedActivityLevel = profile.activityLevel;
@@ -87,6 +95,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     _weightController.addListener(() {
       _profileSetupCubit.updateField(weightKg: double.tryParse(_weightController.text));
     });
+  }
+
+  bool _isValidGenderKey(String? key) {
+    if (key == null) return false;
+    return [_genderKeyMale, _genderKeyFemale, _genderKeyOther, _genderKeyPreferNotToSay].contains(key);
   }
 
   @override
@@ -203,10 +216,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
       items: items,
       onChanged: (newValue) {
+        // This setState is important if the parent widget relies on this state for other UI updates
+        // For ProfileSetupCubit, it already re-emits state which rebuilds.
+        // So this local setState might not be strictly necessary if only cubit state is used.
+        // However, for local _selectedGender variables, it's needed.
         setState(() {
-          if (label.toLowerCase().contains('gender')) _selectedGender = newValue as String?;
-          if (label.toLowerCase().contains('goal')) _selectedFitnessGoal = newValue as String?;
-          if (label.toLowerCase().contains('activity')) _selectedActivityLevel = newValue as String?;
+          if (label == loc.profileSetupGenderLabel) _selectedGender = newValue as String?;
+          if (label == loc.profileSetupFitnessGoalLabel) _selectedFitnessGoal = newValue as String?;
+          if (label == loc.profileSetupActivityLevelLabel) _selectedActivityLevel = newValue as String?;
         });
         onChangedCallback?.call(newValue);
       },
@@ -219,6 +236,46 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+
+    // Define gender items using keys and localized labels
+    final List<DropdownMenuItem<String>> genderItems = [
+      DropdownMenuItem(value: _genderKeyMale, child: Text(loc.profileSetupGenderMale)),
+      DropdownMenuItem(value: _genderKeyFemale, child: Text(loc.profileSetupGenderFemale)),
+      DropdownMenuItem(value: _genderKeyOther, child: Text(loc.profileSetupGenderOther)),
+      DropdownMenuItem(value: _genderKeyPreferNotToSay, child: Text(loc.profileSetupGenderPreferNotToSay)),
+    ];
+    // Ensure _selectedGender is valid or null
+    if (_selectedGender != null && !genderItems.any((item) => item.value == _selectedGender)) {
+      _selectedGender = null;
+    }
+
+
+    // Define fitness goal items
+    final List<DropdownMenuItem<String>> fitnessGoalItems = [
+      MapEntry('lose_weight', loc.profileSetupFitnessGoalLoseWeight),
+      MapEntry('gain_muscle', loc.profileSetupFitnessGoalGainMuscle),
+      MapEntry('improve_stamina', loc.profileSetupFitnessGoalImproveStamina),
+      MapEntry('general_fitness', loc.profileSetupFitnessGoalGeneralFitness),
+      MapEntry('improve_strength', loc.profileSetupFitnessGoalImproveStrength),
+    ].map((entry) => DropdownMenuItem(value: entry.key, child: Text(entry.value))).toList();
+     if (_selectedFitnessGoal != null && !fitnessGoalItems.any((item) => item.value == _selectedFitnessGoal)) {
+      _selectedFitnessGoal = null;
+    }
+
+
+    // Define activity level items
+    final List<DropdownMenuItem<String>> activityLevelItems = [
+      MapEntry('sedentary', loc.profileSetupActivityLevelSedentary),
+      MapEntry('light', loc.profileSetupActivityLevelLight),
+      MapEntry('moderate', loc.profileSetupActivityLevelModerate),
+      MapEntry('active', loc.profileSetupActivityLevelActive),
+      MapEntry('very_active', loc.profileSetupActivityLevelVeryActive),
+    ].map((entry) => DropdownMenuItem(value: entry.key, child: Text(entry.value, overflow: TextOverflow.ellipsis))).toList();
+     if (_selectedActivityLevel != null && !activityLevelItems.any((item) => item.value == _selectedActivityLevel)) {
+      _selectedActivityLevel = null;
+    }
+
+
     return BlocProvider.value(
       value: _profileSetupCubit,
       child: Scaffold(
@@ -253,7 +310,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             } else if (state is ProfileSetupFailure) {
               developer.log("ProfileSetupFailure: ${state.error}", name: "ProfileSetupScreen.Listener");
                String errorMessage = state.error;
-                // Try to translate known error keys if they match
                 if (state.error == "User not logged in.") errorMessage = loc.profileSetupErrorUserNotLoggedIn;
                 else if (state.error == "Username cannot be empty.") errorMessage = loc.profileSetupErrorUsernameEmpty;
                 else if (state.error == "Profile to edit not found. Please try again.") errorMessage = loc.profileSetupErrorProfileNotFoundEdit;
@@ -278,8 +334,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               _heightController.text = profileFromCubit.heightCm?.toStringAsFixed(0) ?? _heightController.text;
               _weightController.text = profileFromCubit.weightKg?.toStringAsFixed(1) ?? _weightController.text;
               _currentAvatarUrl = profileFromCubit.profilePictureUrl ?? _currentAvatarUrl;
+              if (_isValidGenderKey(profileFromCubit.gender) && _selectedGender == null) _selectedGender = profileFromCubit.gender;
+              if (profileFromCubit.fitnessGoal != null && _selectedFitnessGoal == null) _selectedFitnessGoal = profileFromCubit.fitnessGoal;
+              if (profileFromCubit.activityLevel != null && _selectedActivityLevel == null) _selectedActivityLevel = profileFromCubit.activityLevel;
+
             } else if (state is ProfileSetupDataLoaded && _isEditingMode) {
               _currentAvatarUrl = state.userProfile.profilePictureUrl ?? _currentAvatarUrl;
+              // Ensure local state like _selectedGender is updated if cubit's profile changes
+               if (_isValidGenderKey(state.userProfile.gender)) _selectedGender = state.userProfile.gender;
+               if (state.userProfile.fitnessGoal != null) _selectedFitnessGoal = state.userProfile.fitnessGoal;
+               if (state.userProfile.activityLevel != null) _selectedActivityLevel = state.userProfile.activityLevel;
+
             }
 
 
@@ -345,14 +410,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       value: _selectedGender,
                       label: loc.profileSetupGenderLabel,
                       isOptional: true,
-                      items: [
-                        loc.profileSetupGenderMale, 
-                        loc.profileSetupGenderFemale, 
-                        loc.profileSetupGenderOther, 
-                        loc.profileSetupGenderPreferNotToSay
-                      ]
-                          .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
-                          .toList(),
+                      items: genderItems,
                       onChangedCallback: (value) => _profileSetupCubit.updateField(gender: value),
                     ),
                     const SizedBox(height: 16),
@@ -366,7 +424,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       title: Text(
                         _selectedDateOfBirth == null
                             ? '${loc.profileSetupDobLabel} ${loc.profileSetupOptionalFieldSuffix}'
-                            : DateFormat('dd MMMM yyyy').format(_selectedDateOfBirth!),
+                            : DateFormat('dd MMMM yyyy', loc.localeName).format(_selectedDateOfBirth!),
                         style: _selectedDateOfBirth == null
                             ? Theme.of(context).inputDecorationTheme.hintStyle
                             : Theme.of(context).textTheme.bodyLarge,
@@ -405,15 +463,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       value: _selectedFitnessGoal,
                       label: loc.profileSetupFitnessGoalLabel,
                       isOptional: true,
-                      items: [
-                        loc.profileSetupFitnessGoalLoseWeight, 
-                        loc.profileSetupFitnessGoalGainMuscle, 
-                        loc.profileSetupFitnessGoalImproveStamina, 
-                        loc.profileSetupFitnessGoalGeneralFitness, 
-                        loc.profileSetupFitnessGoalImproveStrength
-                      ]
-                          .map((label) => DropdownMenuItem(value: label.toLowerCase().replaceAll(' ', '_'), child: Text(label)))
-                          .toList(),
+                      items: fitnessGoalItems,
                       onChangedCallback: (value) => _profileSetupCubit.updateField(fitnessGoal: value),
                     ),
                     const SizedBox(height: 16),
@@ -421,19 +471,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       value: _selectedActivityLevel,
                       label: loc.profileSetupActivityLevelLabel,
                       isOptional: true,
-                      items: [
-                        loc.profileSetupActivityLevelSedentary, 
-                        loc.profileSetupActivityLevelLight, 
-                        loc.profileSetupActivityLevelModerate, 
-                        loc.profileSetupActivityLevelActive, 
-                        loc.profileSetupActivityLevelVeryActive
-                      ]
-                          .map((label) {
-                            // Use first word as key (or define explicit keys in ARB if needed)
-                            final value = label.split(' ').first.toLowerCase();
-                            return DropdownMenuItem(value: value, child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1,));
-                          })
-                          .toList(),
+                      items: activityLevelItems,
                        onChangedCallback: (value) => _profileSetupCubit.updateField(activityLevel: value),
                     ),
                     const SizedBox(height: 30),

@@ -9,6 +9,7 @@ import 'home_page.dart';
 import 'login_page.dart';
 import 'features/profile_setup/presentation/screens/profile_setup_screen.dart';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -50,6 +51,7 @@ class _ProfileCheckGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final userProfileRepository = RepositoryProvider.of<UserProfileRepository>(context);
     final firebaseAuthFromProvider = RepositoryProvider.of<fb_auth.FirebaseAuth>(context); // Для UserProfileCubit
+    final loc = AppLocalizations.of(context)!; // For localization
 
     developer.log("_ProfileCheckGate: Building StreamBuilder for userId: $userId", name: "AuthGate._ProfileCheckGate");
 
@@ -87,16 +89,16 @@ class _ProfileCheckGate extends StatelessWidget {
             name: "AuthGate._ProfileCheckGate"
           );
           // Показуємо індикатор, поки Firestore не синхронізує створений профіль
-          return const Scaffold(body: Center(child: Column(
+          return Scaffold(body: Center(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text("Finalizing account setup..."), // Або "Loading profile..."
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(loc.authGateFinalizingAccountSetup), // LOCALIZED
             ],
           )));
         }
-        
+
         // 4. Профіль завантажений, перевіряємо profileSetupComplete
         developer.log("_ProfileCheckGate: Profile loaded via stream for $userId. profileSetupComplete: ${userProfile.profileSetupComplete}", name: "AuthGate._ProfileCheckGate");
 

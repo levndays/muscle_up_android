@@ -116,7 +116,7 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
     double? weightKg,
     String? fitnessGoal,
     String? activityLevel,
-    String? profilePictureUrl, // NEW: For updating avatar URL after upload
+    String? profilePictureUrl, 
   }) {
     _currentUserProfile = _currentUserProfile.copyWith(
       username: username != null ? () => username.trim() : null,
@@ -127,24 +127,24 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
       weightKg: weightKg != null ? () => weightKg : null,
       fitnessGoal: fitnessGoal != null ? () => fitnessGoal : null,
       activityLevel: activityLevel != null ? () => activityLevel : null,
-      profilePictureUrl: profilePictureUrl != null ? () => profilePictureUrl : null, // NEW
+      profilePictureUrl: profilePictureUrl != null ? () => profilePictureUrl : null, 
     );
     
     if (!isClosed) emit(ProfileSetupDataLoaded(_currentUserProfile));
     developer.log("ProfileSetupCubit: Field updated. Current profile: $_currentUserProfile", name: "ProfileSetupCubit");
   }
 
-  // NEW: Method to upload image to Firebase Storage
   Future<String?> _uploadAvatarImage(String userId, File imageFile) async {
     try {
       final storageRef = fb_storage.FirebaseStorage.instance
           .ref()
           .child('user_avatars')
-          .child('$userId.jpg'); // Or use a unique ID for each image
+          .child(userId)
+          .child('avatar.jpg'); // CHANGED: Filename to 'avatar.jpg'
       
       final uploadTask = storageRef.putFile(
           imageFile, 
-          fb_storage.SettableMetadata(contentType: 'image/jpeg') // Ensure correct content type
+          fb_storage.SettableMetadata(contentType: 'image/jpeg') 
       );
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -156,7 +156,7 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
     }
   }
 
-  Future<void> saveProfile({File? avatarImageFile /* NEW: Pass avatar file */}) async {
+  Future<void> saveProfile({File? avatarImageFile}) async {
     final userId = _firebaseAuth.currentUser?.uid;
     if (userId == null) {
       developer.log("ProfileSetupCubit: Save failed - User not logged in.", name: "ProfileSetupCubit");
@@ -169,7 +169,8 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
       developer.log("ProfileSetupCubit: Save failed - Username is empty.", name: "ProfileSetupCubit");
       if (!isClosed) {
         emit(const ProfileSetupFailure("Username cannot be empty."));
-        emit(ProfileSetupDataLoaded(_currentUserProfile));
+        // Re-emit data loaded so the UI can reflect the current state of input fields
+        emit(ProfileSetupDataLoaded(_currentUserProfile)); 
       }
       return;
     }
@@ -184,18 +185,19 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
     try {
       String? uploadedAvatarUrl = _currentUserProfile.profilePictureUrl;
       if (avatarImageFile != null) {
-        // Upload new avatar if provided
         uploadedAvatarUrl = await _uploadAvatarImage(userId, avatarImageFile);
         if (uploadedAvatarUrl == null && !isClosed) {
           emit(const ProfileSetupFailure("Failed to upload avatar image. Profile not saved."));
-          return; // Stop if avatar upload failed
+          // Re-emit data loaded so the UI can reflect the current state of input fields
+          emit(ProfileSetupDataLoaded(_currentUserProfile));
+          return; 
         }
       }
 
       final profileToSave = _currentUserProfile.copyWith(
         uid: userId, 
         displayName: () => finalDisplayName, 
-        profilePictureUrl: () => uploadedAvatarUrl, // NEW: Set the (potentially new) avatar URL
+        profilePictureUrl: () => uploadedAvatarUrl, 
         profileSetupComplete: true, 
       );
 
@@ -204,7 +206,11 @@ class ProfileSetupCubit extends Cubit<ProfileSetupState> {
       if (!isClosed) emit(ProfileSetupSuccess(profileToSave));
     } catch (e, s) {
       developer.log("ProfileSetupCubit: Error saving profile: $e", name: "ProfileSetupCubit", error: e, stackTrace: s);
-      if (!isClosed) emit(ProfileSetupFailure(e.toString().replaceFirst("Exception: ", "")));
+      if (!isClosed) {
+        emit(ProfileSetupFailure(e.toString().replaceFirst("Exception: ", "")));
+        // Re-emit data loaded so the UI can reflect the current state of input fields
+        emit(ProfileSetupDataLoaded(_currentUserProfile)); 
+      }
     }
   }
 

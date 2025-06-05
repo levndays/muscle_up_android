@@ -215,6 +215,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get profileSetupOptionalFieldSuffix => '(необов\'язково)';
 
   @override
+  String get authGateFinalizingAccountSetup =>
+      'Завершення налаштування облікового запису...';
+
+  @override
   String get dashboardGreetingWelcome => 'Вітаємо,';
 
   @override
@@ -227,7 +231,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get dashboardStatsStreakLabel => 'СТРІК';
 
   @override
-  String get dashboardStatsAdherenceLabel => 'ДОТРИМАННЯ';
+  String get dashboardStatsAdherenceLabel => 'ВІДВІДУВАНІСТЬ';
 
   @override
   String get dashboardSectionNotifications => 'СПОВІЩЕННЯ';
@@ -318,4 +322,953 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get dashboardTabProfile => 'ПРОФІЛЬ';
+
+  @override
+  String get userRoutinesScreenTitle => 'Мої Програми';
+
+  @override
+  String userRoutinesErrorLoad(String message) {
+    return 'Помилка завантаження програм: $message';
+  }
+
+  @override
+  String get userRoutinesEmptyTitle => 'У вас ще немає програм.';
+
+  @override
+  String get userRoutinesEmptySubtitle =>
+      'Створіть програму, щоб почати організовувати свої тренування!';
+
+  @override
+  String get userRoutinesButtonCreateFirst => 'Створити Першу Програму';
+
+  @override
+  String get userRoutinesFabNewRoutine => 'НОВА ПРОГРАМА';
+
+  @override
+  String get routineListItemMenuStartWorkout => 'Почати Тренування';
+
+  @override
+  String get routineListItemMenuEditRoutine => 'Редагувати Програму';
+
+  @override
+  String get routineListItemMenuShareRoutine => 'Поділитися Програмою';
+
+  @override
+  String get routineListItemMenuDeleteRoutine => 'Видалити Програму';
+
+  @override
+  String get routineListItemDeleteConfirmTitle => 'Підтвердити Видалення';
+
+  @override
+  String routineListItemDeleteConfirmMessage(String routineName) {
+    return 'Ви впевнені, що хочете видалити \"$routineName\"? Цю дію неможливо буде скасувати.';
+  }
+
+  @override
+  String get routineListItemDeleteConfirmButtonCancel => 'Скасувати';
+
+  @override
+  String get routineListItemDeleteConfirmButtonDelete => 'Видалити';
+
+  @override
+  String routineListItemSnackbarDeleted(String routineName) {
+    return 'Програму \"$routineName\" видалено.';
+  }
+
+  @override
+  String routineListItemSnackbarErrorDelete(String errorDetails) {
+    return 'Помилка видалення програми: $errorDetails';
+  }
+
+  @override
+  String get createEditRoutineScreenTitleEdit => 'Редагувати Програму';
+
+  @override
+  String get createEditRoutineScreenTitleCreate => 'Створити Програму';
+
+  @override
+  String get createEditRoutineTooltipDelete => 'Видалити Програму';
+
+  @override
+  String get createEditRoutineSnackbarFormErrors =>
+      'Будь ласка, виправте помилки у формі.';
+
+  @override
+  String createEditRoutineSuccessMessage(String message) {
+    return '$message';
+  }
+
+  @override
+  String createEditRoutineErrorMessage(String errorDetails) {
+    return 'Помилка: $errorDetails';
+  }
+
+  @override
+  String get createEditRoutineStatusUpdated => 'Програму оновлено успішно!';
+
+  @override
+  String get createEditRoutineStatusCreated => 'Програму створено успішно!';
+
+  @override
+  String get createEditRoutineStatusDeleted => 'Програму видалено успішно!';
+
+  @override
+  String get createEditRoutineErrorNameEmpty =>
+      'Назва програми не може бути порожньою.';
+
+  @override
+  String get createEditRoutineErrorNoExercises =>
+      'Програма повинна містити хоча б одну вправу.';
+
+  @override
+  String get createEditRoutineErrorDeleteNew =>
+      'Неможливо видалити нову або незбережену програму.';
+
+  @override
+  String get createEditRoutineLoadingMessageSaving => 'Збереження програми...';
+
+  @override
+  String get createEditRoutineLoadingMessageDeleting => 'Видалення програми...';
+
+  @override
+  String get createEditRoutineNameLabel => 'Назва Програми*';
+
+  @override
+  String get createEditRoutineNameErrorEmpty => 'Назва не може бути порожньою';
+
+  @override
+  String get createEditRoutineDescriptionLabel => 'Опис (необов\'язково)';
+
+  @override
+  String get createEditRoutineScheduledDaysLabel => 'Заплановані дні:';
+
+  @override
+  String createEditRoutineExercisesLabel(int count) {
+    return 'Вправи ($count):';
+  }
+
+  @override
+  String get createEditRoutineButtonAddExercise => 'Додати';
+
+  @override
+  String get createEditRoutineNoExercisesPlaceholder =>
+      'Ще не додано жодної вправи. Натисніть \"Додати\", щоб почати.';
+
+  @override
+  String get createEditRoutineButtonSaveChanges => 'Зберегти Зміни';
+
+  @override
+  String get createEditRoutineButtonCreateRoutine => 'Створити Програму';
+
+  @override
+  String addExerciseDialogTitle(String exerciseName) {
+    return 'Додати \"$exerciseName\"';
+  }
+
+  @override
+  String get addExerciseDialogSetsLabel => 'Кількість підходів';
+
+  @override
+  String get addExerciseDialogSetsErrorEmpty => 'Не може бути порожнім';
+
+  @override
+  String get addExerciseDialogSetsErrorInvalid => 'Має бути позитивним числом';
+
+  @override
+  String get addExerciseDialogNotesLabel => 'Нотатки (необов\'язково)';
+
+  @override
+  String get addExerciseDialogNotesHint =>
+      'Напр., фокус на формі, пірамідні підходи';
+
+  @override
+  String get addExerciseDialogButtonCancel => 'Скасувати';
+
+  @override
+  String get addExerciseDialogButtonAdd => 'Додати Вправу';
+
+  @override
+  String editExerciseDialogTitle(String exerciseName) {
+    return 'Редагувати \"$exerciseName\"';
+  }
+
+  @override
+  String get editExerciseDialogButtonUpdate => 'Оновити';
+
+  @override
+  String get exerciseExplorerScreenTitleSelect => 'Обрати Вправу';
+
+  @override
+  String get exerciseExplorerScreenTitleLibrary => 'Бібліотека Вправ';
+
+  @override
+  String exerciseExplorerErrorLoad(String message) {
+    return 'Помилка завантаження вправ: $message';
+  }
+
+  @override
+  String get exerciseExplorerEmpty =>
+      'У бібліотеці ще немає вправ. Вміст додається!';
+
+  @override
+  String get exerciseExplorerButtonTryAgain => 'Спробувати Ще Раз';
+
+  @override
+  String get exerciseExplorerLoading => 'Завантаження вправ...';
+
+  @override
+  String get dashboardButtonSendTestNotifications =>
+      'Надіслати тестові сповіщення';
+
+  @override
+  String get leagueScreenButtonBackTooltip => 'Назад';
+
+  @override
+  String get leagueScreenLeaderboardTitle => 'ТАБЛИЦЯ ЛІДЕРІВ';
+
+  @override
+  String leagueScreenErrorLoad(String errorMessage) {
+    return 'Помилка: $errorMessage';
+  }
+
+  @override
+  String get leagueScreenNoPlayers => 'У цій лізі ще немає гравців.';
+
+  @override
+  String get leagueScreenButtonTryAgain => 'Спробувати ще';
+
+  @override
+  String get notificationDetailRelatedInfoTitle => 'Пов\'язана інформація:';
+
+  @override
+  String get notificationDetailRelatedInfoTypeLabel => 'Тип:';
+
+  @override
+  String get notificationDetailRelatedInfoIdLabel => 'ID:';
+
+  @override
+  String get notificationDetailStatusRead => 'Прочитано';
+
+  @override
+  String notificationListItemSnackbarRemoved(String notificationTitle) {
+    return 'Сповіщення \"$notificationTitle\" видалено.';
+  }
+
+  @override
+  String get notificationListItemSnackbarUndo => 'ВІДМІНИТИ';
+
+  @override
+  String get notificationListItemDismissDelete => 'Видалити';
+
+  @override
+  String get profileScreenLogoutConfirmTitle => 'Підтвердити вихід';
+
+  @override
+  String get profileScreenLogoutConfirmMessage =>
+      'Ви впевнені, що хочете вийти?';
+
+  @override
+  String get profileScreenLogoutConfirmButtonCancel => 'Скасувати';
+
+  @override
+  String get profileScreenLogoutConfirmButtonLogOut => 'Вийти';
+
+  @override
+  String profileScreenLogoutErrorSnackbar(String errorDetails) {
+    return 'Помилка виходу: $errorDetails';
+  }
+
+  @override
+  String get profileScreenNameFallbackUser => 'Користувач';
+
+  @override
+  String get profileScreenStatLabelFollowers => 'ПІДПИСНИКИ';
+
+  @override
+  String get profileScreenStatLabelFollowing => 'ПІДПИСКИ';
+
+  @override
+  String get profileScreenStatLabelBestStreak => 'КРАЩИЙ СТРІК';
+
+  @override
+  String get profileScreenStatLabelWeight => 'ВАГА';
+
+  @override
+  String get profileScreenUnitKg => 'КГ';
+
+  @override
+  String get profileScreenGoalLabel => 'ЦІЛЬ: ';
+
+  @override
+  String get profileScreenLastTrainingLabel => 'ОСТАННЄ ТРЕНУВАННЯ: ';
+
+  @override
+  String get profileScreenRewardsTitle => 'НАГОРОДИ';
+
+  @override
+  String get profileScreenNoRewards =>
+      'Нагород ще не розблоковано. Продовжуйте тренуватися!';
+
+  @override
+  String get profileScreenMyPostsTitle => 'МОЇ ДОПИСИ';
+
+  @override
+  String get profileScreenNoPosts => 'Ви ще не зробили жодного допису.';
+
+  @override
+  String get profileScreenButtonEditProfile => 'РЕДАГУВАТИ ПРОФІЛЬ';
+
+  @override
+  String get profileScreenButtonLogOut => 'ВИЙТИ';
+
+  @override
+  String profileScreenErrorLoadProfile(String errorMessage) {
+    return 'Помилка завантаження профілю: $errorMessage';
+  }
+
+  @override
+  String get profileScreenErrorUnexpected =>
+      'Сталася неочікувана помилка під час завантаження вашого профілю.';
+
+  @override
+  String createPostScreenLabelPostType(String postType) {
+    return 'Тип допису: $postType';
+  }
+
+  @override
+  String get createPostSegmentStandard => 'Стандартний';
+
+  @override
+  String get createPostSegmentRoutine => 'Програма';
+
+  @override
+  String get createPostSegmentRecord => 'Рекорд';
+
+  @override
+  String get createPostLabelSharedRoutine => 'Поширена програма:';
+
+  @override
+  String get createPostErrorRoutineUnavailable => 'Деталі програми недоступні';
+
+  @override
+  String get createPostRoutineExerciseCountSuffix => ' вправ(и)';
+
+  @override
+  String get createPostLabelRecordDetailsReadOnly =>
+      'Деталі рекорду (тільки для читання):';
+
+  @override
+  String get createPostLabelRecordExercise => 'Вправа: ';
+
+  @override
+  String get createPostLabelRecordWeight => 'Вага: ';
+
+  @override
+  String get createPostUnitKgSuffix => ' кг';
+
+  @override
+  String get createPostLabelRecordReps => 'Повтори: ';
+
+  @override
+  String get createPostLabelRecordVideo => 'Відео: ';
+
+  @override
+  String get createPostLabelRecordDetails => 'Деталі рекорду:';
+
+  @override
+  String get createPostHintSelectExercise => 'Оберіть вправу*';
+
+  @override
+  String get createPostHintRecordWeight => 'Вага (кг)*';
+
+  @override
+  String get createPostErrorRecordWeightInvalid => 'Некоректна вага';
+
+  @override
+  String get createPostHintRecordReps => 'Повторення*';
+
+  @override
+  String get createPostErrorRecordRepsInvalid => 'Некоректні повторення';
+
+  @override
+  String get createPostHintRecordVideoUrl => 'URL відео (необов\'язково)';
+
+  @override
+  String get createPostErrorRecordVideoUrlInvalid => 'Введіть дійсний URL';
+
+  @override
+  String get createPostLabelAttachImageOptionalReplace =>
+      'Прикріпити зображення (необов\'язково - замінить існуюче)';
+
+  @override
+  String get createPostLabelAttachImageOptional =>
+      'Прикріпити зображення (необов\'язково)';
+
+  @override
+  String get createPostButtonAddImage => 'Додати зображення';
+
+  @override
+  String get createPostTooltipRemoveImage => 'Видалити зображення';
+
+  @override
+  String get createPostTooltipRemoveExistingImage =>
+      'Видалити існуюче зображення';
+
+  @override
+  String get createPostToggleEnableComments => 'Увімкнути коментарі';
+
+  @override
+  String get createPostCommentsEnabledSubtitle =>
+      'Користувачі можуть коментувати цей допис';
+
+  @override
+  String get createPostCommentsDisabledSubtitle => 'Коментарі вимкнені';
+
+  @override
+  String get createPostHintTextContent => 'Що у вас на думці?';
+
+  @override
+  String get createPostErrorContentOrImageRequired =>
+      'Вміст допису або зображення обов\'язкові.';
+
+  @override
+  String get createPostAppBarTitleEdit => 'Редагувати допис';
+
+  @override
+  String get createPostAppBarTitleShareRoutine => 'Поділитися програмою';
+
+  @override
+  String get createPostAppBarTitleCreate => 'Створити допис';
+
+  @override
+  String get createPostButtonSaveChanges => 'Зберегти зміни';
+
+  @override
+  String get createPostButtonPublish => 'Опублікувати';
+
+  @override
+  String createPostSnackbarSuccess(String status) {
+    return 'Допис успішно $status!';
+  }
+
+  @override
+  String createPostSnackbarError(String errorDetails) {
+    return 'Помилка: $errorDetails';
+  }
+
+  @override
+  String get createPostStatusUpdated => 'оновлено';
+
+  @override
+  String get createPostStatusPublished => 'опубліковано';
+
+  @override
+  String get createPostLoadingUpdating => 'Оновлення допису...';
+
+  @override
+  String get createPostLoadingPublishing => 'Публікація допису...';
+
+  @override
+  String get createPostErrorUserNotLoggedIn => 'Користувач не увійшов.';
+
+  @override
+  String get createPostErrorContentEmptyStandard =>
+      'Вміст допису не може бути порожнім для стандартного допису без зображення.';
+
+  @override
+  String get createPostErrorFetchProfile =>
+      'Не вдалося отримати профіль користувача.';
+
+  @override
+  String get createPostErrorUploadMedia => 'Не вдалося завантажити медіа.';
+
+  @override
+  String get exploreScreenEmptyTitle => 'Ще нічого немає.';
+
+  @override
+  String get exploreScreenEmptySubtitle =>
+      'Будьте першим, хто чимось поділиться!';
+
+  @override
+  String exploreScreenErrorLoad(String message) {
+    return 'Помилка завантаження дописів: $message';
+  }
+
+  @override
+  String get exploreScreenButtonTryAgain => 'Спробувати ще';
+
+  @override
+  String get exploreScreenFabTooltipCreatePost => 'Створити допис';
+
+  @override
+  String get followListScreenTitleFollowers => 'Підписники';
+
+  @override
+  String get followListScreenTitleFollowing => 'Підписки';
+
+  @override
+  String followListScreenErrorLoad(String message) {
+    return 'Помилка: $message';
+  }
+
+  @override
+  String get followListScreenEmptyFollowers =>
+      'Цей користувач ще не має підписників.';
+
+  @override
+  String get followListScreenEmptyFollowing =>
+      'Цей користувач ні на кого не підписаний.';
+
+  @override
+  String get followListScreenButtonTryAgain => 'Спробувати ще';
+
+  @override
+  String get followListScreenErrorUnexpected => 'Щось пішло не так.';
+
+  @override
+  String get postDetailScreenAppBarTitleFallback => 'Допис';
+
+  @override
+  String get postDetailMenuEditPost => 'Редагувати допис';
+
+  @override
+  String get postDetailMenuDisableComments => 'Вимкнути коментарі';
+
+  @override
+  String get postDetailMenuEnableComments => 'Увімкнути коментарі';
+
+  @override
+  String get postDetailMenuDeletePost => 'Видалити допис';
+
+  @override
+  String get postDetailDeleteConfirmTitle => 'Видалити допис?';
+
+  @override
+  String get postDetailDeleteConfirmMessage =>
+      'Ви впевнені, що хочете видалити цей допис? Цю дію неможливо буде скасувати, і вона видалить усі пов\'язані коментарі та медіа.';
+
+  @override
+  String get postDetailDeleteConfirmButtonCancel => 'Скасувати';
+
+  @override
+  String get postDetailDeleteConfirmButtonDelete => 'Видалити';
+
+  @override
+  String postDetailSnackbarErrorGeneric(String errorDetails) {
+    return 'Помилка: $errorDetails';
+  }
+
+  @override
+  String postDetailSnackbarPostDeleted(String postId) {
+    return 'Допис \"$postId\" видалено.';
+  }
+
+  @override
+  String get postDetailErrorPostNotFound =>
+      'Допис не знайдено або не вдалося завантажити.';
+
+  @override
+  String get postDetailLoading => 'Завантаження деталей допису...';
+
+  @override
+  String get postDetailLikesSuffixSingular => ' Вподобайка';
+
+  @override
+  String get postDetailLikesSuffixPlural => ' Вподобайок';
+
+  @override
+  String get postDetailCommentsSuffixSingular => ' Коментар';
+
+  @override
+  String get postDetailCommentsSuffixPlural => ' Коментарів';
+
+  @override
+  String get postDetailCommentsSectionTitle => 'Коментарі';
+
+  @override
+  String get postDetailCommentsDisabledMessage =>
+      'Коментарі до цього допису вимкнені.';
+
+  @override
+  String get postDetailCommentsEmptyMessage =>
+      'Коментарів ще немає. Будьте першим!';
+
+  @override
+  String get postDetailCommentInputHint => 'Написати коментар...';
+
+  @override
+  String get postDetailButtonValidate => 'ПІДТВЕРДИТИ';
+
+  @override
+  String get postDetailButtonDispute => 'ОСКАРЖИТИ';
+
+  @override
+  String get recordStatusVerified => 'ПІДТВЕРДЖЕНО';
+
+  @override
+  String get recordStatusRejected => 'ВІДХИЛЕНО';
+
+  @override
+  String get recordStatusExpired => 'ПРОСРОЧЕНО';
+
+  @override
+  String get recordStatusPending => 'ОЧІКУЄ ГОЛОСУВАННЯ';
+
+  @override
+  String get recordStatusContested => 'ОСКАРЖЕНО';
+
+  @override
+  String get recordStatusUnknown => 'НЕВІДОМО';
+
+  @override
+  String get postDetailButtonWatchProof => 'Дивитися доказ';
+
+  @override
+  String get viewUserProfileAppBarTitleFallback => 'Профіль користувача';
+
+  @override
+  String get viewUserProfileErrorNotAuth => 'Користувач не автентифікований.';
+
+  @override
+  String viewUserProfileErrorLoadProfile(String message) {
+    return 'Не вдалося завантажити профіль: $message';
+  }
+
+  @override
+  String viewUserProfileErrorInit(String message) {
+    return 'Не вдалося ініціалізувати: $message';
+  }
+
+  @override
+  String get viewUserProfileErrorFollowInvalidOp =>
+      'Не вдалося підписатися/відписатися: Недійсна операція.';
+
+  @override
+  String viewUserProfileErrorFollowGeneric(String action, String errorDetails) {
+    return 'Не вдалося $action: $errorDetails';
+  }
+
+  @override
+  String get viewUserProfileErrorFollowActionFollow => 'підписатися';
+
+  @override
+  String get viewUserProfileErrorFollowActionUnfollow => 'відписатися';
+
+  @override
+  String viewUserProfileErrorInvalidStateFollow(String currentState) {
+    return 'Неможливо обробити підписку/відписку в поточному стані: $currentState';
+  }
+
+  @override
+  String get viewUserProfileStatLabelLevel => 'Рівень';
+
+  @override
+  String get viewUserProfileButtonUnfollow => 'ВІДПИСАТИСЯ';
+
+  @override
+  String get viewUserProfileButtonFollow => 'ПІДПИСАТИСЯ';
+
+  @override
+  String get viewUserProfilePostsTitle => 'Дописи користувача';
+
+  @override
+  String viewUserProfileNoPosts(String username) {
+    return 'Дописи користувача @$username з\'являться тут.';
+  }
+
+  @override
+  String get viewUserProfileErrorProfileNotAvailable => 'Профіль недоступний.';
+
+  @override
+  String get commentListItemEditDialogTitle => 'Редагувати коментар';
+
+  @override
+  String get commentListItemDeleteDialogTitle => 'Видалити коментар?';
+
+  @override
+  String get commentListItemEditDialogHint => 'Ваш коментар...';
+
+  @override
+  String get commentListItemDeleteDialogMessage =>
+      'Ви впевнені, що хочете видалити цей коментар? Цю дію неможливо буде скасувати.';
+
+  @override
+  String get commentListItemDialogButtonCancel => 'Скасувати';
+
+  @override
+  String get commentListItemDialogButtonSave => 'Зберегти';
+
+  @override
+  String get commentListItemDialogButtonDelete => 'Видалити';
+
+  @override
+  String get commentListItemSnackbarDeleted => 'Коментар видалено.';
+
+  @override
+  String get commentListItemMenuEdit => 'Редагувати';
+
+  @override
+  String get commentListItemMenuDelete => 'Видалити';
+
+  @override
+  String get activeWorkoutAppBarTitleFallback => 'Активне Тренування';
+
+  @override
+  String get activeWorkoutDialogCancelTitle => 'Скасувати тренування?';
+
+  @override
+  String get activeWorkoutDialogCompleteTitle => 'Завершити тренування?';
+
+  @override
+  String get activeWorkoutDialogCancelMessage =>
+      'Ви впевнені, що хочете скасувати це тренування? Прогрес не буде збережено.';
+
+  @override
+  String get activeWorkoutDialogCompleteMessage =>
+      'Ви впевнені, що хочете завершити та зберегти це тренування?';
+
+  @override
+  String get activeWorkoutDialogButtonNo => 'Ні';
+
+  @override
+  String get activeWorkoutDialogButtonYesCancel => 'Так, скасувати';
+
+  @override
+  String get activeWorkoutDialogButtonNoContinue => 'Ні, продовжити';
+
+  @override
+  String get activeWorkoutDialogButtonYesComplete => 'Так, завершити';
+
+  @override
+  String get activeWorkoutLoading => 'Завантаження тренування...';
+
+  @override
+  String get activeWorkoutLoadingStartingNew => 'Початок нового тренування...';
+
+  @override
+  String get activeWorkoutNoneMessage => 'Активного тренування не знайдено.';
+
+  @override
+  String get activeWorkoutButtonBackToRoutines => 'Назад до програм';
+
+  @override
+  String get activeWorkoutErrorNoExercises => 'Це тренування не містить вправ.';
+
+  @override
+  String get activeWorkoutButtonAddFirstExercise => 'Додати першу вправу';
+
+  @override
+  String get activeWorkoutButtonFinishEmpty => 'Завершити порожнє тренування';
+
+  @override
+  String activeWorkoutErrorExerciseNoSets(String exerciseName) {
+    return 'Помилка: Вправа \'\'$exerciseName\'\' не має підходів.';
+  }
+
+  @override
+  String get activeWorkoutErrorExerciseNoSetsHelp =>
+      'Будь ласка, відредагуйте програму або зверніться до підтримки.';
+
+  @override
+  String get activeWorkoutButtonGoBack => 'Повернутися назад';
+
+  @override
+  String get activeWorkoutErrorUnexpected =>
+      'Сталася неочікувана помилка. Будь ласка, перезапустіть.';
+
+  @override
+  String get workoutCompleteTitleLevelUp => 'НОВИЙ РІВЕНЬ!';
+
+  @override
+  String get workoutCompleteTitleDefault => 'Тренування Завершено!';
+
+  @override
+  String workoutCompleteSubtitleLevelUp(int level) {
+    return 'Ви досягли $level рівня!';
+  }
+
+  @override
+  String workoutCompleteStatDuration(int durationMinutes) {
+    return 'Тривалість: $durationMinutes хв';
+  }
+
+  @override
+  String workoutCompleteStatVolume(String volume) {
+    return 'Загальний об\'єм: $volume КГ';
+  }
+
+  @override
+  String workoutCompleteStatXpGained(int xpGained) {
+    return '+$xpGained XP НАБУТО';
+  }
+
+  @override
+  String workoutCompleteXpBarLabelLevel(int level) {
+    return 'РІВ $level';
+  }
+
+  @override
+  String workoutCompleteXpBarText(String currentXp, String totalXp) {
+    return '$currentXp/$totalXp XP';
+  }
+
+  @override
+  String get workoutCompleteButtonAwesome => 'Чудово!';
+
+  @override
+  String get currentSetDisplayWeightDialogTitle => 'Встановити вагу (КГ)';
+
+  @override
+  String get currentSetDisplayWeightDialogHint => 'Введіть вагу';
+
+  @override
+  String get currentSetDisplayWeightDialogButtonCancel => 'Скасувати';
+
+  @override
+  String get currentSetDisplayWeightDialogButtonSet => 'Встановити';
+
+  @override
+  String get currentSetDisplaySetLabelPrefix => 'ПІДХІД ';
+
+  @override
+  String get currentSetDisplayWeightLabelPrefix => 'ВАГА: ';
+
+  @override
+  String get currentSetDisplayUnitKgSuffix => ' КГ';
+
+  @override
+  String get currentSetDisplayRepsLabelSuffix => ' ПОВТОРЕНЬ';
+
+  @override
+  String get currentSetDisplayRpeHelpText =>
+      'Оцініть, наскільки важко було виконати повторення\nза шкалою від 0 до 10.';
+
+  @override
+  String get currentSetDisplayNoRepsPlaceholder => 'Додайте повторення';
+
+  @override
+  String get currentSetDisplayButtonPrevSet => '< ПОПЕРЕД. ПІДХІД';
+
+  @override
+  String get currentSetDisplayButtonFinishWorkout => 'ЗАВЕРШИТИ ТРЕНУВАННЯ';
+
+  @override
+  String get currentSetDisplayButtonNextExercise => 'НАСТУПНА ВПРАВА >';
+
+  @override
+  String get currentSetDisplayButtonNextSet => 'НАСТУПНИЙ ПІДХІД >';
+
+  @override
+  String get progressScreenLoadingData => 'Завантаження даних прогресу...';
+
+  @override
+  String get progressScreenRefreshingData => 'Оновлення даних прогресу...';
+
+  @override
+  String get progressScreenErrorNotAuthRefresh =>
+      'Користувач не автентифікований. Неможливо оновити.';
+
+  @override
+  String get progressScreenErrorProfileNotFoundRefresh =>
+      'Профіль користувача не знайдено під час оновлення.';
+
+  @override
+  String progressScreenErrorFailedRefresh(String errorMessage) {
+    return 'Не вдалося оновити дані: $errorMessage';
+  }
+
+  @override
+  String get progressScreenLoadingWorkoutStats =>
+      'Завантаження статистики тренувань...';
+
+  @override
+  String get progressScreenRefreshingWorkoutStats =>
+      'Оновлення статистики тренувань...';
+
+  @override
+  String progressScreenErrorFailedProcessWorkoutData(String errorMessage) {
+    return 'Не вдалося обробити дані тренувань: $errorMessage';
+  }
+
+  @override
+  String get progressScreenXpToNextLevel => 'XP ДО НАСТУПНОГО РІВНЯ!';
+
+  @override
+  String get progressScreenVolumeTitle => 'ОБ\'ЄМ (ОСТАННІ 7 ДНІВ - ПІДХОДИ)';
+
+  @override
+  String get progressScreenNoVolumeData =>
+      'Немає даних про тренування за останні 7 днів для відображення на карті м\'язів.';
+
+  @override
+  String progressScreenRpeTrendTitle(int maxWorkouts) {
+    return 'НАТРУГА (RPE ТРЕНД - ОСТАННІ $maxWorkouts ТРЕНУВАНЬ)';
+  }
+
+  @override
+  String get progressScreenNoRpeData =>
+      'Останнім часом не було зареєстровано даних RPE для жодної вправи.';
+
+  @override
+  String get progressScreenAvgRpeLabel => 'СЕР. RPE - ';
+
+  @override
+  String progressScreenStrengthTrendTitle(int maxWorkouts) {
+    return 'СИЛА (ТРЕНД ВАГИ - ОСТАННІ $maxWorkouts ТРЕНУВАНЬ)';
+  }
+
+  @override
+  String get progressScreenNoWeightData =>
+      'Останнім часом не було зареєстровано даних про вагу для жодної вправи.';
+
+  @override
+  String get progressScreenAvgWeightLabel => 'СЕР. ВАГА - ';
+
+  @override
+  String get progressScreenAdviceTitle => 'ПОРАДИ';
+
+  @override
+  String get progressScreenNoAdvice =>
+      'Наразі нових порад немає. Продовжуйте в тому ж дусі!';
+
+  @override
+  String progressScreenErrorLoadAdvice(String message) {
+    return 'Помилка завантаження порад: $message';
+  }
+
+  @override
+  String get progressScreenLoadingAdvice => 'Завантаження порад...';
+
+  @override
+  String get progressScreenButtonSendTestAdvice => 'Надіслати тестові поради';
+
+  @override
+  String get progressScreenButtonTryAgain => 'Спробувати ще';
+
+  @override
+  String progressScreenErrorLoadingProfile(String errorMessage) {
+    return 'Помилка завантаження профілю: $errorMessage';
+  }
+
+  @override
+  String get progressScreenNoData =>
+      'Даних про прогрес ще немає. Почніть тренуватися!';
+
+  @override
+  String progressScreenLevelLabel(int level) {
+    return 'РІВ $level';
+  }
+
+  @override
+  String progressScreenXpProgressText(String currentXp, String totalXp) {
+    return '$currentXp/$totalXp XP';
+  }
+
+  @override
+  String progressScreenExercisePlaceholder(String placeholder) {
+    return 'ВПРАВА $placeholder';
+  }
+
+  @override
+  String get progressScreenKgUnit => 'КГ';
 }

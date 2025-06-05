@@ -12,10 +12,10 @@ part 'user_interaction_state.dart';
 class UserInteractionCubit extends Cubit<UserInteractionState> {
   final UserProfileRepository _userProfileRepository;
   final fb_auth.FirebaseAuth _firebaseAuth;
-  final String targetUserId; // ID користувача, чий профіль переглядається
+  final String targetUserId; 
 
   StreamSubscription<UserProfile?>? _targetUserProfileSubscription;
-  StreamSubscription<UserProfile?>? _currentUserProfileSubscription; // Для відстеження `following` списку поточного користувача
+  StreamSubscription<UserProfile?>? _currentUserProfileSubscription; 
 
   UserProfile? _currentTargetUserProfile;
   UserProfile? _currentAuthUserProfile;
@@ -26,22 +26,25 @@ class UserInteractionCubit extends Cubit<UserInteractionState> {
     this._firebaseAuth,
     this.targetUserId,
   ) : super(UserInteractionInitial()) {
-    _initialize();
+    initializeProfileAndListen(); // CHANGED: Call the public method
   }
 
   String? get _currentAuthUserId => _firebaseAuth.currentUser?.uid;
 
-  Future<void> _initialize() async {
+  Future<void> initializeProfileAndListen() async { // CHANGED: Renamed from _initialize and made public
     final authUserId = _currentAuthUserId;
     if (authUserId == null) {
       emit(const UserInteractionError("User not authenticated."));
       return;
     }
 
-    emit(const UserInteractionLoading(loadingMessage: "Loading profile..."));
+    // Emit loading only if not already loaded or if it's a different kind of loading.
+    if (state is! UserInteractionProfileLoaded || state is UserInteractionInitial) {
+        emit(const UserInteractionLoading(loadingMessage: "Loading profile..."));
+    }
+
 
     try {
-      // Підписка на профіль цільового користувача
       _targetUserProfileSubscription?.cancel();
       _targetUserProfileSubscription = _userProfileRepository.getUserProfileStream(targetUserId).listen(
         (profile) {
@@ -54,7 +57,6 @@ class UserInteractionCubit extends Cubit<UserInteractionState> {
         },
       );
 
-      // Підписка на профіль поточного автентифікованого користувача
       _currentUserProfileSubscription?.cancel();
       _currentUserProfileSubscription = _userProfileRepository.getUserProfileStream(authUserId).listen(
         (profile) {
@@ -63,7 +65,6 @@ class UserInteractionCubit extends Cubit<UserInteractionState> {
         },
         onError: (error, stackTrace) {
           developer.log('Error in current auth user profile stream for $authUserId: $error', name: 'UserInteractionCubit', error: error, stackTrace: stackTrace);
-          // Don't necessarily emit top-level error, as target profile might still be fine
         },
       );
 
@@ -83,8 +84,6 @@ class UserInteractionCubit extends Cubit<UserInteractionState> {
   void _emitLoadedStateIfNeeded() {
     if (_currentTargetUserProfile != null && _currentAuthUserProfile != null) {
       final bool isCurrentlyFollowing = _getIsFollowingState();
-      // Якщо попередній стан був помилкою, але ми успішно завантажили дані,
-      // або якщо це перший успішний завантаження, або якщо змінилися дані.
       if (state is UserInteractionError || state is UserInteractionInitial || state is UserInteractionLoading ||
           (state is UserInteractionProfileLoaded && 
            ((state as UserInteractionProfileLoaded).targetUserProfile != _currentTargetUserProfile || 
@@ -96,8 +95,7 @@ class UserInteractionCubit extends Cubit<UserInteractionState> {
         ));
       }
     } else if (_currentTargetUserProfile == null && (state is UserInteractionInitial || state is UserInteractionLoading)) {
-      // Якщо targetUserProfile ще завантажується, але authUser вже є.
-      // Можна залишити Loading або перейти в стан з помилкою, якщо target не завантажиться.
+      // Waiting for target profile
     }
   }
 
@@ -111,23 +109,23 @@ class UserInteractionCubit extends Cubit<UserInteractionState> {
 
     final currentState = state;
     if (currentState is UserInteractionProfileLoaded) {
-      emit(currentState.copyWith(isProcessingFollow: true)); // Show loading on button
+      emit(currentState.copyWith(isProcessingFollow: true)); 
 
       final bool wasFollowing = currentState.isFollowing;
       try {
         if (wasFollowing) {
           await _userProfileRepository.unfollowUser(authUserId, targetUserId);
-          emit(UserInteractionUnfollowSuccess(targetUserProfile: currentState.targetUserProfile, isFollowing: false));
+          // State will be updated by the stream listener for _currentAuthUserProfile
+          // emit(UserInteractionUnfollowSuccess(targetUserProfile: currentState.targetUserProfile, isFollowing: false));
           developer.log('User $authUserId unfollowed $targetUserId', name: 'UserInteractionCubit');
         } else {
           await _userProfileRepository.followUser(authUserId, targetUserId);
-           emit(UserInteractionFollowSuccess(targetUserProfile: currentState.targetUserProfile, isFollowing: true));
+          // State will be updated by the stream listener for _currentAuthUserProfile
+          // emit(UserInteractionFollowSuccess(targetUserProfile: currentState.targetUserProfile, isFollowing: true));
           developer.log('User $authUserId followed $targetUserId', name: 'UserInteractionCubit');
         }
-        // Хмарні функції оновлять лічильники, стрім профілю їх підхопить.
       } catch (e, s) {
         developer.log('Error toggling follow: $e', name: 'UserInteractionCubit', error: e, stackTrace: s);
-        // Revert to previous state on error
         emit(UserInteractionError("Failed to ${wasFollowing ? 'unfollow' : 'follow'}: ${e.toString()}", targetUserProfile: currentState.targetUserProfile, wasFollowing: wasFollowing));
       }
     } else {

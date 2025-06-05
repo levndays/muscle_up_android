@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 import '../../../../core/domain/entities/league_info.dart';
 import '../../../../core/domain/entities/user_profile.dart';
@@ -54,6 +55,7 @@ class _LeagueScreenView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!; // For localization
     final leagueInfo = context.watch<LeagueCubit>().state.currentLeague;
     // We don't need currentUserProfileData for the title anymore on this screen.
 
@@ -71,7 +73,7 @@ class _LeagueScreenView extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
                         onPressed: () => Navigator.of(context).pop(),
-                        tooltip: "Back",
+                        tooltip: loc.leagueScreenButtonBackTooltip, // LOCALIZED
                       ),
                       const Spacer(),
                     ],
@@ -88,7 +90,7 @@ class _LeagueScreenView extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'LEADERBOARD',
+                  loc.leagueScreenLeaderboardTitle, // LOCALIZED
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: Colors.white.withOpacity(0.9),
                     fontWeight: FontWeight.bold,
@@ -114,12 +116,12 @@ class _LeagueScreenView extends StatelessWidget {
                               children: [
                                 Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
                                 const SizedBox(height: 16),
-                                Text('Error: ${state.errorMessage}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)),
+                                Text(loc.leagueScreenErrorLoad(state.errorMessage ?? 'Unknown error'), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)), // LOCALIZED
                                 const SizedBox(height: 16),
                                 ElevatedButton(
                                   onPressed: () => context.read<LeagueCubit>().fetchLeaderboard(),
                                   style: ElevatedButton.styleFrom(backgroundColor: Colors.white24),
-                                  child: const Text('Try Again', style: TextStyle(color: Colors.white)),
+                                  child: Text(loc.leagueScreenButtonTryAgain, style: const TextStyle(color: Colors.white)), // LOCALIZED
                                 )
                               ],
                             ),
@@ -129,7 +131,7 @@ class _LeagueScreenView extends StatelessWidget {
                       if (state.leaderboard.isEmpty) {
                         return Center(
                           child: Text(
-                            'No players in this league yet.',
+                            loc.leagueScreenNoPlayers, // LOCALIZED
                             style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
                           ),
                         );
