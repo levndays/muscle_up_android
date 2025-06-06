@@ -12,12 +12,13 @@ import '../widgets/comment_list_item.dart';
 import '../widgets/post_card_content_widget.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import 'dart:developer' as developer;
-import 'create_post_screen.dart'; // NEW: Для навігації на редагування
-import 'view_user_profile_screen.dart'; // NEW: For navigation
+import 'create_post_screen.dart';
+import 'view_user_profile_screen.dart';
+import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
-  final Post initialPost; // Передаємо початковий пост для уникнення блимання
+  final Post initialPost;
 
   const PostDetailScreen({super.key, required this.postId, required this.initialPost});
 
@@ -52,7 +53,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (state is PostCommentsLoaded) return state.post;
     if (state is PostInteractionLoading) return state.post;
     if (state is PostInteractionFailure) return state.post;
-    // NEW states for delete/update might not always have the post, so handle carefully
     if (state is PostDeleting) return state.postToDelete;
     if (state is PostUpdating) return state.postToUpdate;
     return null;
@@ -69,7 +69,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         RepositoryProvider.of<UserProfileRepository>(context),
         RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
         widget.postId,
-        widget.initialPost, // Використовуємо переданий initialPost
+        widget.initialPost,
       )..fetchComments(),
       child: Scaffold(
         appBar: AppBar(
@@ -93,18 +93,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                        if (value == 'edit_comments') {
                         context.read<PostInteractionCubit>().toggleCommentsEnabled();
                       } else if (value == 'edit_post') {
-                         final bool? result = await Navigator.of(context).push<bool>(
+                         await Navigator.of(context).push<bool>(
                            CreatePostScreen.route(postToEdit: post),
                          );
-                         if (result == true && context.mounted) {
-                           // Пост оновиться через стрім в PostInteractionCubit
-                         }
                       } else if (value == 'delete_post') {
                          final confirmed = await showDialog<bool>(
                            context: context,
                            builder: (ctx) => AlertDialog(
                              title: const Text('Delete Post?'),
-                             content: Text('Are you sure you want to delete this post? This action cannot be undone and will remove all associated comments and media.'),
+                             content: const Text('Are you sure you want to delete this post? This action cannot be undone and will remove all associated comments and media.'),
                              actions: [
                                TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
                                TextButton(
@@ -121,7 +118,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       }
                     },
                     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                       if (post.type == PostType.standard) // Редагувати можна тільки стандартні пости
+                       if (post.type == PostType.standard)
                         const PopupMenuItem<String>(
                           value: 'edit_post',
                           child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Edit Post')),
@@ -148,7 +145,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ),
         body: BlocConsumer<PostInteractionCubit, PostInteractionState>(
           listener: (context, state) {
-            if (state is PostInteractionFailure && state.post == null) { // If post itself is gone
+            if (state is PostInteractionFailure && state.post == null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
               );
@@ -161,17 +158,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Post "${state.postId}" has been deleted.'), backgroundColor: Colors.orangeAccent, duration: const Duration(seconds: 3)),
                 );
-                Navigator.of(context).pop(true); // Повертаємо true, щоб позначити успішне видалення
-            } else if (state is PostUpdating) {
-                // Можна показати індикатор завантаження поверх, якщо потрібно
+                Navigator.of(context).pop(true);
             }
           },
           builder: (context, state) {
             final cubit = context.read<PostInteractionCubit>();
             Post? post = _extractPostFromState(state);
             List<Comment> comments = [];
-            bool isLoadingPostDetails = state is PostInteractionLoading && state.post.id == widget.postId; // Завантаження саме цього поста
-            bool isLoadingComments = false; // Буде true, якщо post завантажений, а коментарі ще ні
+            bool isLoadingPostDetails = state is PostInteractionLoading && state.post.id == widget.postId;
+            bool isLoadingComments = false;
             VoteType? currentUserVote; 
 
             if (state is PostCommentsLoaded) {
@@ -179,23 +174,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               currentUserVote = state.currentUserVote;
             } else if (state is PostUpdated) {
               currentUserVote = state.currentUserVote;
-              // Якщо коментарі вже були завантажені, їх можна взяти з попереднього стану PostCommentsLoaded
-              // або ініціювати їх завантаження, якщо це перше оновлення поста
-              if (cubit.state is PostCommentsLoaded) { // Це не спрацює, бо cubit.state вже оновився
-                 // Краще мати список коментарів як частину PostInteractionState, якщо вони потрібні завжди
+              if (cubit.state is PostCommentsLoaded) {
               } else if (post != null && (state is! PostInteractionFailure) && (state is! PostInteractionLoading)) {
-                isLoadingComments = true; // Позначимо, що коментарі потрібно завантажити
+                isLoadingComments = true;
               }
             } else if (post != null && (state is! PostInteractionFailure) && (state is! PostCommentsLoaded) && (state is! PostInteractionLoading)) {
               isLoadingComments = true;
             }
 
-
             if (post == null && isLoadingPostDetails) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (post == null) { // Якщо пост не завантажено і не йде завантаження
-              if (state is PostInteractionFailure && state.post == null) { // Якщо була помилка завантаження самого поста
+            if (post == null) {
+              if (state is PostInteractionFailure && state.post == null) {
                  return const Center(child: Text("Post not found or could not be loaded."));
               }
               return const Center(child: Text("Loading post details..."));
@@ -221,12 +212,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 },
                                 child: Row(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 22,
-                                      backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
-                                          ? NetworkImage(post.authorProfilePicUrl!) : null,
-                                      child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
-                                          ? const Icon(Icons.person, size: 22) : null,
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty) {
+                                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: NetworkImage(post.authorProfilePicUrl!), heroTag: "post_avatar_${post.id}")));
+                                        }
+                                      },
+                                      child: Hero(
+                                        tag: "post_avatar_${post.id}",
+                                        child: CircleAvatar(
+                                          radius: 22,
+                                          backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
+                                              ? NetworkImage(post.authorProfilePicUrl!) : null,
+                                          child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
+                                              ? const Icon(Icons.person, size: 22) : null,
+                                        ),
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -243,9 +244,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               ),
                               const SizedBox(height: 16),
                               if(post.textContent.isNotEmpty) 
-                                Text(post.textContent, style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.45)), // Збільшено міжрядковий інтервал
+                                Text(post.textContent, style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.45)),
                               
-                              // Показуємо контент для routineShare/recordClaim, якщо це детальний перегляд
                               PostCardContentWidget(
                                 post: post,
                                 currentUserVote: currentUserVote,
@@ -254,19 +254,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               
                               if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty && post.type == PostType.standard) ...[ 
                                 const SizedBox(height: 12),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: AspectRatio(
-                                    aspectRatio: 16 / 9, 
-                                    child: Image.network(
-                                      post.mediaUrl!, 
-                                      fit: BoxFit.cover,
-                                      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null));
-                                      },
-                                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image, color: Colors.grey, size: 40)),
-                                    )
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: NetworkImage(post.mediaUrl!), heroTag: "post_media_${post.id}")));
+                                  },
+                                  child: Hero(
+                                    tag: "post_media_${post.id}",
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: AspectRatio(
+                                        aspectRatio: 16 / 9, 
+                                        child: Image.network(
+                                          post.mediaUrl!, 
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                            if (loadingProgress == null) return child;
+                                            return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null));
+                                          },
+                                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image, color: Colors.grey, size: 40)),
+                                        )
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -320,16 +328,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             childCount: comments.length,
                           ),
                         ),
-                       SliverToBoxAdapter(child: SizedBox(height: (post.isCommentsEnabled && currentAuthUserId != null) ? 100 : 20)), // Відступ для поля вводу коментаря
+                       SliverToBoxAdapter(child: SizedBox(height: (post.isCommentsEnabled && currentAuthUserId != null) ? 100 : 20)),
                     ],
                   ),
                 ),
-                if (post.isCommentsEnabled && currentAuthUserId != null) // Показувати поле вводу, тільки якщо коментарі ввімкнені та користувач залогінений
-                  SafeArea( // Щоб поле вводу не заходило під системні елементи (наприклад, gesture bar на iOS)
+                if (post.isCommentsEnabled && currentAuthUserId != null)
+                  SafeArea(
                     child: Container(
-                      padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 12.0), // Трохи більше відступу знизу
+                      padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 12.0),
                       decoration: BoxDecoration(
-                        color: theme.cardColor, // або theme.scaffoldBackgroundColor
+                        color: theme.cardColor,
                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, -3))],
                       ),
                       child: Row(
@@ -342,21 +350,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 hintText: 'Write a comment...',
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
                                 filled: true,
-                                fillColor: theme.scaffoldBackgroundColor.withOpacity(0.8), // Ледь помітний фон
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Зменшено вертикальний padding
+                                fillColor: theme.scaffoldBackgroundColor.withOpacity(0.8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               ),
                               textInputAction: TextInputAction.send,
                               onSubmitted: (text) => _submitComment(context, cubit),
                               minLines: 1,
-                              maxLines: 3, // Дозволяє кілька рядків, але не безкінечно
+                              maxLines: 3,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Material( // Для InkWell ripple effect
+                          Material(
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => _submitComment(context, cubit),
-                              borderRadius: BorderRadius.circular(22), // Радіус для круглої кнопки
+                              borderRadius: BorderRadius.circular(22),
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(

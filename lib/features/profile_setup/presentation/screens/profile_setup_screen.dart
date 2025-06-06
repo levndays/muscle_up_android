@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart'; // NEW: Added missing import
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
 import 'dart:io'; 
@@ -14,8 +16,8 @@ import '../../../../home_page.dart';
 import '../../../profile/presentation/cubit/user_profile_cubit.dart' as global_user_profile_cubit;
 import '../../../../core/services/image_picker_service.dart'; 
 import 'package:muscle_up/l10n/app_localizations.dart'; 
+import '../../../../widgets/fullscreen_image_viewer.dart';
 
-// Define keys for gender to ensure consistency
 const String _genderKeyMale = 'male';
 const String _genderKeyFemale = 'female';
 const String _genderKeyOther = 'other';
@@ -39,7 +41,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
 
-  String? _selectedGender; // Will store keys like _genderKeyMale
+  String? _selectedGender;
   DateTime? _selectedDateOfBirth;
   String? _selectedFitnessGoal;
   String? _selectedActivityLevel;
@@ -67,7 +69,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _displayNameController.text = profile.displayName ?? '';
       _heightController.text = profile.heightCm?.toStringAsFixed(0) ?? '';
       _weightController.text = profile.weightKg?.toStringAsFixed(1) ?? '';
-      // Ensure _selectedGender is set to one of the defined keys if it exists
       _selectedGender = _isValidGenderKey(profile.gender) ? profile.gender : null;
       _selectedDateOfBirth = profile.dateOfBirth?.toDate();
       _selectedFitnessGoal = profile.fitnessGoal;
@@ -149,7 +150,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   Future<void> _pickAvatarImage() async {
     final ImagePickerService imagePickerService = ImagePickerService();
-    final File? image = await imagePickerService.pickImageFromGallery();
+    final File? image = await imagePickerService.pickAndCropImage(
+      source: ImageSource.gallery,
+      cropStyle: CropStyle.circle,
+    );
     if (image != null) {
       setState(() {
         _selectedAvatarImage = image;
@@ -216,10 +220,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
       items: items,
       onChanged: (newValue) {
-        // This setState is important if the parent widget relies on this state for other UI updates
-        // For ProfileSetupCubit, it already re-emits state which rebuilds.
-        // So this local setState might not be strictly necessary if only cubit state is used.
-        // However, for local _selectedGender variables, it's needed.
         setState(() {
           if (label == loc.profileSetupGenderLabel) _selectedGender = newValue as String?;
           if (label == loc.profileSetupFitnessGoalLabel) _selectedFitnessGoal = newValue as String?;
@@ -237,20 +237,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
-    // Define gender items using keys and localized labels
     final List<DropdownMenuItem<String>> genderItems = [
       DropdownMenuItem(value: _genderKeyMale, child: Text(loc.profileSetupGenderMale)),
       DropdownMenuItem(value: _genderKeyFemale, child: Text(loc.profileSetupGenderFemale)),
       DropdownMenuItem(value: _genderKeyOther, child: Text(loc.profileSetupGenderOther)),
       DropdownMenuItem(value: _genderKeyPreferNotToSay, child: Text(loc.profileSetupGenderPreferNotToSay)),
     ];
-    // Ensure _selectedGender is valid or null
     if (_selectedGender != null && !genderItems.any((item) => item.value == _selectedGender)) {
       _selectedGender = null;
     }
 
-
-    // Define fitness goal items
     final List<DropdownMenuItem<String>> fitnessGoalItems = [
       MapEntry('lose_weight', loc.profileSetupFitnessGoalLoseWeight),
       MapEntry('gain_muscle', loc.profileSetupFitnessGoalGainMuscle),
@@ -262,8 +258,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _selectedFitnessGoal = null;
     }
 
-
-    // Define activity level items
     final List<DropdownMenuItem<String>> activityLevelItems = [
       MapEntry('sedentary', loc.profileSetupActivityLevelSedentary),
       MapEntry('light', loc.profileSetupActivityLevelLight),
@@ -340,7 +334,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
             } else if (state is ProfileSetupDataLoaded && _isEditingMode) {
               _currentAvatarUrl = state.userProfile.profilePictureUrl ?? _currentAvatarUrl;
-              // Ensure local state like _selectedGender is updated if cubit's profile changes
                if (_isValidGenderKey(state.userProfile.gender)) _selectedGender = state.userProfile.gender;
                if (state.userProfile.fitnessGoal != null) _selectedFitnessGoal = state.userProfile.fitnessGoal;
                if (state.userProfile.activityLevel != null) _selectedActivityLevel = state.userProfile.activityLevel;
@@ -350,6 +343,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
             if (state is ProfileSetupLoading) {
               return const Center(child: CircularProgressIndicator());
+            }
+            
+            ImageProvider? avatarImageProvider;
+            if (_selectedAvatarImage != null) {
+              avatarImageProvider = FileImage(_selectedAvatarImage!);
+            } else if (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty) {
+              avatarImageProvider = NetworkImage(_currentAvatarUrl!);
             }
             
             return SingleChildScrollView(
@@ -362,17 +362,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     Center(
                       child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundColor: Colors.grey.shade300,
-                            backgroundImage: _selectedAvatarImage != null
-                                ? FileImage(_selectedAvatarImage!)
-                                : (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty
-                                    ? NetworkImage(_currentAvatarUrl!)
-                                    : null) as ImageProvider?,
-                            child: (_selectedAvatarImage == null && (_currentAvatarUrl == null || _currentAvatarUrl!.isEmpty))
-                                ? const Icon(Icons.person, size: 60, color: Colors.white70)
-                                : null,
+                          GestureDetector(
+                            onTap: avatarImageProvider != null ? () {
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: avatarImageProvider!)));
+                            } : null,
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundColor: Colors.grey.shade300,
+                              backgroundImage: avatarImageProvider,
+                              child: avatarImageProvider == null
+                                  ? const Icon(Icons.person, size: 60, color: Colors.white70)
+                                  : null,
+                            ),
                           ),
                           Positioned(
                             bottom: 0,

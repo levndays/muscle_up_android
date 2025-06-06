@@ -14,6 +14,8 @@ import 'dart:developer' as developer;
 import 'follow_list_screen.dart';
 import '../cubit/follow_list_cubit.dart' show FollowListType;
 import 'package:muscle_up/l10n/app_localizations.dart';
+import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
+import '../../../profile/presentation/widgets/achievement_details_dialog.dart'; // NEW
 
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
@@ -129,7 +131,7 @@ class ViewUserProfileScreen extends StatelessWidget {
 
               return RefreshIndicator(
                 onRefresh: () async {
-                   context.read<UserInteractionCubit>().initializeProfileAndListen(); // CORRECTED: Calling the public method
+                   context.read<UserInteractionCubit>().initializeProfileAndListen();
                    context.read<UserPostsFeedCubit>().fetchUserPosts(targetUserId);
                 },
                 child: SingleChildScrollView(
@@ -141,15 +143,25 @@ class ViewUserProfileScreen extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 45,
-                            backgroundColor: profilePrimaryOrange,
-                            backgroundImage: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
-                                ? NetworkImage(userProfile.profilePictureUrl!)
-                                : null,
-                            child: userProfile.profilePictureUrl == null || userProfile.profilePictureUrl!.isEmpty
-                                ? const Icon(Icons.person, size: 45, color: Colors.white)
-                                : null,
+                          GestureDetector(
+                            onTap: () {
+                              if (userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty) {
+                                Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: NetworkImage(userProfile.profilePictureUrl!), heroTag: "profile_avatar_${userProfile.uid}")));
+                              }
+                            },
+                            child: Hero(
+                              tag: "profile_avatar_${userProfile.uid}",
+                              child: CircleAvatar(
+                                radius: 45,
+                                backgroundColor: profilePrimaryOrange,
+                                backgroundImage: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
+                                    ? NetworkImage(userProfile.profilePictureUrl!)
+                                    : null,
+                                child: userProfile.profilePictureUrl == null || userProfile.profilePictureUrl!.isEmpty
+                                    ? const Icon(Icons.person, size: 45, color: Colors.white)
+                                    : null,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 15),
                           Expanded(
@@ -253,15 +265,7 @@ class ViewUserProfileScreen extends StatelessWidget {
                               final achievementId = achievedRewardIdsEnum[index];
                               final achievement = allAchievements[achievementId];
                               if (achievement == null) return const SizedBox.shrink();
-                              
-                              String achievementName = achievement.name;
-                              String achievementDescription = achievement.description;
-                              if (achievement.isPersonalized) {
-                                achievementName = achievement.name.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); 
-                                achievementDescription = achievement.description.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); 
-                              }
-                              
-                              return _buildRewardItem(context, achievementName, achievementDescription, achievement.emblemAssetPath);
+                              return _buildRewardItem(context, achievement);
                             },
                           ),
                         ),
@@ -349,49 +353,57 @@ class ViewUserProfileScreen extends StatelessWidget {
     );
   }
 
-   Widget _buildRewardItem(BuildContext context, String name, String description, String assetPath) {
+   Widget _buildRewardItem(BuildContext context, Achievement achievement) {
+    // Reusing the same logic as in profile_screen, but now it's encapsulated here.
+    final loc = AppLocalizations.of(context)!;
+    String achievementName = achievement.name;
+    String achievementDescription = achievement.description;
+    if (achievement.isPersonalized) {
+      achievementName = achievement.name.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); 
+      achievementDescription = achievement.description.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); 
+    }
+    
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Tooltip(
-            message: description,
-            padding: const EdgeInsets.all(8),
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            textStyle: const TextStyle(color: Colors.white, fontSize: 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: SizedBox( 
+      child: InkWell(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (_) => AchievementDetailsDialog(achievement: achievement),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox( 
               width: 64,
               height: 64,
               child: Image.asset(
-                assetPath,
+                achievement.emblemAssetPath,
                 fit: BoxFit.contain, 
                 errorBuilder: (context, error, stackTrace) {
                   return const Icon(Icons.shield_outlined, color: Colors.grey, size: 30);
                 },
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            width: 70,
-            child: Text(
-              name,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: profileTextBlack,
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 70,
+              child: Text(
+                achievementName,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: profileTextBlack,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

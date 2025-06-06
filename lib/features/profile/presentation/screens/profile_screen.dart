@@ -16,6 +16,8 @@ import '../../../social/presentation/screens/follow_list_screen.dart';
 import '../../../social/presentation/cubit/follow_list_cubit.dart' show FollowListType;
 import '../../../social/presentation/widgets/post_list_item.dart';
 import 'package:muscle_up/l10n/app_localizations.dart';
+import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
+import '../widgets/achievement_details_dialog.dart'; // NEW
 
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
@@ -31,14 +33,11 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
     if (currentUserId == null) {
-      // This should ideally not happen if AuthGate is working correctly
       return const Scaffold(body: Center(child: Text("Error: User not logged in.")));
     }
 
     return MultiBlocProvider(
       providers: [
-        // UserProfileCubit is already provided by AuthGate -> HomePage
-        // We ensure UserPostsFeedCubit is initialized here for this screen context
         BlocProvider<UserPostsFeedCubit>(
           create: (context) => UserPostsFeedCubit(
             RepositoryProvider.of<PostRepository>(context),
@@ -83,7 +82,6 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
     if (storedValue == null || storedValue.isEmpty) {
       return loc.profileSetupErrorUsernameEmpty; // Or a generic "N/A"
     }
-    // First, try direct key mapping for goals/activity levels
     switch (storedValue) {
         case 'lose_weight': return loc.profileSetupFitnessGoalLoseWeight;
         case 'gain_muscle': return loc.profileSetupFitnessGoalGainMuscle;
@@ -96,7 +94,6 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
         case 'active': return loc.profileSetupActivityLevelActive.split(' ').first;
         case 'very_active': return loc.profileSetupActivityLevelVeryActive.split(' ').first;
         default: 
-          // Fallback for other mappings or direct display
           return mapping[storedValue] ?? storedValue.replaceAll('_', ' ').split(' ').map((e) => e[0].toUpperCase() + e.substring(1)).join(' ');
     }
   }
@@ -138,8 +135,8 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
   }
 
   String _formatNumberWithSpaces(int number) {
-    final formatter = NumberFormat("#,###", "en_US"); // Consider device locale for formatting
-    return formatter.format(number).replaceAll(',', ' '); // Or use a non-breaking space
+    final formatter = NumberFormat("#,###", "en_US");
+    return formatter.format(number).replaceAll(',', ' ');
   }
 
   @override
@@ -219,14 +216,24 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundColor: profilePrimaryOrange,
-                            child: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
-                                ? ClipOval(child: Image.network(userProfile.profilePictureUrl!, fit: BoxFit.cover, width: 80, height: 80,
-                                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 40, color: Colors.white)
-                                  ))
-                                : const Icon(Icons.person, size: 40, color: Colors.white),
+                          GestureDetector(
+                            onTap: () {
+                              if (userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty) {
+                                Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: NetworkImage(userProfile.profilePictureUrl!), heroTag: "profile_avatar_${userProfile.uid}")));
+                              }
+                            },
+                            child: Hero(
+                              tag: "profile_avatar_${userProfile.uid}",
+                              child: CircleAvatar(
+                                radius: 40,
+                                backgroundColor: profilePrimaryOrange,
+                                child: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
+                                    ? ClipOval(child: Image.network(userProfile.profilePictureUrl!, fit: BoxFit.cover, width: 80, height: 80,
+                                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 40, color: Colors.white)
+                                      ))
+                                    : const Icon(Icons.person, size: 40, color: Colors.white),
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Text(
@@ -400,16 +407,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                           final achievementId = achievedRewardIdsEnum[index];
                           final achievement = allAchievements[achievementId];
                           if (achievement == null) return const SizedBox.shrink();
-                          
-                          String achievementName = achievement.name;
-                          String achievementDescription = achievement.description;
-
-                          if (achievement.isPersonalized) {
-                            achievementName = achievement.name.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); // Fallback detail
-                            achievementDescription = achievement.description.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); // Fallback detail
-                          }
-                          
-                          return _buildRewardItem(context, achievementName, achievementDescription, achievement.emblemAssetPath, true);
+                          return _buildRewardItem(context, achievement);
                         },
                       ),
                     ),
@@ -518,49 +516,48 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
     );
   }
 
-  Widget _buildRewardItem(BuildContext context, String name, String description, String assetPath, bool isAchieved) {
+  Widget _buildRewardItem(BuildContext context, Achievement achievement) {
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Tooltip(
-            message: description,
-            padding: const EdgeInsets.all(8),
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            textStyle: const TextStyle(color: Colors.white, fontSize: 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: SizedBox( // Constrain the size of the image/icon
+      child: InkWell(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (_) => AchievementDetailsDialog(achievement: achievement),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
               width: 64,
               height: 64,
               child: Image.asset(
-                assetPath,
-                fit: BoxFit.contain, 
+                achievement.emblemAssetPath,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.shield_outlined, color: Colors.grey, size: 30); // Fallback icon
+                  return const Icon(Icons.shield_outlined, color: Colors.grey, size: 30);
                 },
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            width: 70,
-            child: Text(
-              name,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: profileTextBlack,
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 70,
+              child: Text(
+                achievement.name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: profileTextBlack,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

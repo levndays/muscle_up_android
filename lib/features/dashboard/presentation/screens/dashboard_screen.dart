@@ -94,7 +94,7 @@ class DashboardScreen extends StatelessWidget {
 
           String greetingName = 'User'; // Fallback
           String weightStat = '-- KG';
-          String streakStat = '0 DAY';
+          String streakStat = '0'; // CHANGED: Removed "DAY"
           String currentStreakForIcon = "0";
 
           if (userState is UserProfileLoaded) {
@@ -107,12 +107,12 @@ class DashboardScreen extends StatelessWidget {
             weightStat = userProfile.weightKg != null
                 ? '${userProfile.weightKg!.toStringAsFixed(1)} ${loc.profileScreenUnitKg}' // LOCALIZED UNIT
                 : '-- ${loc.profileScreenUnitKg}'; // LOCALIZED UNIT
-            streakStat = '${userProfile.currentStreak} DAY'; // "DAY" could be localized if needed for pluralization
+            streakStat = userProfile.currentStreak.toString(); // CHANGED
             currentStreakForIcon = userProfile.currentStreak.toString();
           } else if (userState is UserProfileLoading) {
             greetingName = loc.dashboardNotificationsLoading.split(' ').first; // "Loading..."
             weightStat = '... ${loc.profileScreenUnitKg}'; // LOCALIZED UNIT
-            streakStat = '... DAY';
+            streakStat = '...'; // CHANGED
             currentStreakForIcon = "...";
           } else if (userState is UserProfileError) {
             greetingName = 'Error'; // This can be localized as loc.errorGeneric or similar
@@ -258,7 +258,7 @@ class DashboardScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildStatsItem(context, weightStat, loc.dashboardStatsWeightLabel),
-                          _buildStatsItem(context, streakStat, loc.dashboardStatsStreakLabel),
+                          _buildStatsItem(context, streakStat, loc.dashboardStatsStreakLabel), // <-- This will now show only the number
                           _buildStatsItem(context, adherenceDisplay, loc.dashboardStatsAdherenceLabel),
                         ],
                       );

@@ -4,9 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:intl/intl.dart';
 import '../../../../core/domain/entities/comment.dart';
-import '../cubit/post_interaction_cubit.dart'; // Для виклику delete/update
+import '../cubit/post_interaction_cubit.dart';
 import 'dart:developer' as developer;
-import '../screens/view_user_profile_screen.dart'; // NEW: For navigation
+import '../screens/view_user_profile_screen.dart';
+import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
 
 class CommentListItem extends StatelessWidget {
   final Comment comment;
@@ -27,7 +28,7 @@ class CommentListItem extends StatelessWidget {
             child: TextFormField(
               controller: textController,
               autofocus: true,
-              maxLines: null, // Дозволяє багаторядкове введення
+              maxLines: null,
               keyboardType: TextInputType.multiline,
               decoration: const InputDecoration(
                 hintText: 'Your comment...',
@@ -91,7 +92,7 @@ class CommentListItem extends StatelessWidget {
     final timeAgo = DateFormat.yMMMd().add_jm().format(comment.timestamp.toDate());
     final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
     final bool isAuthor = currentUserId == comment.userId;
-    final cubit = context.read<PostInteractionCubit>(); // Отримуємо кубіт з контексту
+    final cubit = context.read<PostInteractionCubit>();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -100,17 +101,22 @@ class CommentListItem extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.of(context).push(ViewUserProfileScreen.route(comment.userId));
+              if (comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty) {
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: NetworkImage(comment.authorProfilePicUrl!), heroTag: "comment_avatar_${comment.id}")));
+              }
             },
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
-                  ? NetworkImage(comment.authorProfilePicUrl!)
-                  : null,
-              child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
-                  ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
-                  : null,
+            child: Hero(
+              tag: "comment_avatar_${comment.id}",
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
+                    ? NetworkImage(comment.authorProfilePicUrl!)
+                    : null,
+                child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
+                    ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
+                    : null,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -136,7 +142,7 @@ class CommentListItem extends StatelessWidget {
                     ),
                     const Spacer(),
                     if (isAuthor)
-                      SizedBox( // Обмежуємо розмір кнопки меню
+                      SizedBox(
                         width: 30, height: 30,
                         child: PopupMenuButton<String>(
                           icon: Icon(Icons.more_vert, size: 18, color: Colors.grey.shade600),

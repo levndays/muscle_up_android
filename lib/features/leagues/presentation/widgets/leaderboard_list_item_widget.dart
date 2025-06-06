@@ -1,13 +1,14 @@
 // lib/features/leagues/presentation/widgets/leaderboard_list_item_widget.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Для форматування чисел
+import 'package:intl/intl.dart';
 import '../../../../core/domain/entities/user_profile.dart';
-import '../../../social/presentation/screens/view_user_profile_screen.dart'; // Для навігації
+import '../../../social/presentation/screens/view_user_profile_screen.dart';
+import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
 
 class LeaderboardListItemWidget extends StatelessWidget {
   final UserProfile userProfile;
   final int rank;
-  final String? currentUserId; // ID поточного автентифікованого користувача
+  final String? currentUserId;
 
   const LeaderboardListItemWidget({
     super.key,
@@ -17,13 +18,12 @@ class LeaderboardListItemWidget extends StatelessWidget {
   });
 
   Widget _buildRankIndicator(BuildContext context, int rank) {
-    final theme = Theme.of(context);
     if (rank == 1) {
-      return const _MedalWidget(color: Color(0xFFFFD700), icon: Icons.emoji_events, rank: '1'); // Gold
+      return const _MedalWidget(color: Color(0xFFFFD700), icon: Icons.emoji_events, rank: '1');
     } else if (rank == 2) {
-      return const _MedalWidget(color: Color(0xFFC0C0C0), icon: Icons.emoji_events, rank: '2'); // Silver
+      return const _MedalWidget(color: Color(0xFFC0C0C0), icon: Icons.emoji_events, rank: '2');
     } else if (rank == 3) {
-      return const _MedalWidget(color: Color(0xFFCD7F32), icon: Icons.emoji_events, rank: '3'); // Bronze
+      return const _MedalWidget(color: Color(0xFFCD7F32), icon: Icons.emoji_events, rank: '3');
     } else {
       return Container(
         width: 32,
@@ -47,7 +47,6 @@ class LeaderboardListItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final bool isCurrentUser = userProfile.uid == currentUserId;
     final NumberFormat xpFormatter = NumberFormat("#,###", "en_US");
 
@@ -62,7 +61,7 @@ class LeaderboardListItemWidget extends StatelessWidget {
           width: isCurrentUser ? 1.5 : 0.8,
         ),
       ),
-      color: Colors.white.withOpacity(isCurrentUser ? 0.12 : 0.07), // Ледь прозорий фон
+      color: Colors.white.withOpacity(isCurrentUser ? 0.12 : 0.07),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         leading: Row(
@@ -70,15 +69,25 @@ class LeaderboardListItemWidget extends StatelessWidget {
           children: [
             _buildRankIndicator(context, rank),
             const SizedBox(width: 12),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.white.withOpacity(0.2),
-              backgroundImage: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
-                  ? NetworkImage(userProfile.profilePictureUrl!)
-                  : null,
-              child: userProfile.profilePictureUrl == null || userProfile.profilePictureUrl!.isEmpty
-                  ? Icon(Icons.person_outline, size: 20, color: Colors.white.withOpacity(0.8))
-                  : null,
+            GestureDetector(
+              onTap: () {
+                if (userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty) {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageProvider: NetworkImage(userProfile.profilePictureUrl!), heroTag: "leaderboard_avatar_${userProfile.uid}")));
+                }
+              },
+              child: Hero(
+                tag: "leaderboard_avatar_${userProfile.uid}",
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  backgroundImage: userProfile.profilePictureUrl != null && userProfile.profilePictureUrl!.isNotEmpty
+                      ? NetworkImage(userProfile.profilePictureUrl!)
+                      : null,
+                  child: userProfile.profilePictureUrl == null || userProfile.profilePictureUrl!.isEmpty
+                      ? Icon(Icons.person_outline, size: 20, color: Colors.white.withOpacity(0.8))
+                      : null,
+                ),
+              ),
             ),
           ],
         ),
@@ -127,7 +136,7 @@ class LeaderboardListItemWidget extends StatelessWidget {
           ],
         ),
         onTap: () {
-          if (!isCurrentUser && currentUserId != null) { // Перехід тільки якщо це не поточний користувач
+          if (!isCurrentUser && currentUserId != null) {
             Navigator.of(context).push(ViewUserProfileScreen.route(userProfile.uid));
           }
         },
@@ -153,14 +162,11 @@ class _MedalWidget extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         Icon(icon, color: color, size: 32),
-        // Для кращої видимості цифри на медалі можна додати обводку або тінь до тексту,
-        // або невеликий контрастний фон під цифрою.
-        // Поки що просто текст зверху.
         Container(
           width: 16,
           height: 16,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.8), // трохи темніший фон для цифри
+            color: color.withOpacity(0.8),
             shape: BoxShape.circle,
             border: Border.all(color: Colors.black.withOpacity(0.2), width: 0.5)
           ),
@@ -170,7 +176,7 @@ class _MedalWidget extends StatelessWidget {
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: Colors.black87, // Контрастний колір для цифри
+              color: Colors.black87,
             ),
           ),
         ),
