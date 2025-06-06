@@ -4,6 +4,7 @@ import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:math';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import '../../../../core/domain/entities/workout_session.dart';
 import '../../../../core/domain/entities/user_profile.dart';
@@ -136,6 +137,7 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final durationMinutes = widget.completedSession.durationSeconds != null ? (widget.completedSession.durationSeconds! / 60).floor() : 0;
     final volumeFormatted = widget.completedSession.totalVolume?.toStringAsFixed(1) ?? "0";
 
@@ -153,16 +155,16 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                 children: [
                   SizedBox(width: 120, height: 120, child: Lottie.asset('assets/animations/trophy_animation.json', repeat: false)),
                   const SizedBox(height: 16),
-                  Text(levelUpOccurred ? 'LEVEL UP!' : 'Workout Complete!', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: levelUpOccurred ? Colors.amber.shade700 : theme.colorScheme.primary), textAlign: TextAlign.center),
-                  if (levelUpOccurred) Text('You reached Level ${widget.userProfileAtCompletion.level}!', style: theme.textTheme.titleLarge?.copyWith(color: Colors.amber.shade600), textAlign: TextAlign.center),
+                  Text(levelUpOccurred ? loc.workoutCompleteTitleLevelUp : loc.workoutCompleteTitleDefault, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: levelUpOccurred ? Colors.amber.shade700 : theme.colorScheme.primary), textAlign: TextAlign.center),
+                  if (levelUpOccurred) Text(loc.workoutCompleteSubtitleLevelUp(widget.userProfileAtCompletion.level), style: theme.textTheme.titleLarge?.copyWith(color: Colors.amber.shade600), textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   if (widget.completedSession.routineNameSnapshot != null) Text(widget.completedSession.routineNameSnapshot!, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
                   const SizedBox(height: 6),
-                  Text('Duration: $durationMinutes min', style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
-                  Text('Total Volume: $volumeFormatted KG', style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
+                  Text(loc.workoutCompleteStatDuration(durationMinutes), style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
+                  Text(loc.workoutCompleteStatVolume(volumeFormatted), style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
                   const SizedBox(height: 24),
                   
-                  Text('+${widget.xpGained} XP GAINED', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.green.shade700)),
+                  Text(loc.workoutCompleteStatXpGained(widget.xpGained), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.green.shade700)),
                   const SizedBox(height: 12),
                   AnimatedBuilder(
                     animation: _xpFillAnimation,
@@ -206,12 +208,12 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('LVL $displayCurrentLevel', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                                Text(loc.workoutCompleteXpBarLabelLevel(displayCurrentLevel), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                                 Text(
-                                  '$displayXpOnBar/${displayTotalXpForLevel} XP',
+                                  loc.workoutCompleteXpBarText(displayXpOnBar.toString(), displayTotalXpForLevel.toString()),
                                   style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'IBMPlexMono'),
                                 ),
-                                Text('LVL $displayNextLevel', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                                Text(loc.workoutCompleteXpBarLabelLevel(displayNextLevel), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -229,7 +231,7 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                        );
                     },
                     style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16), textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    child: const Text('Awesome!'),
+                    child: Text(loc.workoutCompleteButtonAwesome),
                   ),
                 ],
               ),

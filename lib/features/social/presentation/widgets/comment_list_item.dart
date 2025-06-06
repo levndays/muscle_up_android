@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/domain/entities/comment.dart';
 import '../cubit/post_interaction_cubit.dart'; // Для виклику delete/update
 import 'dart:developer' as developer;
+import '../screens/view_user_profile_screen.dart'; // NEW: For navigation
 
 class CommentListItem extends StatelessWidget {
   final Comment comment;
@@ -97,15 +98,20 @@ class CommentListItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
-                ? NetworkImage(comment.authorProfilePicUrl!)
-                : null,
-            child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
-                ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
-                : null,
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(ViewUserProfileScreen.route(comment.userId));
+            },
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
+                  ? NetworkImage(comment.authorProfilePicUrl!)
+                  : null,
+              child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
+                  ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
+                  : null,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -114,9 +120,14 @@ class CommentListItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      comment.authorUsername,
-                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(ViewUserProfileScreen.route(comment.userId));
+                      },
+                      child: Text(
+                        comment.authorUsername,
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(

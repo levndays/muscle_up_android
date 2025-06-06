@@ -231,7 +231,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get dashboardStatsStreakLabel => 'СТРІК';
 
   @override
-  String get dashboardStatsAdherenceLabel => 'ВІДВІДУВАНІСТЬ';
+  String get dashboardStatsAdherenceLabel => 'ДОТРИМАННЯ';
 
   @override
   String get dashboardSectionNotifications => 'СПОВІЩЕННЯ';
@@ -1191,7 +1191,9 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get progressScreenXpToNextLevel => 'XP ДО НАСТУПНОГО РІВНЯ!';
+  String progressScreenXpToNextLevel(int xp) {
+    return '$xp XP ДО НАСТУПНОГО РІВНЯ!';
+  }
 
   @override
   String get progressScreenVolumeTitle => 'ОБ\'ЄМ (ОСТАННІ 7 ДНІВ - ПІДХОДИ)';
@@ -1202,7 +1204,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String progressScreenRpeTrendTitle(int maxWorkouts) {
-    return 'НАТРУГА (RPE ТРЕНД - ОСТАННІ $maxWorkouts ТРЕНУВАНЬ)';
+    return 'СЕР. ВИСНАЖЕННЯ (ТРЕНД ЗА ОСТАННІ $maxWorkouts ТРЕНУВАНЬ)';
   }
 
   @override

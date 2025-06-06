@@ -1613,10 +1613,16 @@
       }
     }
   },
-  "progressScreenXpToNextLevel": "XP TO NEXT LEVEL!",
+  "progressScreenXpToNextLevel": "{xp} XP TO NEXT LEVEL!",
   "@progressScreenXpToNextLevel": {
-    "description": "Text indicating XP needed for next level"
-  },
+  "description": "Text indicating XP needed for next level",
+  "placeholders": {
+    "xp": {
+      "type": "int",
+      "example": "150"
+    }
+  }
+},
   "progressScreenVolumeTitle": "VOLUME (LAST 7 DAYS - SETS)",
   "@progressScreenVolumeTitle": {
     "description": "Title for the muscle map volume section"

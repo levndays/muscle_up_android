@@ -139,8 +139,21 @@ class _ProgressView extends StatelessWidget {
             final userProfile = state.userProfile;
             final currentLeague = state.currentLeague;
 
-            final int currentXpInLevel = (userProfile.xp - state.xpForCurrentLevelStart).clamp(0, state.xpForNextLevelTotal);
-            // final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel; // Not directly used in UI anymore
+            final int xpPerLevelBase = 200;
+            int calculateTotalXpForLevelStart(int level) {
+              if (level <= 1) return 0;
+              int totalXp = 0;
+              for (int i = 1; i < level; i++) {
+                totalXp += (xpPerLevelBase + (i - 1) * 50);
+              }
+              return totalXp;
+            }
+            int currentLevelXpStart = calculateTotalXpForLevelStart(userProfile.level);
+            int xpToNextLevelTotal = (xpPerLevelBase + (userProfile.level - 1) * 50);
+            if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase;
+            
+            final int currentXpInLevel = (userProfile.xp - currentLevelXpStart).clamp(0, xpToNextLevelTotal);
+            final int xpToNext = xpToNextLevelTotal - currentXpInLevel;
 
             final String gender = userProfile.gender?.toLowerCase() ?? 'male';
             final String frontSvgPath = gender == 'female'
@@ -172,7 +185,7 @@ class _ProgressView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     LeagueTitleWidget(
-                      leagueName: currentLeague.name, // This should ideally be localized too if leagues are dynamic
+                      leagueName: currentLeague.name, 
                       level: userProfile.level,
                       gradientColors: currentLeague.gradientColors,
                       onLeagueTap: () {
@@ -184,12 +197,12 @@ class _ProgressView extends StatelessWidget {
                     XPProgressBarWidget(
                       currentXp: currentXpInLevel,
                       xpForNextLevel: state.xpForNextLevelTotal,
-                      startLevelXpText: loc.progressScreenXpProgressText(currentXpInLevel.toString(), state.xpForNextLevelTotal.toString()), 
-                      endLevelXpText: loc.progressScreenLevelLabel(userProfile.level + 1), 
+                      startLevelXpText: loc.progressScreenXpProgressText(currentXpInLevel.toString(), state.xpForNextLevelTotal.toString()),
+                      endLevelXpText: loc.progressScreenLevelLabel(userProfile.level + 1),
                     ),
                     Center(
                       child: Text(
-                        loc.progressScreenXpToNextLevel, 
+                        loc.progressScreenXpToNextLevel(xpToNext), // <<< FIXED
                         style: theme.textTheme.bodySmall?.copyWith(
                             color: primaryOrange,
                             fontWeight: FontWeight.bold,

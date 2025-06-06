@@ -2159,8 +2159,8 @@ abstract class AppLocalizations {
   /// Text indicating XP needed for next level
   ///
   /// In en, this message translates to:
-  /// **'XP TO NEXT LEVEL!'**
-  String get progressScreenXpToNextLevel;
+  /// **'{xp} XP TO NEXT LEVEL!'**
+  String progressScreenXpToNextLevel(int xp);
 
   /// Title for the muscle map volume section
   ///

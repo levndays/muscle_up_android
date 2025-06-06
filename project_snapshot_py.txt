@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up2\muscle_up_android
-Snapshot created on: 2025-06-06T02:14:15.701721
+Snapshot created on: 2025-06-06T04:13:11.255123
 ================================================================================
 
 === FILE: .firebaserc ===
@@ -13510,18 +13510,20 @@ class Post extends Equatable {
 --------------------------------------------------
 // lib/core/domain/entities/predefined_exercise.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart'; // For BuildContext if used in getters
+import 'package:muscle_up/l10n/app_localizations.dart'; // To get current locale
 
 class PredefinedExercise {
   final String id;
-  final String name;
-  final String normalizedName;
-  final String primaryMuscleGroup;
-  final List<String> secondaryMuscleGroups;
-  final List<String> equipmentNeeded;
-  final String description;
+  final Map<String, String> name; // e.g., {'en': 'Bench Press', 'uk': 'Жим лежачи'}
+  final String normalizedName; // Based on default language, e.g., English, for searching
+  final Map<String, String> primaryMuscleGroup;
+  final Map<String, List<String>> secondaryMuscleGroups;
+  final Map<String, List<String>> equipmentNeeded;
+  final Map<String, String> description;
   final String? videoDemonstrationUrl;
-  final String difficultyLevel;
-  final List<String> tags;
+  final String difficultyLevel; // Consider localizing this if it's 'Beginner', 'Intermediate', etc.
+  final List<String> tags; // Tags might also need a localization strategy
 
   PredefinedExercise({
     required this.id,
@@ -13536,26 +13538,95 @@ class PredefinedExercise {
     required this.tags,
   });
 
+  // Helper method to get the localized name based on BuildContext
+  String getLocalizedName(BuildContext context) {
+    final locale = AppLocalizations.of(context)!.localeName.split('_').first; // 'en' or 'uk'
+    return name[locale] ?? name['en'] ?? name.values.firstOrNull ?? id;
+  }
+
+  String getLocalizedPrimaryMuscleGroup(BuildContext context) {
+    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    return primaryMuscleGroup[locale] ?? primaryMuscleGroup['en'] ?? primaryMuscleGroup.values.firstOrNull ?? '';
+  }
+
+  List<String> getLocalizedSecondaryMuscleGroups(BuildContext context) {
+    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    return secondaryMuscleGroups[locale] ?? secondaryMuscleGroups['en'] ?? secondaryMuscleGroups.values.firstOrNull ?? [];
+  }
+   List<String> getLocalizedEquipmentNeeded(BuildContext context) {
+    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    return equipmentNeeded[locale] ?? equipmentNeeded['en'] ?? equipmentNeeded.values.firstOrNull ?? [];
+  }
+
+  String getLocalizedDescription(BuildContext context) {
+    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    return description[locale] ?? description['en'] ?? description.values.firstOrNull ?? '';
+  }
+
+  // Fallback getter if BuildContext is not available (e.g., in some Cubit logic)
+  // This will try to use 'en' as a fallback or the first available name.
+  String get nameFallback {
+      return name['en'] ?? name.values.firstOrNull ?? id;
+  }
+
+
   factory PredefinedExercise.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
     final data = snapshot.data();
-    if (data == null) throw Exception("Exercise data is null!");
+    if (data == null) throw Exception("Exercise data is null for ID: ${snapshot.id}!");
+
+    Map<String, String> _parseLocalizedMap(dynamic fieldData, String defaultFallbackValue, String fieldName) {
+      if (fieldData is Map) {
+        return Map<String, String>.from(fieldData.map((k, v) => MapEntry(k.toString(), v.toString())));
+      } else if (fieldData is String) {
+        // Legacy support: if it's a single string, assume it's for 'en'
+        return {'en': fieldData};
+      }
+      // developer.log("Warning: Localized field '$fieldName' for exercise '${snapshot.id}' is not a Map or String, using fallback.", name: "PredefinedExercise.fromFirestore");
+      return {'en': defaultFallbackValue};
+    }
+
+    Map<String, List<String>> _parseLocalizedListMap(dynamic fieldData, String fieldName) {
+      if (fieldData is Map) {
+        return Map<String, List<String>>.from(fieldData.map((k, v) => MapEntry(
+          k.toString(),
+          (v is List) ? List<String>.from(v.map((item) => item.toString())) : <String>[]
+        )));
+      } else if (fieldData is List) {
+         // Legacy support for a single list (assume 'en')
+        return {'en': List<String>.from(fieldData.map((item) => item.toString()))};
+      }
+      // developer.log("Warning: Localized list field '$fieldName' for exercise '${snapshot.id}' is not a Map or List, using empty fallback.", name: "PredefinedExercise.fromFirestore");
+      return {'en': []};
+    }
+    
+    String englishName = '';
+    final nameData = data['name'];
+    if (nameData is Map && nameData['en'] is String) {
+      englishName = nameData['en'];
+    } else if (nameData is String) {
+      englishName = nameData;
+    } else {
+      englishName = snapshot.id;
+    }
+
+
     return PredefinedExercise(
       id: snapshot.id,
-      name: data['name'] ?? '',
-      normalizedName: data['normalizedName'] ?? '',
-      primaryMuscleGroup: data['primaryMuscleGroup'] ?? '',
-      secondaryMuscleGroups: List<String>.from(data['secondaryMuscleGroups'] ?? []),
-      equipmentNeeded: List<String>.from(data['equipmentNeeded'] ?? []),
-      description: data['description'] ?? '',
-      videoDemonstrationUrl: data['videoDemonstrationUrl'],
-      difficultyLevel: data['difficultyLevel'] ?? '',
-      tags: List<String>.from(data['tags'] ?? []),
+      name: _parseLocalizedMap(data['name'], snapshot.id, 'name'),
+      normalizedName: data['normalizedName'] as String? ?? englishName.toLowerCase(),
+      primaryMuscleGroup: _parseLocalizedMap(data['primaryMuscleGroup'], 'Unknown', 'primaryMuscleGroup'),
+      secondaryMuscleGroups: _parseLocalizedListMap(data['secondaryMuscleGroups'], 'secondaryMuscleGroups'),
+      equipmentNeeded: _parseLocalizedListMap(data['equipmentNeeded'], 'equipmentNeeded'),
+      description: _parseLocalizedMap(data['description'], '', 'description'),
+      videoDemonstrationUrl: data['videoDemonstrationUrl'] as String?,
+      difficultyLevel: data['difficultyLevel'] as String? ?? 'Unknown',
+      tags: List<String>.from(data['tags'] as List<dynamic>? ?? []),
     );
   }
 
-  Map<String, dynamic> toJson() { // Необхідно для адмін-панелі або майбутнього створення вправ з додатку
+  Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'name': name, // Store the map
       'normalizedName': normalizedName,
       'primaryMuscleGroup': primaryMuscleGroup,
       'secondaryMuscleGroups': secondaryMuscleGroups,
@@ -15597,15 +15668,16 @@ class ExerciseExplorerScreen extends StatelessWidget {
 // lib/features/exercise_explorer/presentation/widgets/exercise_list_item.dart
 import 'package:flutter/material.dart';
 import '../../../../core/domain/entities/predefined_exercise.dart';
+// No need to import AppLocalizations if using getLocalizedName(context) from entity
 
 class ExerciseListItem extends StatelessWidget {
   final PredefinedExercise exercise;
-  final bool isSelectionMode; // <--- ДОДАНО
+  final bool isSelectionMode;
 
   const ExerciseListItem({
-    super.key, 
+    super.key,
     required this.exercise,
-    this.isSelectionMode = false, // <--- ДОДАНО
+    this.isSelectionMode = false,
   });
 
   @override
@@ -15613,16 +15685,16 @@ class ExerciseListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        title: Text(exercise.name),
-        subtitle: Text(exercise.primaryMuscleGroup),
+        title: Text(exercise.getLocalizedName(context)), // USE LOCALIZED
+        subtitle: Text(exercise.getLocalizedPrimaryMuscleGroup(context)), // USE LOCALIZED
         trailing: isSelectionMode ? const Icon(Icons.add_circle_outline) : const Icon(Icons.arrow_forward_ios),
         onTap: () {
           if (isSelectionMode) {
-            Navigator.pop(context, exercise); // Повертаємо обрану вправу
+            Navigator.pop(context, exercise);
           } else {
             // TODO: Навігація на детальний екран вправи
             // Наприклад: Navigator.push(context, MaterialPageRoute(builder: (_) => ExerciseDetailScreen(exercise: exercise)));
-            // log('Tapped on ${exercise.name} for details'); // Використовуй логгер
+            // developer.log('Tapped on ${exercise.getLocalizedName(context)} for details');
           }
         },
       ),
@@ -19027,7 +19099,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:flutter/material.dart'; // Для Color у _getDefaultLeaguesInternal
+import 'package:flutter/material.dart'; // For Color in _getDefaultLeaguesInternal and BuildContext
 import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
@@ -19036,7 +19108,7 @@ import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/entities/league_info.dart';
 import '../../../../core/domain/entities/workout_session.dart';
 import '../../../../core/domain/entities/predefined_exercise.dart';
-
+import '../../../../l10n/app_localizations.dart'; // <<< ADDED THIS IMPORT
 
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../../../../core/domain/repositories/league_repository.dart';
@@ -19055,8 +19127,8 @@ class ProgressCubit extends Cubit<ProgressState> {
   StreamSubscription<UserProfile?>? _userProfileSubscription;
   List<LeagueInfo> _allLeagues = [];
   List<PredefinedExercise> _allPredefinedExercises = [];
-  
-  static const int maxWorkoutsForTrend = 15; // Узагальнена константа для трендів
+
+  static const int maxWorkoutsForTrend = 15;
 
   ProgressCubit(
     this._userProfileRepository,
@@ -19153,16 +19225,17 @@ class ProgressCubit extends Cubit<ProgressState> {
     }
   }
 
-  String? getExerciseNameById(String exerciseId) {
+  String getExerciseNameById(BuildContext context, String exerciseId) { // Added BuildContext
     if (_allPredefinedExercises.isEmpty) {
         developer.log("Attempted to get exercise name but _allPredefinedExercises is empty.", name: "ProgressCubit.getExerciseNameById");
-        return 'Loading...';
+        return AppLocalizations.of(context)!.exerciseExplorerLoading;
     }
     try {
-      return _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId).name;
+      final exercise = _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId);
+      return exercise.getLocalizedName(context);
     } catch (e) {
       developer.log("Exercise with ID $exerciseId not found in cached list.", name: "ProgressCubit.getExerciseNameById");
-      return null;
+      return AppLocalizations.of(context)!.progressScreenExercisePlaceholder(exerciseId.length > 5 ? exerciseId.substring(0,5) : exerciseId);
     }
   }
 
@@ -19191,10 +19264,7 @@ class ProgressCubit extends Cubit<ProgressState> {
       final volumeData = await _calculateVolumePerMuscleGroup7Days(userProfile.uid);
       final avgRpe30DaysData = await _calculateAvgRpePerExercise30Days(userProfile.uid);
       final rpeTrendData = await _calculateRpePerWorkoutTrend(userProfile.uid);
-      // Попередній avgWorkingWeights90Days нам вже не потрібен для основного стану,
-      // оскільки ми будемо використовувати новий тренд.
-      // final avgWorkingWeights90DaysData = await _calculateAvgWorkingWeights90Days(userProfile.uid);
-      final workingWeightTrendData = await _calculateWorkingWeightPerWorkoutTrend(userProfile.uid); // <--- НОВИЙ ВИКЛИК
+      final workingWeightTrendData = await _calculateWorkingWeightPerWorkoutTrend(userProfile.uid);
 
       emit(ProgressLoaded(
         userProfile: userProfile,
@@ -19204,8 +19274,8 @@ class ProgressCubit extends Cubit<ProgressState> {
         volumePerMuscleGroup7Days: volumeData,
         avgRpePerExercise30Days: avgRpe30DaysData,
         rpePerWorkoutTrend: rpeTrendData,
-        // avgWorkingWeights90Days: avgWorkingWeights90DaysData, // Можна прибрати, якщо не використовується
-        workingWeightPerWorkoutTrend: workingWeightTrendData, // <--- ПЕРЕДАЧА НОВИХ ДАНИХ
+        workingWeightPerWorkoutTrend: workingWeightTrendData,
+        // avgWorkingWeights90Days is not explicitly passed if not used for primary display
       ));
     } catch (e, s) {
       developer.log('Error processing workout logs for progress update: $e', error: e, stackTrace: s, name: 'ProgressCubit._processUserProfileUpdate');
@@ -19273,22 +19343,24 @@ class ProgressCubit extends Cubit<ProgressState> {
         }
 
         List<String> targetSvgIds = [];
+        String primaryGroupKeyEn = predefinedEx.primaryMuscleGroup['en']?.toLowerCase().replaceAll(' ', '-') ?? '';
 
-        String primaryGroupKey = predefinedEx.primaryMuscleGroup.toLowerCase().replaceAll(' ', '-');
-        if (muscleGroupMapping.containsKey(primaryGroupKey)) {
-          targetSvgIds.addAll(muscleGroupMapping[primaryGroupKey]!);
+        if (primaryGroupKeyEn.isNotEmpty && muscleGroupMapping.containsKey(primaryGroupKeyEn)) {
+          targetSvgIds.addAll(muscleGroupMapping[primaryGroupKeyEn]!);
         } else {
-          developer.log("No SVG mapping for primary group: ${predefinedEx.primaryMuscleGroup} (key: $primaryGroupKey)", name: "ProgressCubit.VolumeCalc");
+          developer.log("No SVG mapping for primary group (key: $primaryGroupKeyEn) from exercise: ${predefinedEx.name['en']}", name: "ProgressCubit.VolumeCalc");
         }
-
-        for (var secGroup in predefinedEx.secondaryMuscleGroups) {
-          String secGroupKey = secGroup.toLowerCase().replaceAll(' ', '-');
-          if (muscleGroupMapping.containsKey(secGroupKey)) {
-            targetSvgIds.addAll(muscleGroupMapping[secGroupKey]!);
+        
+        final secondaryGroupsEn = predefinedEx.secondaryMuscleGroups['en'] ?? [];
+        for (var secGroupEn in secondaryGroupsEn) {
+          String secGroupKeyEn = secGroupEn.toLowerCase().replaceAll(' ', '-');
+          if (muscleGroupMapping.containsKey(secGroupKeyEn)) {
+            targetSvgIds.addAll(muscleGroupMapping[secGroupKeyEn]!);
           } else {
-            developer.log("No SVG mapping for secondary group: $secGroup (key: $secGroupKey)", name: "ProgressCubit.VolumeCalc");
+            developer.log("No SVG mapping for secondary group (key: $secGroupKeyEn) from exercise: ${predefinedEx.name['en']}", name: "ProgressCubit.VolumeCalc");
           }
         }
+
         targetSvgIds = targetSvgIds.toSet().toList();
 
         int setCountForExercise = loggedEx.completedSets.where((s) => s.isCompleted && (s.reps ?? 0) > 0).length;
@@ -19380,10 +19452,10 @@ class ProgressCubit extends Cubit<ProgressState> {
     developer.log("RPE per workout trend: ${rpeTrendMap.entries.where((e) => e.value.isNotEmpty).length} exercises processed with trend data.", name: "ProgressCubit.RPETrendCalc");
     return rpeTrendMap;
   }
-
-  // Метод _calculateAvgWorkingWeights90Days можна видалити або залишити, якщо він ще десь потрібен.
-  // Якщо він використовується тільки для ProgressLoaded.avgWorkingWeights90Days, а це поле більше не основне,
-  // то можна його прибрати. Для прикладу, я його залишу, але він не буде використовуватися для нового тренду.
+  
+  // This declaration '_calculateAvgWorkingWeights90Days' isn't referenced.
+  // You can remove it if it's no longer needed.
+  // ignore: unused_element
   Future<Map<String, double>> _calculateAvgWorkingWeights90Days(String userId) async {
     final ninetyDaysAgo = DateTime.now().subtract(const Duration(days: 90));
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
@@ -19412,15 +19484,14 @@ class ProgressCubit extends Cubit<ProgressState> {
     return avgWeightsMap;
   }
 
-  // Новий метод для розрахунку тренду робочої ваги
   Future<Map<String, List<double>>> _calculateWorkingWeightPerWorkoutTrend(String userId) async {
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
       userId,
-      limit: maxWorkoutsForTrend + 10, // Беремо трохи більше для запасу
+      limit: maxWorkoutsForTrend + 10, 
     );
 
     Map<String, List<double>> weightTrendMap = {};
-    workoutLogs.sort((a, b) => a.startedAt.compareTo(b.startedAt)); // Сортуємо від старих до нових
+    workoutLogs.sort((a, b) => a.startedAt.compareTo(b.startedAt)); 
 
     for (var session in workoutLogs) {
       if (session.status != WorkoutStatus.completed) continue;
@@ -19434,8 +19505,6 @@ class ProgressCubit extends Cubit<ProgressState> {
         }
 
         if (weightsForExerciseInSession.isNotEmpty) {
-          // Для тренду ваги ми можемо брати середню, максимальну або першу робочу вагу за сесію.
-          // Для простоти, візьмемо середню вагу з усіх робочих підходів у цій сесії для цієї вправи.
           final avgWeightForExerciseInSession = weightsForExerciseInSession.reduce((a, b) => a + b) / weightsForExerciseInSession.length;
           
           weightTrendMap.putIfAbsent(loggedEx.predefinedExerciseId, () => []).add(avgWeightForExerciseInSession);
@@ -19443,7 +19512,6 @@ class ProgressCubit extends Cubit<ProgressState> {
       }
     }
 
-    // Обмежуємо кількість точок
     weightTrendMap.forEach((exerciseId, trendList) {
       if (trendList.length > maxWorkoutsForTrend) {
         weightTrendMap[exerciseId] = trendList.sublist(trendList.length - maxWorkoutsForTrend);
@@ -19457,7 +19525,6 @@ class ProgressCubit extends Cubit<ProgressState> {
 
   Map<String, List<String>> _getMuscleGroupToSvgIdMapping() {
     return {
-      // Front Male / Female
       'chest': ['chest'],
       'front-shoulders': ['front-shoulders'],
       'biceps': ['biceps'],
@@ -19468,8 +19535,6 @@ class ProgressCubit extends Cubit<ProgressState> {
       'quadriceps': ['quads'],
       'calves': ['calves'],
       'traps': ['traps'],
-
-      // Back Male / Female
       'rear-shoulders': ['rear-shoulders'],
       'traps-middle': ['traps-middle'],
       'lats': ['lats'],
@@ -19477,8 +19542,6 @@ class ProgressCubit extends Cubit<ProgressState> {
       'triceps': ['triceps'],
       'glutes': ['glutes'],
       'hamstrings': ['hamstrings'],
-
-      // Спільні / агреговані
       'shoulders': ['front-shoulders', 'rear-shoulders', 'traps'],
       'back': ['lats', 'traps', 'traps-middle', 'lowerback', 'rear-shoulders'],
       'core': ['abdominals', 'obliques', 'lowerback'],
@@ -19621,6 +19684,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
 import 'dart:ui' as ui show lerpDouble, PathMetric, Path;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../../../../core/domain/repositories/league_repository.dart';
@@ -19633,7 +19697,7 @@ import '../widgets/muscle_map_widget.dart';
 import '../../../../core/domain/entities/app_notification.dart';
 import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../../notifications/presentation/widgets/notification_list_item.dart';
-import '../../../leagues/presentation/screens/league_screen.dart'; 
+import '../../../leagues/presentation/screens/league_screen.dart';
 
 
 class ProgressScreen extends StatelessWidget {
@@ -19710,6 +19774,7 @@ class _ProgressView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!; 
 
     return Scaffold(
       body: BlocBuilder<ProgressCubit, ProgressState>(
@@ -19740,11 +19805,11 @@ class _ProgressView extends StatelessWidget {
                   children: [
                     const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
                     const SizedBox(height: 16),
-                    Text('Error: ${state.message}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
+                    Text(loc.progressScreenErrorLoadingProfile(state.message), textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)), 
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => context.read<ProgressCubit>().refreshData(),
-                      child: const Text('Try Again'),
+                      child: Text(loc.progressScreenButtonTryAgain), 
                     )
                   ],
                 ),
@@ -19754,8 +19819,21 @@ class _ProgressView extends StatelessWidget {
             final userProfile = state.userProfile;
             final currentLeague = state.currentLeague;
 
-            final int currentXpInLevel = (userProfile.xp - state.xpForCurrentLevelStart).clamp(0, state.xpForNextLevelTotal);
-            final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel;
+            final int xpPerLevelBase = 200;
+            int calculateTotalXpForLevelStart(int level) {
+              if (level <= 1) return 0;
+              int totalXp = 0;
+              for (int i = 1; i < level; i++) {
+                totalXp += (xpPerLevelBase + (i - 1) * 50);
+              }
+              return totalXp;
+            }
+            int currentLevelXpStart = calculateTotalXpForLevelStart(userProfile.level);
+            int xpToNextLevelTotal = (xpPerLevelBase + (userProfile.level - 1) * 50);
+            if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase;
+            
+            final int currentXpInLevel = (userProfile.xp - currentLevelXpStart).clamp(0, xpToNextLevelTotal);
+            // final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel; // Not directly used in UI anymore
 
             final String gender = userProfile.gender?.toLowerCase() ?? 'male';
             final String frontSvgPath = gender == 'female'
@@ -19787,7 +19865,7 @@ class _ProgressView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     LeagueTitleWidget(
-                      leagueName: currentLeague.name,
+                      leagueName: currentLeague.name, // This should ideally be localized too if leagues are dynamic
                       level: userProfile.level,
                       gradientColors: currentLeague.gradientColors,
                       onLeagueTap: () {
@@ -19799,12 +19877,12 @@ class _ProgressView extends StatelessWidget {
                     XPProgressBarWidget(
                       currentXp: currentXpInLevel,
                       xpForNextLevel: state.xpForNextLevelTotal,
-                      startLevelXpText: '$currentXpInLevel',
-                      endLevelXpText: '${state.xpForNextLevelTotal}',
+                      startLevelXpText: loc.progressScreenXpProgressText(currentXpInLevel.toString(), state.xpForNextLevelTotal.toString()),
+                      endLevelXpText: loc.progressScreenLevelLabel(userProfile.level + 1),
                     ),
                     Center(
                       child: Text(
-                        '$xpToNext XP TO NEXT LEVEL!',
+                        loc.progressScreenXpToNextLevel, 
                         style: theme.textTheme.bodySmall?.copyWith(
                             color: primaryOrange,
                             fontWeight: FontWeight.bold,
@@ -19813,12 +19891,12 @@ class _ProgressView extends StatelessWidget {
                     ),
                     const SizedBox(height: 30),
 
-                    Text('VOLUME (LAST 7 DAYS - SETS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(loc.progressScreenVolumeTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                     if (state.volumePerMuscleGroup7Days.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20.0),
-                        child: Center(child: Text("No workout data for the last 7 days to display on muscle map.", style: TextStyle(color: Colors.grey.shade600))),
+                        child: Center(child: Text(loc.progressScreenNoVolumeData, style: TextStyle(color: Colors.grey.shade600))), 
                       )
                     else
                       Row(
@@ -19853,10 +19931,10 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text('EXERTION (RPE TREND - LAST ${ProgressCubit.maxWorkoutsForTrend} WORKOUTS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(loc.progressScreenRpeTrendTitle(ProgressCubit.maxWorkoutsForTrend), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                     if (exercisesWithRpeTrend.isEmpty)
-                      const Text('No RPE data logged recently for any exercise.', style: TextStyle(color: Colors.grey))
+                      Text(loc.progressScreenNoRpeData, style: const TextStyle(color: Colors.grey)) 
                     else
                       ListView.builder(
                         shrinkWrap: true,
@@ -19864,7 +19942,7 @@ class _ProgressView extends StatelessWidget {
                         itemCount: exercisesWithRpeTrend.length,
                         itemBuilder: (context, index) {
                           final entry = exercisesWithRpeTrend[index];
-                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'EXERCISE ${entry.key.substring(0,5)}...';
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(context, entry.key);
                           final double rpeForColorAndAvg = state.avgRpePerExercise30Days[entry.key] ??
                                                      (entry.value.isNotEmpty ? entry.value.reduce((a,b) => a+b) / entry.value.length : 5.0);
                           final rpeColor = _getRpeColor(rpeForColorAndAvg);
@@ -19892,7 +19970,7 @@ class _ProgressView extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'AVG. RPE - ${rpeForColorAndAvg.toStringAsFixed(1)}',
+                                          '${loc.progressScreenAvgRpeLabel}${rpeForColorAndAvg.toStringAsFixed(1)}', 
                                           style: theme.textTheme.bodyMedium?.copyWith(
                                             color: rpeColor,
                                             fontWeight: FontWeight.w600,
@@ -19922,10 +20000,10 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text('STRENGTH (WEIGHT TREND - LAST ${ProgressCubit.maxWorkoutsForTrend} WORKOUTS)', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(loc.progressScreenStrengthTrendTitle(ProgressCubit.maxWorkoutsForTrend), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                      if (exercisesWithWeightTrend.isEmpty)
-                      const Text('No weight data logged recently for any exercise.', style: TextStyle(color: Colors.grey))
+                      Text(loc.progressScreenNoWeightData, style: const TextStyle(color: Colors.grey)) 
                     else
                        ListView.builder(
                         shrinkWrap: true,
@@ -19933,7 +20011,7 @@ class _ProgressView extends StatelessWidget {
                         itemCount: exercisesWithWeightTrend.length,
                         itemBuilder: (context, index) {
                           final entry = exercisesWithWeightTrend[index];
-                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? 'EXERCISE ${entry.key.substring(0,5)}...';
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(context, entry.key);
                           final double avgWeight = entry.value.isNotEmpty ? entry.value.reduce((a,b) => a+b) / entry.value.length : 0.0;
                           final trendColor = _getTrendColor(entry.value);
 
@@ -19960,7 +20038,7 @@ class _ProgressView extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'AVG. WEIGHT - ${avgWeight.toStringAsFixed(1)} KG',
+                                          '${loc.progressScreenAvgWeightLabel}${avgWeight.toStringAsFixed(1)} ${loc.progressScreenKgUnit}', 
                                           style: theme.textTheme.bodyMedium?.copyWith(
                                             color: trendColor,
                                             fontWeight: FontWeight.w600,
@@ -19990,7 +20068,7 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text('ADVICE', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(loc.progressScreenAdviceTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                     BlocBuilder<NotificationsCubit, NotificationsState>(
                       builder: (context, notificationsState) {
@@ -20006,7 +20084,7 @@ class _ProgressView extends StatelessWidget {
                                 color: Colors.blueGrey.shade50,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text('No new advice at the moment. Keep up the great work!', style: TextStyle(color: Colors.blueGrey)),
+                              child: Text(loc.progressScreenNoAdvice, style: const TextStyle(color: Colors.blueGrey)), 
                             );
                           }
                           return ListView.builder(
@@ -20020,9 +20098,9 @@ class _ProgressView extends StatelessWidget {
                         } else if (notificationsState is NotificationsLoading) {
                           return const Center(child: CircularProgressIndicator());
                         } else if (notificationsState is NotificationsError) {
-                          return Text('Error loading advice: ${notificationsState.message}', style: const TextStyle(color: Colors.red));
+                          return Text(loc.progressScreenErrorLoadAdvice(notificationsState.message), style: const TextStyle(color: Colors.red)); 
                         }
-                        return const Text('Loading advice...');
+                        return Text(loc.progressScreenLoadingAdvice); 
                       },
                     ),
                     const SizedBox(height: 10),
@@ -20030,7 +20108,7 @@ class _ProgressView extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.lightbulb_outline),
-                        label: const Text("Send Test Advice"),
+                        label: Text(loc.progressScreenButtonSendTestAdvice), 
                         onPressed: () => _createTestAdviceNotifications(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.tealAccent.shade400,
@@ -20043,7 +20121,7 @@ class _ProgressView extends StatelessWidget {
                 ),
               );
           } else {
-            contentToShow = const Center(child: Text('An unexpected state occurred. Please try again.'));
+            contentToShow = Center(child: Text(loc.progressScreenNoData)); 
             developer.log("ProgressScreen: Reached unexpected state: $state", name: "ProgressScreen.Build");
           }
 
@@ -21761,28 +21839,26 @@ class UserRoutinesScreen extends StatelessWidget {
 --------------------------------------------------
 // lib/features/routines/presentation/widgets/add_exercise_to_routine_dialog.dart
 import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart'; // <--- ВИДАЛЕНО, якщо не використовується тут напряму
 import '../../../../core/domain/entities/predefined_exercise.dart';
 import '../../../../core/domain/entities/routine.dart';
 import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
+// Import AppLocalizations if needed for dialog titles, though exercise name is now localized via entity
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 
 Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) async {
+  final loc = AppLocalizations.of(context)!;
   final PredefinedExercise? selectedPredefinedExercise = await Navigator.of(context).push<PredefinedExercise>(
     MaterialPageRoute(
-      builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true), // <--- ВИПРАВЛЕНО
+      builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true),
     ),
   );
 
-  if (selectedPredefinedExercise == null) { // Перевірка mounted не потрібна перед pop
+  if (selectedPredefinedExercise == null) {
     return null;
   }
 
-  // Подальший код залишається без змін, але переконайся, що `context` для `showDialog` є валідним.
-  // Якщо `context` з попереднього екрану вже не валідний, це викличе помилку.
-  // Але оскільки ми одразу викликаємо showDialog, він, ймовірно, буде валідним.
-  // ignore: use_build_context_synchronously
-  if (!context.mounted) return null; // Додаємо перевірку для безпеки
+  if (!context.mounted) return null;
 
   return await showDialog<RoutineExercise>(
     context: context,
@@ -21792,7 +21868,7 @@ Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) as
       final formKey = GlobalKey<FormState>();
 
       return AlertDialog(
-        title: Text('Add "${selectedPredefinedExercise.name}"'),
+        title: Text(loc.addExerciseDialogTitle(selectedPredefinedExercise.getLocalizedName(context))), // USE LOCALIZED NAME
         content: SingleChildScrollView(
           child: Form(
             key: formKey,
@@ -21801,21 +21877,21 @@ Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) as
               children: <Widget>[
                 TextFormField(
                   controller: setsController,
-                  decoration: const InputDecoration(labelText: 'Number of Sets'),
+                  decoration: InputDecoration(labelText: loc.addExerciseDialogSetsLabel),
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Cannot be empty';
+                    if (value == null || value.isEmpty) return loc.addExerciseDialogSetsErrorEmpty;
                     final n = int.tryParse(value);
-                    if (n == null || n <= 0) return 'Must be a positive number';
+                    if (n == null || n <= 0) return loc.addExerciseDialogSetsErrorInvalid;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
-                    hintText: 'E.g., focus on form, pyramid sets'
+                  decoration: InputDecoration(
+                    labelText: loc.addExerciseDialogNotesLabel,
+                    hintText: loc.addExerciseDialogNotesHint
                   ),
                   maxLines: 2,
                 ),
@@ -21825,16 +21901,16 @@ Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) as
         ),
         actions: <Widget>[
           TextButton(
-            child: const Text('Cancel'),
+            child: Text(loc.addExerciseDialogButtonCancel),
             onPressed: () => Navigator.of(dialogContext).pop(null),
           ),
           ElevatedButton(
-            child: const Text('Add Exercise'),
+            child: Text(loc.addExerciseDialogButtonAdd),
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 Navigator.of(dialogContext).pop(RoutineExercise(
                   predefinedExerciseId: selectedPredefinedExercise.id,
-                  exerciseNameSnapshot: selectedPredefinedExercise.name,
+                  exerciseNameSnapshot: selectedPredefinedExercise.getLocalizedName(context), // Store localized name as snapshot
                   numberOfSets: int.parse(setsController.text),
                   notes: notesController.text.trim().isNotEmpty ? notesController.text.trim() : null,
                 ));
@@ -23496,7 +23572,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../core/domain/entities/post.dart'; 
+import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/create_post_cubit.dart';
@@ -23506,6 +23582,7 @@ import '../../../../core/domain/entities/predefined_exercise.dart';
 import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
 import '../../../routines/presentation/screens/user_routines_screen.dart';
 import '../../../../core/services/image_picker_service.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final UserRoutine? routineToShare;
@@ -23513,7 +23590,7 @@ class CreatePostScreen extends StatefulWidget {
 
   const CreatePostScreen({super.key, this.routineToShare, this.postToEdit});
 
-  static Route<bool> route({UserRoutine? routineToShare, Post? postToEdit}) { 
+  static Route<bool> route({UserRoutine? routineToShare, Post? postToEdit}) {
     return MaterialPageRoute<bool>(
       builder: (_) => CreatePostScreen(routineToShare: routineToShare, postToEdit: postToEdit),
     );
@@ -23559,18 +23636,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       } else if (post.type == PostType.recordClaim && post.recordDetails != null) {
         _recordWeightController.text = post.recordDetails!['weightKg']?.toString() ?? '';
         _recordRepsController.text = post.recordDetails!['reps']?.toString() ?? '';
-        _recordVideoUrlController.text = post.recordDetails!['videoUrl'] ?? '';
-         if (post.recordDetails!['exerciseName'] != null && post.recordDetails!['exerciseId'] != null) {
+        _recordVideoUrlController.text = post.recordDetails!['videoUrl'] as String? ?? ''; // Cast
+         if (post.recordDetails!['exerciseId'] != null && post.recordDetails!['exerciseName'] != null) {
+            // Reconstruct the localized maps for PredefinedExercise
+            Map<String, String> nameMap = {'en': post.recordDetails!['exerciseName'] as String? ?? 'Unknown'};
+            if(post.recordDetails!['localizedExerciseNames'] is Map) {
+              nameMap = Map<String, String>.from(post.recordDetails!['localizedExerciseNames']);
+            }
+
             _selectedExerciseForRecord = PredefinedExercise(
-                id: post.recordDetails!['exerciseId'],
-                name: post.recordDetails!['exerciseName'],
-                normalizedName: post.recordDetails!['exerciseName'].toLowerCase(),
-                primaryMuscleGroup: post.recordDetails!['primaryMuscleGroup'] ?? '',
-                secondaryMuscleGroups: List<String>.from(post.recordDetails!['secondaryMuscleGroups'] ?? []),
-                equipmentNeeded: List<String>.from(post.recordDetails!['equipmentNeeded'] ?? []),
-                description: '',
-                difficultyLevel: '',
-                tags: []);
+                id: post.recordDetails!['exerciseId'] as String,
+                name: nameMap,
+                normalizedName: (post.recordDetails!['exerciseName'] as String? ?? 'unknown').toLowerCase(),
+                primaryMuscleGroup: {'en': post.recordDetails!['primaryMuscleGroup'] as String? ?? ''}, // Defaulting to 'en' map
+                secondaryMuscleGroups: {'en': List<String>.from(post.recordDetails!['secondaryMuscleGroups'] as List<dynamic>? ?? [])},
+                equipmentNeeded: {'en': List<String>.from(post.recordDetails!['equipmentNeeded'] as List<dynamic>? ?? [])},
+                description: {'en': post.recordDetails!['description'] as String? ?? ''}, // Assuming description was stored as string
+                difficultyLevel: post.recordDetails!['difficultyLevel'] as String? ?? '',
+                tags: List<String>.from(post.recordDetails!['tags'] as List<dynamic>? ?? []));
         }
       }
     } else if (widget.routineToShare != null) {
@@ -23602,19 +23685,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildPostTypeSelector() {
+    final loc = AppLocalizations.of(context)!;
     if (_isEditing) {
+      String postTypeName;
+      switch(_selectedPostType){
+        case PostType.standard: postTypeName = loc.createPostSegmentStandard; break;
+        case PostType.routineShare: postTypeName = loc.createPostSegmentRoutine; break;
+        case PostType.recordClaim: postTypeName = loc.createPostSegmentRecord; break;
+      }
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
-        child: Text("Post Type: ${_selectedPostType.name.toUpperCase()}", style: Theme.of(context).textTheme.titleMedium),
+        child: Text(loc.createPostScreenLabelPostType(postTypeName.toUpperCase()), style: Theme.of(context).textTheme.titleMedium),
       );
     }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SegmentedButton<PostType>(
-        segments: const <ButtonSegment<PostType>>[
-          ButtonSegment<PostType>(value: PostType.standard, label: Text('Standard'), icon: Icon(Icons.note_outlined)),
-          ButtonSegment<PostType>(value: PostType.routineShare, label: Text('Routine'), icon: Icon(Icons.share_outlined)),
-          ButtonSegment<PostType>(value: PostType.recordClaim, label: Text('Record'), icon: Icon(Icons.emoji_events_outlined)),
+        segments: <ButtonSegment<PostType>>[
+          ButtonSegment<PostType>(value: PostType.standard, label: Text(loc.createPostSegmentStandard), icon: const Icon(Icons.note_outlined)),
+          ButtonSegment<PostType>(value: PostType.routineShare, label: Text(loc.createPostSegmentRoutine), icon: const Icon(Icons.share_outlined)),
+          ButtonSegment<PostType>(value: PostType.recordClaim, label: Text(loc.createPostSegmentRecord), icon: const Icon(Icons.emoji_events_outlined)),
         ],
         selected: <PostType>{_selectedPostType},
         onSelectionChanged: (Set<PostType> newSelection) {
@@ -23640,16 +23730,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildRoutineShareFields() {
+    final loc = AppLocalizations.of(context)!;
     if (_isEditing && _selectedPostType == PostType.routineShare) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          Text('Shared Routine:', style: Theme.of(context).textTheme.titleMedium),
+          Text(loc.createPostLabelSharedRoutine, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           ListTile(
-            title: Text(_selectedRoutine?.name ?? 'Routine details unavailable'),
-            subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length} exercises') : null,
+            title: Text(_selectedRoutine?.name ?? loc.createPostErrorRoutineUnavailable),
+            subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length}${loc.createPostRoutineExerciseCountSuffix}') : null,
             leading: const Icon(Icons.list_alt_rounded),
             tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
             shape: Theme.of(context).inputDecorationTheme.border,
@@ -23661,17 +23752,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text('Routine to Share:', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.createPostLabelSharedRoutine, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         ListTile(
-          title: Text(_selectedRoutine?.name ?? 'Select Routine*', style: _selectedRoutine == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
-          subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length} exercises') : null,
+          title: Text(_selectedRoutine?.name ?? '${loc.createPostSegmentRoutine}*', style: _selectedRoutine == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
+          subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length}${loc.createPostRoutineExerciseCountSuffix}') : null,
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
-            final UserRoutine? selectedRoutine = await Navigator.of(context).push<UserRoutine?>(UserRoutinesScreen.route(isSelectionMode: true));
-            if (selectedRoutine != null) {
+            final UserRoutine? selectedRoutineFromList = await Navigator.of(context).push<UserRoutine?>(UserRoutinesScreen.route(isSelectionMode: true));
+            if (selectedRoutineFromList != null) {
               setState(() {
-                _selectedRoutine = selectedRoutine;
+                _selectedRoutine = selectedRoutineFromList;
                 if (_textController.text.trim().isEmpty || _textController.text.contains("Check out my new routine")) {
                   _textController.text = "Check out my new routine: ${_selectedRoutine!.name}!";
                 }
@@ -23687,21 +23778,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildRecordClaimFields() {
+     final loc = AppLocalizations.of(context)!;
      if (_isEditing && _selectedPostType == PostType.recordClaim) {
         return Column(
          crossAxisAlignment: CrossAxisAlignment.start,
          children: [
            const SizedBox(height: 16),
-           Text('Record Details (Read-only):', style: Theme.of(context).textTheme.titleMedium),
+           Text(loc.createPostLabelRecordDetailsReadOnly, style: Theme.of(context).textTheme.titleMedium),
            const SizedBox(height: 8),
-           ListTile(title: Text('Exercise: ${_selectedExerciseForRecord?.name ?? 'N/A'}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+           ListTile(title: Text('${loc.createPostLabelRecordExercise}${_selectedExerciseForRecord?.getLocalizedName(context) ?? 'N/A'}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            const SizedBox(height: 8),
-           ListTile(title: Text('Weight: ${_recordWeightController.text} kg'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+           ListTile(title: Text('${loc.createPostLabelRecordWeight}${_recordWeightController.text}${loc.createPostUnitKgSuffix}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            const SizedBox(height: 8),
-           ListTile(title: Text('Reps: ${_recordRepsController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+           ListTile(title: Text('${loc.createPostLabelRecordReps}${_recordRepsController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            if (_recordVideoUrlController.text.isNotEmpty) ...[
              const SizedBox(height: 8),
-             ListTile(title: Text('Video: ${_recordVideoUrlController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+             ListTile(title: Text('${loc.createPostLabelRecordVideo}${_recordVideoUrlController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            ]
          ],
         );
@@ -23710,10 +23802,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text('Record Details:', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.createPostLabelRecordDetails, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         ListTile(
-          title: Text(_selectedExerciseForRecord?.name ?? 'Select Exercise*', style: _selectedExerciseForRecord == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
+          title: Text(_selectedExerciseForRecord?.getLocalizedName(context) ?? loc.createPostHintSelectExercise, style: _selectedExerciseForRecord == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
             final PredefinedExercise? selectedExercise = await Navigator.of(context).push<PredefinedExercise>(MaterialPageRoute(builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true)));
@@ -23724,16 +23816,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           tileColor: Theme.of(context).inputDecorationTheme.fillColor,
         ),
         const SizedBox(height: 16),
-        TextFormField(controller: _recordWeightController, decoration: const InputDecoration(labelText: 'Weight (kg)*'), keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false), validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null || double.parse(v) <= 0) ? 'Invalid weight' : null),
+        TextFormField(controller: _recordWeightController, decoration: InputDecoration(labelText: loc.createPostHintRecordWeight), keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false), validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null || double.parse(v) <= 0) ? loc.createPostErrorRecordWeightInvalid : null),
         const SizedBox(height: 16),
-        TextFormField(controller: _recordRepsController, decoration: const InputDecoration(labelText: 'Repetitions*'), keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), validator: (v) => (v == null || v.trim().isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? 'Invalid repetitions' : null),
+        TextFormField(controller: _recordRepsController, decoration: InputDecoration(labelText: loc.createPostHintRecordReps), keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), validator: (v) => (v == null || v.trim().isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? loc.createPostErrorRecordRepsInvalid : null),
         const SizedBox(height: 16),
-        TextFormField(controller: _recordVideoUrlController, decoration: const InputDecoration(labelText: 'Video URL (optional)'), keyboardType: TextInputType.url, validator: (v) => (v != null && v.isNotEmpty && (Uri.tryParse(v) == null || !Uri.tryParse(v)!.hasAbsolutePath)) ? 'Enter a valid URL' : null),
+        TextFormField(controller: _recordVideoUrlController, decoration: InputDecoration(labelText: loc.createPostHintRecordVideoUrl), keyboardType: TextInputType.url, validator: (v) => (v != null && v.isNotEmpty && (Uri.tryParse(v) == null || !Uri.tryParse(v)!.hasAbsolutePath)) ? loc.createPostErrorRecordVideoUrlInvalid : null),
       ],
     );
   }
 
  Widget _buildMediaPicker() {
+    final loc = AppLocalizations.of(context)!;
     if (_selectedPostType != PostType.standard && _isEditing) {
       if (_existingMediaUrl != null && _existingMediaUrl!.isNotEmpty) {
         return Padding(
@@ -23741,7 +23834,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Attached Media (Read-only):', style: Theme.of(context).textTheme.titleMedium),
+              Text(loc.createPostLabelAttachImageOptionalReplace, style: Theme.of(context).textTheme.titleMedium), // Read-only indication is removed, action is via close button
               const SizedBox(height: 8),
               ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(_existingMediaUrl!, height: 180, width: double.infinity, fit: BoxFit.cover)),
             ],
@@ -23755,14 +23848,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text('Attach Image${_isEditing && _existingMediaUrl != null ? " (Optional - Replaces Existing)" : " (Optional)"}:', style: Theme.of(context).textTheme.titleMedium),
+        Text(_isEditing && _existingMediaUrl != null ? loc.createPostLabelAttachImageOptionalReplace : loc.createPostLabelAttachImageOptional, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (_selectedMediaImage != null)
           Stack(
             alignment: Alignment.topRight,
             children: [
               ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.file(_selectedMediaImage!, height: 180, width: double.infinity, fit: BoxFit.cover)),
-              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _selectedMediaImage = null; _removeExistingMedia = _existingMediaUrl != null; }), tooltip: 'Remove Image'),
+              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _selectedMediaImage = null; _removeExistingMedia = _existingMediaUrl != null; }), tooltip: loc.createPostTooltipRemoveImage),
             ],
           )
         else if (_existingMediaUrl != null && !_removeExistingMedia)
@@ -23770,13 +23863,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             alignment: Alignment.topRight,
             children: [
               ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(_existingMediaUrl!, height: 180, width: double.infinity, fit: BoxFit.cover)),
-              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _removeExistingMedia = true; }), tooltip: 'Remove Existing Image'),
+              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _removeExistingMedia = true; }), tooltip: loc.createPostTooltipRemoveExistingImage),
             ],
           )
         else
           OutlinedButton.icon(
             icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: const Text('Add Image'),
+            label: Text(loc.createPostButtonAddImage),
             onPressed: _pickMediaImage,
             style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), textStyle: const TextStyle(fontSize: 15)),
           ),
@@ -23787,6 +23880,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return BlocProvider(
       create: (context) => CreatePostCubit(
         RepositoryProvider.of<PostRepository>(context),
@@ -23796,7 +23890,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEditing ? 'Edit Post' : (widget.routineToShare != null ? 'Share Routine' : 'Create Post')),
+          title: Text(_isEditing ? loc.createPostAppBarTitleEdit : (widget.routineToShare != null ? loc.createPostAppBarTitleShareRoutine : loc.createPostAppBarTitleCreate)),
           actions: [
             BlocBuilder<CreatePostCubit, CreatePostState>(
               builder: (context, state) {
@@ -23811,14 +23905,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
                             if (_selectedPostType == PostType.recordClaim && !_isEditing) {
                               if (_selectedExerciseForRecord == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an exercise.'), backgroundColor: Colors.red)); return;
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.createPostErrorRecordWeightInvalid), backgroundColor: Colors.red)); return; // Placeholder for actual error
                               }
-                              recordDetails = { 'exerciseId': _selectedExerciseForRecord!.id, 'exerciseName': _selectedExerciseForRecord!.name, 'weightKg': double.parse(_recordWeightController.text), 'reps': int.parse(_recordRepsController.text), if (_recordVideoUrlController.text.isNotEmpty) 'videoUrl': _recordVideoUrlController.text };
+                              recordDetails = {
+                                'exerciseId': _selectedExerciseForRecord!.id,
+                                'exerciseName': _selectedExerciseForRecord!.nameFallback, // Storing English/fallback name
+                                'localizedExerciseNames': _selectedExerciseForRecord!.name, // Storing the map
+                                'weightKg': double.parse(_recordWeightController.text),
+                                'reps': int.parse(_recordRepsController.text),
+                                if (_recordVideoUrlController.text.isNotEmpty) 'videoUrl': _recordVideoUrlController.text,
+                                // Include other non-localized fields from PredefinedExercise if needed by functions
+                                'primaryMuscleGroup': _selectedExerciseForRecord!.primaryMuscleGroup['en'], // Example
+                                'secondaryMuscleGroups': _selectedExerciseForRecord!.secondaryMuscleGroups['en'], // Example
+                                'equipmentNeeded': _selectedExerciseForRecord!.equipmentNeeded['en'], // Example
+                              };
                             } else if (_selectedPostType == PostType.routineShare && !_isEditing) {
                                if (_selectedRoutine == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a routine.'), backgroundColor: Colors.red)); return;
                               }
-                              routineSnapshot = _selectedRoutine!.toMap();
+                              routineSnapshot = _selectedRoutine!.toMap(); // This already contains localized exerciseNameSnapshot
                               relatedRoutineId = _selectedRoutine!.id;
                             }
                             
@@ -23836,7 +23941,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         },
                   child: state is CreatePostLoading
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(_isEditing ? 'Save Changes' : 'Publish', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      : Text(_isEditing ? loc.createPostButtonSaveChanges : loc.createPostButtonPublish, style: const TextStyle(fontWeight: FontWeight.bold)),
                 );
               },
             ),
@@ -23846,12 +23951,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           listener: (context, state) {
             if (state is CreatePostSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Post ${state.isUpdate ? "updated" : "published"} successfully!'), backgroundColor: Colors.green),
+                SnackBar(content: Text(loc.createPostSnackbarSuccess(state.isUpdate ? loc.createPostStatusUpdated : loc.createPostStatusPublished)), backgroundColor: Colors.green),
               );
               Navigator.of(context).pop(true);
             } else if (state is CreatePostFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+                SnackBar(content: Text(loc.createPostSnackbarError(state.error)), backgroundColor: Colors.red),
               );
             }
           },
@@ -23871,22 +23976,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _textController,
-                          decoration: const InputDecoration(hintText: 'What\'s on your mind?', border: OutlineInputBorder()),
+                          decoration: InputDecoration(hintText: loc.createPostHintTextContent, border: const OutlineInputBorder()),
                           maxLines: 8,
                           maxLength: 500,
                            validator: (value) {
-                            if (_isEditing && widget.postToEdit?.type == PostType.standard) { // При редагуванні стандартного поста, текст може бути пустим, якщо є медіа
+                            if (_isEditing && widget.postToEdit?.type == PostType.standard) { 
                                 if ((value == null || value.trim().isEmpty) && _selectedMediaImage == null && (_existingMediaUrl == null || _removeExistingMedia)) {
-                                    return 'Post content or image is required.';
+                                    return loc.createPostErrorContentOrImageRequired;
                                 }
                                 return null;
                             }
-                            // Для нових постів
                             if (value == null || value.trim().isEmpty) {
                               if (_selectedPostType == PostType.standard && _selectedMediaImage == null) {
-                                return 'Post content or image is required.';
+                                return loc.createPostErrorContentOrImageRequired;
                               }
-                              if (_selectedPostType != PostType.standard) return null; // Для routine/record текст не обов'язковий
+                              if (_selectedPostType != PostType.standard) return null;
                             }
                             return null;
                           },
@@ -23896,8 +24000,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         const SizedBox(height: 16),
                         if (!_isEditing || (_isEditing && widget.postToEdit?.type == PostType.standard))
                           SwitchListTile(
-                            title: const Text('Enable Comments'),
-                            subtitle: Text(_areCommentsEnabled ? 'Users can comment on this post' : 'Comments are disabled'),
+                            title: Text(loc.createPostToggleEnableComments),
+                            subtitle: Text(_areCommentsEnabled ? loc.createPostCommentsEnabledSubtitle : loc.createPostCommentsDisabledSubtitle),
                             value: _areCommentsEnabled,
                             onChanged: (bool value) => setState(() => _areCommentsEnabled = value),
                             activeColor: Theme.of(context).colorScheme.primary,
@@ -23954,7 +24058,7 @@ class _DummyDocumentSnapshot implements DocumentSnapshot<Map<String, dynamic>> {
   dynamic get(Object field) => _data[field];
 
   @override
-  dynamic operator [](Object field) => _data[field as String]; // ВИПРАВЛЕНО ТУТ
+  dynamic operator [](Object field) => _data[field as String]; 
 
   @override
   SnapshotMetadata get metadata => throw UnimplementedError('metadata not implemented for _DummyDocumentSnapshot');
@@ -24233,6 +24337,7 @@ import '../widgets/post_card_content_widget.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import 'dart:developer' as developer;
 import 'create_post_screen.dart'; // NEW: Для навігації на редагування
+import 'view_user_profile_screen.dart'; // NEW: For navigation
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -24434,26 +24539,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
-                                        ? NetworkImage(post.authorProfilePicUrl!) : null,
-                                    child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
-                                        ? const Icon(Icons.person, size: 22) : null,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(post.authorUsername, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                                        Text(DateFormat.yMMMMd('en_US').add_jm().format(post.timestamp.toDate()), style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
-                                      ],
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(ViewUserProfileScreen.route(post.userId));
+                                },
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 22,
+                                      backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
+                                          ? NetworkImage(post.authorProfilePicUrl!) : null,
+                                      child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
+                                          ? const Icon(Icons.person, size: 22) : null,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(post.authorUsername, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                                          Text(DateFormat.yMMMMd('en_US').add_jm().format(post.timestamp.toDate()), style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 16),
                               if(post.textContent.isNotEmpty) 
@@ -25011,6 +25121,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/domain/entities/comment.dart';
 import '../cubit/post_interaction_cubit.dart'; // Для виклику delete/update
 import 'dart:developer' as developer;
+import '../screens/view_user_profile_screen.dart'; // NEW: For navigation
 
 class CommentListItem extends StatelessWidget {
   final Comment comment;
@@ -25102,15 +25213,20 @@ class CommentListItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
-                ? NetworkImage(comment.authorProfilePicUrl!)
-                : null,
-            child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
-                ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
-                : null,
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(ViewUserProfileScreen.route(comment.userId));
+            },
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              backgroundImage: comment.authorProfilePicUrl != null && comment.authorProfilePicUrl!.isNotEmpty
+                  ? NetworkImage(comment.authorProfilePicUrl!)
+                  : null,
+              child: comment.authorProfilePicUrl == null || comment.authorProfilePicUrl!.isEmpty
+                  ? Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.primary)
+                  : null,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -25119,9 +25235,14 @@ class CommentListItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      comment.authorUsername,
-                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(ViewUserProfileScreen.route(comment.userId));
+                      },
+                      child: Text(
+                        comment.authorUsername,
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -25225,28 +25346,29 @@ class FollowListItemWidget extends StatelessWidget {
 --------------------------------------------------
 // lib/features/social/presentation/widgets/post_card_content_widget.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; 
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth; 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
-import '../cubit/post_interaction_cubit.dart'; 
+import '../cubit/post_interaction_cubit.dart';
 import 'vote_progress_bar_widget.dart';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 // NEW COLORS FOR RECORD CLAIM
-const Color recordClaimBaseBlue = Color(0xFF067BC2); 
-const Color recordClaimLighterBlue = Color(0xFF4FA8D8); 
-const Color recordClaimDarkerBlue = Color(0xFF045C9B); 
+const Color recordClaimBaseBlue = Color(0xFF067BC2);
+const Color recordClaimLighterBlue = Color(0xFF4FA8D8);
+const Color recordClaimDarkerBlue = Color(0xFF045C9B);
 
-const Color recordVerifyColor = Color(0xFF0A8754); 
-const Color recordDisputeColor = Color(0xFFEF2917); 
+const Color recordVerifyColor = Color(0xFF0A8754);
+const Color recordDisputeColor = Color(0xFFEF2917);
 
 
 class PostCardContentWidget extends StatelessWidget {
   final Post post;
-  final VoteType? currentUserVote; 
-  final bool isDetailedView; 
+  final VoteType? currentUserVote;
+  final bool isDetailedView;
 
   const PostCardContentWidget({
     super.key,
@@ -25256,17 +25378,18 @@ class PostCardContentWidget extends StatelessWidget {
   });
 
   Future<void> _addRoutineToMyRoutines(BuildContext context, Map<String, dynamic> routineSnapshot) async {
+    final loc = AppLocalizations.of(context)!;
     final userId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to add routines.'), backgroundColor: Colors.red),
+        SnackBar(content: Text(loc.postCardRoutineSnackbarLoginToAdd), backgroundColor: Colors.red),
       );
       return;
     }
     final originalRoutineUserId = routineSnapshot['userId'];
     if (originalRoutineUserId == userId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This is your routine already!'), backgroundColor: Colors.orange),
+        SnackBar(content: Text(loc.postCardRoutineSnackbarAlreadyOwn), backgroundColor: Colors.orange),
       );
       return;
     }
@@ -25275,52 +25398,53 @@ class PostCardContentWidget extends StatelessWidget {
       await routineRepository.copyRoutineFromSnapshot(routineSnapshot, userId);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Routine added to your list!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(loc.postCardRoutineSnackbarAdded), backgroundColor: Colors.green),
         );
       }
     } catch (e, s) {
       developer.log('Error adding shared routine: $e', name: 'PostCardContentWidget', error: e, stackTrace: s);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add routine: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(content: Text(loc.postCardRoutineSnackbarErrorAdd(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
   }
 
-  String _getRecordStatusText(RecordVerificationStatus? status, bool? isVerified) {
-    if (isVerified == true) return "VERIFIED";
+  String _getRecordStatusText(RecordVerificationStatus? status, bool? isVerified, AppLocalizations loc) {
+    if (isVerified == true) return loc.recordStatusVerified;
     if (isVerified == false) {
-        if (status == RecordVerificationStatus.rejected) return "REJECTED";
-        if (status == RecordVerificationStatus.expired) return "EXPIRED";
+        if (status == RecordVerificationStatus.rejected) return loc.recordStatusRejected;
+        if (status == RecordVerificationStatus.expired) return loc.recordStatusExpired;
     }
-    if (status == RecordVerificationStatus.pending || status == null) return "AWAITS VOTING";
-    if (status == RecordVerificationStatus.contested) return "CONTESTED";
-    return "UNKNOWN";
+    if (status == RecordVerificationStatus.pending || status == null) return loc.recordStatusPending;
+    if (status == RecordVerificationStatus.contested) return loc.recordStatusContested;
+    return loc.recordStatusUnknown;
   }
 
   Color _getRecordStatusColor(RecordVerificationStatus? status, bool? isVerified, BuildContext context) {
     if (isVerified == true) return recordVerifyColor;
     if (isVerified == false) {
-        if (status == RecordVerificationStatus.rejected) return recordDisputeColor; 
-        if (status == RecordVerificationStatus.expired) return recordDisputeColor.withOpacity(0.8); 
+        if (status == RecordVerificationStatus.rejected) return recordDisputeColor;
+        if (status == RecordVerificationStatus.expired) return recordDisputeColor.withOpacity(0.8);
     }
     switch (status) {
-      case RecordVerificationStatus.pending: return Colors.yellow.shade700; 
+      case RecordVerificationStatus.pending: return Colors.yellow.shade700;
       case RecordVerificationStatus.verified: return recordVerifyColor;
       case RecordVerificationStatus.rejected: return recordDisputeColor;
       case RecordVerificationStatus.expired: return recordDisputeColor.withOpacity(0.8);
-      case RecordVerificationStatus.contested: return Colors.orange.shade600; 
-      default: return Colors.yellow.shade700; 
+      case RecordVerificationStatus.contested: return Colors.orange.shade600;
+      default: return Colors.yellow.shade700;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     final bool isAuthorOfPost = currentAuthUserId == post.userId;
-    
+
     int verifyCount = 0;
     int disputeCount = 0;
     post.verificationVotes.forEach((_, voteStr) {
@@ -25334,7 +25458,10 @@ class PostCardContentWidget extends StatelessWidget {
 
 
     if (post.type == PostType.routineShare && post.routineSnapshot != null) {
-      return Padding( 
+      final exerciseCount = (post.routineSnapshot!['exercises'] as List<dynamic>?)?.length ?? 0;
+      final scheduledDaysString = (post.routineSnapshot!['scheduledDays'] as List<dynamic>?)?.join(', ').toUpperCase() ?? loc.postCardRoutineNoSchedule;
+
+      return Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
           padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
@@ -25346,21 +25473,21 @@ class PostCardContentWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(post.routineSnapshot!['name']?.toUpperCase() ?? 'UNNAMED ROUTINE', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, shadows: [const Shadow(color: Colors.black26, offset: Offset(1,1), blurRadius: 2)])),
-              Text('SHARED ROUTINE', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+              Text((post.routineSnapshot!['name'] as String?)?.toUpperCase() ?? 'UNNAMED ROUTINE', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, shadows: [const Shadow(color: Colors.black26, offset: Offset(1,1), blurRadius: 2)])),
+              Text(loc.postCardRoutineShareTitle, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.bold, letterSpacing: 1.1)),
               const SizedBox(height: 6),
-              Text('by @${post.authorUsername}', style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+              Text(loc.postCardRoutineAuthorPrefix(post.authorUsername), style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Column(children: [
-                    Text('${(post.routineSnapshot!['exercises'] as List<dynamic>?)?.length ?? 0}', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
-                    Text('EXERCISE${(post.routineSnapshot!['exercises'] as List<dynamic>?)?.length == 1 ? '' : 'S'}', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+                    Text('$exerciseCount', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
+                    Text(exerciseCount == 1 ? loc.postCardRoutineExercisesLabel : loc.postCardRoutineExercisesLabelPlural, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
                   ]),
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text((post.routineSnapshot!['scheduledDays'] as List<dynamic>?)?.join(', ').toUpperCase() ?? 'NO SCHEDULE', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
-                    Text('SCHEDULED DAYS', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+                    Text(scheduledDaysString, style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
+                    Text(loc.postCardRoutineScheduledDaysLabel, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
                   ]),
                 ]),
               ),
@@ -25371,16 +25498,23 @@ class PostCardContentWidget extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _addRoutineToMyRoutines(context, post.routineSnapshot!),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFFED5D1A), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)), elevation: 3),
-                    child: const Text('ADD TO MY LIST', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 0.5)),
+                    child: Text(loc.postCardRoutineButtonAddToList, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 0.5)),
                   ),
                 ),
-              if (isAuthorOfPost) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text("This is your shared routine.", style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
-              if (!isAuthorOfPost && currentAuthUserId == null) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text("Log in to add this routine.", style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
+              if (isAuthorOfPost) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text(loc.postCardRoutineIsYours, style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
+              if (!isAuthorOfPost && currentAuthUserId == null) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text(loc.postCardRoutineLoginToAdd, style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
+              const SizedBox(height: 8), // Added padding at the bottom
             ],
           ),
         ),
       );
     } else if (post.type == PostType.recordClaim && post.recordDetails != null) {
+      final String exerciseDisplayName = (post.recordDetails!['localizedExerciseNames'] is Map
+          ? (Map<String, String>.from(post.recordDetails!['localizedExerciseNames'])[loc.localeName.split('_').first] ??
+             Map<String, String>.from(post.recordDetails!['localizedExerciseNames'])['en'] ??
+             post.recordDetails!['exerciseName'])
+          : post.recordDetails!['exerciseName']) ?? loc.postCardRecordExerciseNameFallback;
+
       return Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
@@ -25400,11 +25534,11 @@ class PostCardContentWidget extends StatelessWidget {
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text((post.recordDetails!['exerciseName'] ?? 'EXERCISE RECORD').toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, height: 1.1)),
-                  Text('RECORD CLAIM', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Text(exerciseDisplayName.toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, height: 1.1)),
+                  Text(loc.postCardRecordClaimTitle, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold, letterSpacing: 1)),
                 ])),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  Text('by @${post.authorUsername}', style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text(loc.postCardRoutineAuthorPrefix(post.authorUsername), style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
@@ -25412,34 +25546,39 @@ class PostCardContentWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      _getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified),
+                      _getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified, loc),
                       style: theme.textTheme.bodySmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 0.5),
                     ),
                   ),
                 ]),
               ]),
               const SizedBox(height: 12),
-              Text('${post.recordDetails!['reps'] ?? 'N/A'} REPS / ${post.recordDetails!['weightKg']?.toStringAsFixed(1) ?? 'N/A'} KG', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
+              Text(
+                loc.postCardRecordRepsKgFormat(
+                    post.recordDetails!['reps']?.toString() ?? loc.postCardRecordRepsFallback,
+                    (post.recordDetails!['weightKg'] as num?)?.toStringAsFixed(1) ?? loc.postCardRecordWeightFallback
+                ),
+                style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)
+              ),
               const SizedBox(height: 10),
               VoteProgressBarWidget(
-                verifyCount: verifyCount, 
-                disputeCount: disputeCount, 
-                height: 22, 
-                verifyColor: recordVerifyColor, 
-                disputeColor: recordDisputeColor, 
-                backgroundColor: Colors.black.withOpacity(0.3), 
+                verifyCount: verifyCount,
+                disputeCount: disputeCount,
+                height: 22,
+                verifyColor: recordVerifyColor,
+                disputeColor: recordDisputeColor,
+                backgroundColor: Colors.black.withOpacity(0.3),
                 centerTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, shadows: [Shadow(color: Colors.black87, blurRadius: 2, offset: Offset(0,1))])
               ),
-              if (post.recordDetails!['videoUrl'] != null && post.recordDetails!['videoUrl'].isNotEmpty)
-                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO: Launch URL */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: const Text('Watch Proof', style: TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
-              // Show vote buttons only in detailed view AND if user can vote
-              if (isDetailedView && canVote) 
+              if (post.recordDetails!['videoUrl'] != null && (post.recordDetails!['videoUrl'] as String).isNotEmpty)
+                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO: Launch URL */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: Text(loc.postDetailButtonWatchProof, style: const TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
+              if (isDetailedView && canVote)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: Row(children: [
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? recordVerifyColor.withOpacity(0.7) : recordVerifyColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('VALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? recordVerifyColor.withOpacity(0.7) : recordVerifyColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: Text(loc.postDetailButtonValidate, style: const TextStyle(fontWeight: FontWeight.bold)))),
                     const SizedBox(width: 12),
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? recordDisputeColor.withOpacity(0.7) : recordDisputeColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('DISPUTE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? recordDisputeColor.withOpacity(0.7) : recordDisputeColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: Text(loc.postDetailButtonDispute, style: const TextStyle(fontWeight: FontWeight.bold)))),
                   ]),
                 )
             ],
@@ -25447,8 +25586,7 @@ class PostCardContentWidget extends StatelessWidget {
         ),
       );
     }
-    // For PostType.standard, this widget returns nothing, as text and media are handled by PostListItem directly.
-    return const SizedBox.shrink(); 
+    return const SizedBox.shrink();
   }
 }
 --------------------------------------------------
@@ -26785,6 +26923,7 @@ import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:math';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import '../../../../core/domain/entities/workout_session.dart';
 import '../../../../core/domain/entities/user_profile.dart';
@@ -26917,6 +27056,7 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final durationMinutes = widget.completedSession.durationSeconds != null ? (widget.completedSession.durationSeconds! / 60).floor() : 0;
     final volumeFormatted = widget.completedSession.totalVolume?.toStringAsFixed(1) ?? "0";
 
@@ -26934,16 +27074,16 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                 children: [
                   SizedBox(width: 120, height: 120, child: Lottie.asset('assets/animations/trophy_animation.json', repeat: false)),
                   const SizedBox(height: 16),
-                  Text(levelUpOccurred ? 'LEVEL UP!' : 'Workout Complete!', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: levelUpOccurred ? Colors.amber.shade700 : theme.colorScheme.primary), textAlign: TextAlign.center),
-                  if (levelUpOccurred) Text('You reached Level ${widget.userProfileAtCompletion.level}!', style: theme.textTheme.titleLarge?.copyWith(color: Colors.amber.shade600), textAlign: TextAlign.center),
+                  Text(levelUpOccurred ? loc.workoutCompleteTitleLevelUp : loc.workoutCompleteTitleDefault, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: levelUpOccurred ? Colors.amber.shade700 : theme.colorScheme.primary), textAlign: TextAlign.center),
+                  if (levelUpOccurred) Text(loc.workoutCompleteSubtitleLevelUp(widget.userProfileAtCompletion.level), style: theme.textTheme.titleLarge?.copyWith(color: Colors.amber.shade600), textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   if (widget.completedSession.routineNameSnapshot != null) Text(widget.completedSession.routineNameSnapshot!, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
                   const SizedBox(height: 6),
-                  Text('Duration: $durationMinutes min', style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
-                  Text('Total Volume: $volumeFormatted KG', style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
+                  Text(loc.workoutCompleteStatDuration(durationMinutes), style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
+                  Text(loc.workoutCompleteStatVolume(volumeFormatted), style: theme.textTheme.titleSmall?.copyWith(color: Colors.grey.shade700)),
                   const SizedBox(height: 24),
                   
-                  Text('+${widget.xpGained} XP GAINED', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.green.shade700)),
+                  Text(loc.workoutCompleteStatXpGained(widget.xpGained), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.green.shade700)),
                   const SizedBox(height: 12),
                   AnimatedBuilder(
                     animation: _xpFillAnimation,
@@ -26987,12 +27127,12 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('LVL $displayCurrentLevel', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                                Text(loc.workoutCompleteXpBarLabelLevel(displayCurrentLevel), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                                 Text(
-                                  '$displayXpOnBar/${displayTotalXpForLevel} XP',
+                                  loc.workoutCompleteXpBarText(displayXpOnBar.toString(), displayTotalXpForLevel.toString()),
                                   style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'IBMPlexMono'),
                                 ),
-                                Text('LVL $displayNextLevel', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                                Text(loc.workoutCompleteXpBarLabelLevel(displayNextLevel), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -27010,7 +27150,7 @@ class _WorkoutCompleteScreenState extends State<WorkoutCompleteScreen> with Tick
                        );
                     },
                     style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16), textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    child: const Text('Awesome!'),
+                    child: Text(loc.workoutCompleteButtonAwesome),
                   ),
                 ],
               ),
@@ -27679,12 +27819,10 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   "@profileSetupOptionalFieldSuffix": {
     "description": "Suffix for optional field labels"
   },
-
   "authGateFinalizingAccountSetup": "Finalizing account setup...",
   "@authGateFinalizingAccountSetup": {
     "description": "Message shown in AuthGate while waiting for profile sync"
   },
-
   "dashboardGreetingWelcome": "Welcome,",
   "@dashboardGreetingWelcome": {
     "description": "Greeting text on the dashboard, part 1. Name will be appended."
@@ -29026,10 +29164,16 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
       }
     }
   },
-  "progressScreenXpToNextLevel": "XP TO NEXT LEVEL!",
+  "progressScreenXpToNextLevel": "{xp} XP TO NEXT LEVEL!",
   "@progressScreenXpToNextLevel": {
-    "description": "Text indicating XP needed for next level"
-  },
+  "description": "Text indicating XP needed for next level",
+  "placeholders": {
+    "xp": {
+      "type": "int",
+      "example": "150"
+    }
+  }
+},
   "progressScreenVolumeTitle": "VOLUME (LAST 7 DAYS - SETS)",
   "@progressScreenVolumeTitle": {
     "description": "Title for the muscle map volume section"
@@ -29096,6 +29240,148 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   "progressScreenButtonSendTestAdvice": "Send Test Advice",
   "@progressScreenButtonSendTestAdvice": {
     "description": "Button text to send test advice notifications"
+  },
+  "progressScreenButtonTryAgain": "Try Again",
+  "@progressScreenButtonTryAgain": {
+    "description": "Button text to retry loading data on error"
+  },
+  "progressScreenErrorLoadingProfile": "Error loading profile: {errorMessage}",
+  "@progressScreenErrorLoadingProfile": {
+    "description": "Error message when profile loading fails",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenNoData": "No progress data available yet. Start working out!",
+  "@progressScreenNoData": {
+    "description": "Message when no progress data is available"
+  },
+  "progressScreenLevelLabel": "LVL {level}",
+  "@progressScreenLevelLabel": {
+    "description": "Label for level, e.g., LVL 5",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenXpProgressText": "{currentXp}/{totalXp} XP",
+  "@progressScreenXpProgressText": {
+    "description": "Text showing XP progress, e.g., 150/200 XP",
+    "placeholders": {
+      "currentXp": {
+        "type": "String"
+      },
+      "totalXp": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenExercisePlaceholder": "EXERCISE {placeholder}",
+  "@progressScreenExercisePlaceholder": {
+    "description": "Placeholder for exercise name if not found, e.g., EXERCISE ABCDE...",
+    "placeholders": {
+      "placeholder": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenKgUnit": "KG",
+  "@progressScreenKgUnit": {
+    "description": "Unit for kilograms, short form"
+  },
+
+  "postCardRoutineShareTitle": "SHARED ROUTINE",
+  "@postCardRoutineShareTitle": {
+    "description": "Title overlay for a shared routine post card"
+  },
+  "postCardRoutineAuthorPrefix": "by @{authorUsername}",
+  "@postCardRoutineAuthorPrefix": {
+    "description": "Author prefix for shared routine post card",
+    "placeholders": {
+      "authorUsername": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineExercisesLabel": "EXERCISE",
+  "@postCardRoutineExercisesLabel": {
+    "description": "Label for exercises count in shared routine card (singular)"
+  },
+  "postCardRoutineExercisesLabelPlural": "EXERCISES",
+  "@postCardRoutineExercisesLabelPlural": {
+    "description": "Label for exercises count in shared routine card (plural)"
+  },
+  "postCardRoutineNoSchedule": "NO SCHEDULE",
+  "@postCardRoutineNoSchedule": {
+    "description": "Text when a shared routine has no scheduled days"
+  },
+  "postCardRoutineScheduledDaysLabel": "SCHEDULED DAYS",
+  "@postCardRoutineScheduledDaysLabel": {
+    "description": "Label for scheduled days in shared routine card"
+  },
+  "postCardRoutineButtonAddToList": "ADD TO MY LIST",
+  "@postCardRoutineButtonAddToList": {
+    "description": "Button text to add a shared routine to user's list"
+  },
+  "postCardRoutineSnackbarLoginToAdd": "Please log in to add routines.",
+  "@postCardRoutineSnackbarLoginToAdd": {
+    "description": "Snackbar message if user tries to add routine without login"
+  },
+  "postCardRoutineSnackbarAlreadyOwn": "This is your routine already!",
+  "@postCardRoutineSnackbarAlreadyOwn": {
+    "description": "Snackbar message if user tries to add their own routine"
+  },
+  "postCardRoutineSnackbarAdded": "Routine added to your list!",
+  "@postCardRoutineSnackbarAdded": {
+    "description": "Snackbar message on successful routine addition"
+  },
+  "postCardRoutineSnackbarErrorAdd": "Failed to add routine: {errorDetails}",
+  "@postCardRoutineSnackbarErrorAdd": {
+    "description": "Snackbar message on error adding routine",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineIsYours": "This is your shared routine.",
+  "@postCardRoutineIsYours": {
+    "description": "Message indicating the shared routine belongs to the current user"
+  },
+  "postCardRoutineLoginToAdd": "Log in to add this routine.",
+  "@postCardRoutineLoginToAdd": {
+    "description": "Message prompting login to add a shared routine"
+  },
+  "postCardRecordClaimTitle": "RECORD CLAIM",
+  "@postCardRecordClaimTitle": {
+    "description": "Title overlay for a record claim post card"
+  },
+  "postCardRecordExerciseNameFallback": "EXERCISE RECORD",
+  "@postCardRecordExerciseNameFallback": {
+    "description": "Fallback exercise name for record claim if not specified"
+  },
+  "postCardRecordRepsKgFormat": "{reps} REPS / {weight} KG",
+  "@postCardRecordRepsKgFormat": {
+    "description": "Format for displaying reps and weight in record claim",
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRecordRepsFallback": "N/A",
+  "@postCardRecordRepsFallback": {
+    "description": "Fallback for reps if not available"
+  },
+  "postCardRecordWeightFallback": "N/A",
+  "@postCardRecordWeightFallback": {
+    "description": "Fallback for weight if not available"
   }
 }
 --------------------------------------------------
@@ -31265,8 +31551,8 @@ abstract class AppLocalizations {
   /// Text indicating XP needed for next level
   ///
   /// In en, this message translates to:
-  /// **'XP TO NEXT LEVEL!'**
-  String get progressScreenXpToNextLevel;
+  /// **'{xp} XP TO NEXT LEVEL!'**
+  String progressScreenXpToNextLevel(int xp);
 
   /// Title for the muscle map volume section
   ///
@@ -31345,6 +31631,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send Test Advice'**
   String get progressScreenButtonSendTestAdvice;
+
+  /// Button text to retry loading data on error
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get progressScreenButtonTryAgain;
+
+  /// Error message when profile loading fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading profile: {errorMessage}'**
+  String progressScreenErrorLoadingProfile(String errorMessage);
+
+  /// Message when no progress data is available
+  ///
+  /// In en, this message translates to:
+  /// **'No progress data available yet. Start working out!'**
+  String get progressScreenNoData;
+
+  /// Label for level, e.g., LVL 5
+  ///
+  /// In en, this message translates to:
+  /// **'LVL {level}'**
+  String progressScreenLevelLabel(int level);
+
+  /// Text showing XP progress, e.g., 150/200 XP
+  ///
+  /// In en, this message translates to:
+  /// **'{currentXp}/{totalXp} XP'**
+  String progressScreenXpProgressText(String currentXp, String totalXp);
+
+  /// Placeholder for exercise name if not found, e.g., EXERCISE ABCDE...
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISE {placeholder}'**
+  String progressScreenExercisePlaceholder(String placeholder);
+
+  /// Unit for kilograms, short form
+  ///
+  /// In en, this message translates to:
+  /// **'KG'**
+  String get progressScreenKgUnit;
+
+  /// Title overlay for a shared routine post card
+  ///
+  /// In en, this message translates to:
+  /// **'SHARED ROUTINE'**
+  String get postCardRoutineShareTitle;
+
+  /// Author prefix for shared routine post card
+  ///
+  /// In en, this message translates to:
+  /// **'by @{authorUsername}'**
+  String postCardRoutineAuthorPrefix(String authorUsername);
+
+  /// Label for exercises count in shared routine card (singular)
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISE'**
+  String get postCardRoutineExercisesLabel;
+
+  /// Label for exercises count in shared routine card (plural)
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISES'**
+  String get postCardRoutineExercisesLabelPlural;
+
+  /// Text when a shared routine has no scheduled days
+  ///
+  /// In en, this message translates to:
+  /// **'NO SCHEDULE'**
+  String get postCardRoutineNoSchedule;
+
+  /// Label for scheduled days in shared routine card
+  ///
+  /// In en, this message translates to:
+  /// **'SCHEDULED DAYS'**
+  String get postCardRoutineScheduledDaysLabel;
+
+  /// Button text to add a shared routine to user's list
+  ///
+  /// In en, this message translates to:
+  /// **'ADD TO MY LIST'**
+  String get postCardRoutineButtonAddToList;
+
+  /// Snackbar message if user tries to add routine without login
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to add routines.'**
+  String get postCardRoutineSnackbarLoginToAdd;
+
+  /// Snackbar message if user tries to add their own routine
+  ///
+  /// In en, this message translates to:
+  /// **'This is your routine already!'**
+  String get postCardRoutineSnackbarAlreadyOwn;
+
+  /// Snackbar message on successful routine addition
+  ///
+  /// In en, this message translates to:
+  /// **'Routine added to your list!'**
+  String get postCardRoutineSnackbarAdded;
+
+  /// Snackbar message on error adding routine
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add routine: {errorDetails}'**
+  String postCardRoutineSnackbarErrorAdd(String errorDetails);
+
+  /// Message indicating the shared routine belongs to the current user
+  ///
+  /// In en, this message translates to:
+  /// **'This is your shared routine.'**
+  String get postCardRoutineIsYours;
+
+  /// Message prompting login to add a shared routine
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to add this routine.'**
+  String get postCardRoutineLoginToAdd;
+
+  /// Title overlay for a record claim post card
+  ///
+  /// In en, this message translates to:
+  /// **'RECORD CLAIM'**
+  String get postCardRecordClaimTitle;
+
+  /// Fallback exercise name for record claim if not specified
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISE RECORD'**
+  String get postCardRecordExerciseNameFallback;
+
+  /// Format for displaying reps and weight in record claim
+  ///
+  /// In en, this message translates to:
+  /// **'{reps} REPS / {weight} KG'**
+  String postCardRecordRepsKgFormat(String reps, String weight);
+
+  /// Fallback for reps if not available
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get postCardRecordRepsFallback;
+
+  /// Fallback for weight if not available
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get postCardRecordWeightFallback;
 }
 
 class _AppLocalizationsDelegate
@@ -32563,7 +32999,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get progressScreenXpToNextLevel => 'XP TO NEXT LEVEL!';
+  String progressScreenXpToNextLevel(int xp) {
+    return '$xp XP TO NEXT LEVEL!';
+  }
 
   @override
   String get progressScreenVolumeTitle => 'VOLUME (LAST 7 DAYS - SETS)';
@@ -32613,6 +33051,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressScreenButtonSendTestAdvice => 'Send Test Advice';
+
+  @override
+  String get progressScreenButtonTryAgain => 'Try Again';
+
+  @override
+  String progressScreenErrorLoadingProfile(String errorMessage) {
+    return 'Error loading profile: $errorMessage';
+  }
+
+  @override
+  String get progressScreenNoData =>
+      'No progress data available yet. Start working out!';
+
+  @override
+  String progressScreenLevelLabel(int level) {
+    return 'LVL $level';
+  }
+
+  @override
+  String progressScreenXpProgressText(String currentXp, String totalXp) {
+    return '$currentXp/$totalXp XP';
+  }
+
+  @override
+  String progressScreenExercisePlaceholder(String placeholder) {
+    return 'EXERCISE $placeholder';
+  }
+
+  @override
+  String get progressScreenKgUnit => 'KG';
+
+  @override
+  String get postCardRoutineShareTitle => 'SHARED ROUTINE';
+
+  @override
+  String postCardRoutineAuthorPrefix(String authorUsername) {
+    return 'by @$authorUsername';
+  }
+
+  @override
+  String get postCardRoutineExercisesLabel => 'EXERCISE';
+
+  @override
+  String get postCardRoutineExercisesLabelPlural => 'EXERCISES';
+
+  @override
+  String get postCardRoutineNoSchedule => 'NO SCHEDULE';
+
+  @override
+  String get postCardRoutineScheduledDaysLabel => 'SCHEDULED DAYS';
+
+  @override
+  String get postCardRoutineButtonAddToList => 'ADD TO MY LIST';
+
+  @override
+  String get postCardRoutineSnackbarLoginToAdd =>
+      'Please log in to add routines.';
+
+  @override
+  String get postCardRoutineSnackbarAlreadyOwn =>
+      'This is your routine already!';
+
+  @override
+  String get postCardRoutineSnackbarAdded => 'Routine added to your list!';
+
+  @override
+  String postCardRoutineSnackbarErrorAdd(String errorDetails) {
+    return 'Failed to add routine: $errorDetails';
+  }
+
+  @override
+  String get postCardRoutineIsYours => 'This is your shared routine.';
+
+  @override
+  String get postCardRoutineLoginToAdd => 'Log in to add this routine.';
+
+  @override
+  String get postCardRecordClaimTitle => 'RECORD CLAIM';
+
+  @override
+  String get postCardRecordExerciseNameFallback => 'EXERCISE RECORD';
+
+  @override
+  String postCardRecordRepsKgFormat(String reps, String weight) {
+    return '$reps REPS / $weight KG';
+  }
+
+  @override
+  String get postCardRecordRepsFallback => 'N/A';
+
+  @override
+  String get postCardRecordWeightFallback => 'N/A';
 }
 
 --------------------------------------------------
@@ -32854,7 +33384,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get dashboardStatsStreakLabel => 'СТРІК';
 
   @override
-  String get dashboardStatsAdherenceLabel => 'ВІДВІДУВАНІСТЬ';
+  String get dashboardStatsAdherenceLabel => 'ДОТРИМАННЯ';
 
   @override
   String get dashboardSectionNotifications => 'СПОВІЩЕННЯ';
@@ -33814,7 +34344,9 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get progressScreenXpToNextLevel => 'XP ДО НАСТУПНОГО РІВНЯ!';
+  String progressScreenXpToNextLevel(int xp) {
+    return '$xp XP ДО НАСТУПНОГО РІВНЯ!';
+  }
 
   @override
   String get progressScreenVolumeTitle => 'ОБ\'ЄМ (ОСТАННІ 7 ДНІВ - ПІДХОДИ)';
@@ -33825,7 +34357,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String progressScreenRpeTrendTitle(int maxWorkouts) {
-    return 'НАТРУГА (RPE ТРЕНД - ОСТАННІ $maxWorkouts ТРЕНУВАНЬ)';
+    return 'СЕР. ВИСНАЖЕННЯ (ТРЕНД ЗА ОСТАННІ $maxWorkouts ТРЕНУВАНЬ)';
   }
 
   @override
@@ -33864,6 +34396,98 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get progressScreenButtonSendTestAdvice => 'Надіслати тестові поради';
+
+  @override
+  String get progressScreenButtonTryAgain => 'Спробувати ще';
+
+  @override
+  String progressScreenErrorLoadingProfile(String errorMessage) {
+    return 'Помилка завантаження профілю: $errorMessage';
+  }
+
+  @override
+  String get progressScreenNoData =>
+      'Даних про прогрес ще немає. Почніть тренуватися!';
+
+  @override
+  String progressScreenLevelLabel(int level) {
+    return 'РІВ $level';
+  }
+
+  @override
+  String progressScreenXpProgressText(String currentXp, String totalXp) {
+    return '$currentXp/$totalXp XP';
+  }
+
+  @override
+  String progressScreenExercisePlaceholder(String placeholder) {
+    return 'ВПРАВА $placeholder';
+  }
+
+  @override
+  String get progressScreenKgUnit => 'КГ';
+
+  @override
+  String get postCardRoutineShareTitle => 'ПОШИРЕНА ПРОГРАМА';
+
+  @override
+  String postCardRoutineAuthorPrefix(String authorUsername) {
+    return 'від @$authorUsername';
+  }
+
+  @override
+  String get postCardRoutineExercisesLabel => 'ВПРАВА';
+
+  @override
+  String get postCardRoutineExercisesLabelPlural => 'ВПРАВ';
+
+  @override
+  String get postCardRoutineNoSchedule => 'БЕЗ РОЗКЛАДУ';
+
+  @override
+  String get postCardRoutineScheduledDaysLabel => 'ЗАПЛАНОВАНІ ДНІ';
+
+  @override
+  String get postCardRoutineButtonAddToList => 'ДОДАТИ ДО МОГО СПИСКУ';
+
+  @override
+  String get postCardRoutineSnackbarLoginToAdd =>
+      'Будь ласка, увійдіть, щоб додавати програми.';
+
+  @override
+  String get postCardRoutineSnackbarAlreadyOwn => 'Це вже ваша програма!';
+
+  @override
+  String get postCardRoutineSnackbarAdded =>
+      'Програму додано до вашого списку!';
+
+  @override
+  String postCardRoutineSnackbarErrorAdd(String errorDetails) {
+    return 'Не вдалося додати програму: $errorDetails';
+  }
+
+  @override
+  String get postCardRoutineIsYours => 'Це ваша поширена програма.';
+
+  @override
+  String get postCardRoutineLoginToAdd => 'Увійдіть, щоб додати цю програму.';
+
+  @override
+  String get postCardRecordClaimTitle => 'ЗАЯВКА НА РЕКОРД';
+
+  @override
+  String get postCardRecordExerciseNameFallback => 'РЕКОРД ВПРАВИ';
+
+  @override
+  String postCardRecordRepsKgFormat(String reps, String weight) {
+    return '$reps ПОВТОРЕНЬ / $weight КГ';
+  }
+
+  @override
+  String get postCardRecordRepsFallback => 'Н/Д';
+
+  @override
+  String get postCardRecordWeightFallback => 'Н/Д';
 }
 
 --------------------------------------------------
@@ -34142,12 +34766,10 @@ class AppLocalizationsUk extends AppLocalizations {
   "@profileSetupOptionalFieldSuffix": {
     "description": "Суфікс для міток необов'язкових полів"
   },
-
   "authGateFinalizingAccountSetup": "Завершення налаштування облікового запису...",
   "@authGateFinalizingAccountSetup": {
     "description": "Повідомлення в AuthGate під час очікування синхронізації профілю"
   },
-
   "dashboardGreetingWelcome": "Вітаємо,",
   "@dashboardGreetingWelcome": {
     "description": "Вітальний текст на панелі приладів, частина 1. Ім'я буде додано."
@@ -34164,7 +34786,7 @@ class AppLocalizationsUk extends AppLocalizations {
   "@dashboardStatsStreakLabel": {
     "description": "Мітка для статистики стріку тренувань на панелі приладів"
   },
-  "dashboardStatsAdherenceLabel": "ВІДВІДУВАНІСТЬ",
+  "dashboardStatsAdherenceLabel": "ДОТРИМАННЯ",
   "@dashboardStatsAdherenceLabel": {
     "description": "Мітка для відсотка відвідуваності тренувань на панелі приладів"
   },
@@ -35489,10 +36111,16 @@ class AppLocalizationsUk extends AppLocalizations {
       }
     }
   },
-  "progressScreenXpToNextLevel": "XP ДО НАСТУПНОГО РІВНЯ!",
+  "progressScreenXpToNextLevel": "{xp} XP ДО НАСТУПНОГО РІВНЯ!",
   "@progressScreenXpToNextLevel": {
-    "description": "Текст, що вказує на кількість XP, необхідну для наступного рівня"
-  },
+  "description": "Текст, що вказує на кількість XP, необхідну для наступного рівня",
+  "placeholders": {
+    "xp": {
+      "type": "int",
+      "example": "150"
+    }
+  }
+},
   "progressScreenVolumeTitle": "ОБ'ЄМ (ОСТАННІ 7 ДНІВ - ПІДХОДИ)",
   "@progressScreenVolumeTitle": {
     "description": "Заголовок для розділу карти м'язів за об'ємом"
@@ -35501,7 +36129,7 @@ class AppLocalizationsUk extends AppLocalizations {
   "@progressScreenNoVolumeData": {
     "description": "Повідомлення, коли немає даних про об'єм для карти м'язів"
   },
-  "progressScreenRpeTrendTitle": "НАТРУГА (RPE ТРЕНД - ОСТАННІ {maxWorkouts} ТРЕНУВАНЬ)",
+  "progressScreenRpeTrendTitle": "СЕР. ВИСНАЖЕННЯ (ТРЕНД ЗА ОСТАННІ {maxWorkouts} ТРЕНУВАНЬ)",
   "@progressScreenRpeTrendTitle": {
     "description": "Заголовок для розділу тренду RPE",
     "placeholders": {
@@ -35559,6 +36187,148 @@ class AppLocalizationsUk extends AppLocalizations {
   "progressScreenButtonSendTestAdvice": "Надіслати тестові поради",
   "@progressScreenButtonSendTestAdvice": {
     "description": "Текст кнопки для надсилання тестових сповіщень-порад"
+  },
+  "progressScreenButtonTryAgain": "Спробувати ще",
+  "@progressScreenButtonTryAgain": {
+    "description": "Текст кнопки для повторного завантаження даних при помилці"
+  },
+  "progressScreenErrorLoadingProfile": "Помилка завантаження профілю: {errorMessage}",
+  "@progressScreenErrorLoadingProfile": {
+    "description": "Повідомлення про помилку при невдалому завантаженні профілю",
+    "placeholders": {
+      "errorMessage": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenNoData": "Даних про прогрес ще немає. Почніть тренуватися!",
+  "@progressScreenNoData": {
+    "description": "Повідомлення, коли немає даних про прогрес"
+  },
+  "progressScreenLevelLabel": "РІВ {level}",
+  "@progressScreenLevelLabel": {
+    "description": "Мітка для рівня, наприклад, РІВ 5",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressScreenXpProgressText": "{currentXp}/{totalXp} XP",
+  "@progressScreenXpProgressText": {
+    "description": "Текст, що показує прогрес XP, наприклад, 150/200 XP",
+    "placeholders": {
+      "currentXp": {
+        "type": "String"
+      },
+      "totalXp": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenExercisePlaceholder": "ВПРАВА {placeholder}",
+  "@progressScreenExercisePlaceholder": {
+    "description": "Заповнювач для назви вправи, якщо не знайдено, наприклад, ВПРАВА ABCDE...",
+    "placeholders": {
+      "placeholder": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScreenKgUnit": "КГ",
+  "@progressScreenKgUnit": {
+    "description": "Одиниця для кілограмів, скорочена форма"
+  },
+
+  "postCardRoutineShareTitle": "ПОШИРЕНА ПРОГРАМА",
+  "@postCardRoutineShareTitle": {
+    "description": "Заголовок для картки поширеної програми"
+  },
+  "postCardRoutineAuthorPrefix": "від @{authorUsername}",
+  "@postCardRoutineAuthorPrefix": {
+    "description": "Префікс автора для картки поширеної програми",
+    "placeholders": {
+      "authorUsername": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineExercisesLabel": "ВПРАВА",
+  "@postCardRoutineExercisesLabel": {
+    "description": "Мітка для кількості вправ у картці поширеної програми (однина)"
+  },
+  "postCardRoutineExercisesLabelPlural": "ВПРАВ",
+  "@postCardRoutineExercisesLabelPlural": {
+    "description": "Мітка для кількості вправ у картці поширеної програми (множина)"
+  },
+  "postCardRoutineNoSchedule": "БЕЗ РОЗКЛАДУ",
+  "@postCardRoutineNoSchedule": {
+    "description": "Текст, коли поширена програма не має запланованих днів"
+  },
+  "postCardRoutineScheduledDaysLabel": "ЗАПЛАНОВАНІ ДНІ",
+  "@postCardRoutineScheduledDaysLabel": {
+    "description": "Мітка для запланованих днів у картці поширеної програми"
+  },
+  "postCardRoutineButtonAddToList": "ДОДАТИ ДО МОГО СПИСКУ",
+  "@postCardRoutineButtonAddToList": {
+    "description": "Текст кнопки для додавання поширеної програми до списку користувача"
+  },
+  "postCardRoutineSnackbarLoginToAdd": "Будь ласка, увійдіть, щоб додавати програми.",
+  "@postCardRoutineSnackbarLoginToAdd": {
+    "description": "Повідомлення снекбару, якщо користувач намагається додати програму без входу"
+  },
+  "postCardRoutineSnackbarAlreadyOwn": "Це вже ваша програма!",
+  "@postCardRoutineSnackbarAlreadyOwn": {
+    "description": "Повідомлення снекбару, якщо користувач намагається додати власну програму"
+  },
+  "postCardRoutineSnackbarAdded": "Програму додано до вашого списку!",
+  "@postCardRoutineSnackbarAdded": {
+    "description": "Повідомлення снекбару при успішному додаванні програми"
+  },
+  "postCardRoutineSnackbarErrorAdd": "Не вдалося додати програму: {errorDetails}",
+  "@postCardRoutineSnackbarErrorAdd": {
+    "description": "Повідомлення снекбару при помилці додавання програми",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineIsYours": "Це ваша поширена програма.",
+  "@postCardRoutineIsYours": {
+    "description": "Повідомлення, що вказує, що поширена програма належить поточному користувачеві"
+  },
+  "postCardRoutineLoginToAdd": "Увійдіть, щоб додати цю програму.",
+  "@postCardRoutineLoginToAdd": {
+    "description": "Повідомлення, що пропонує увійти, щоб додати поширену програму"
+  },
+  "postCardRecordClaimTitle": "ЗАЯВКА НА РЕКОРД",
+  "@postCardRecordClaimTitle": {
+    "description": "Заголовок для картки заявки на рекорд"
+  },
+  "postCardRecordExerciseNameFallback": "РЕКОРД ВПРАВИ",
+  "@postCardRecordExerciseNameFallback": {
+    "description": "Запасна назва вправи для заявки на рекорд, якщо не вказано"
+  },
+  "postCardRecordRepsKgFormat": "{reps} ПОВТОРЕНЬ / {weight} КГ",
+  "@postCardRecordRepsKgFormat": {
+    "description": "Формат для відображення повторень та ваги в заявці на рекорд",
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRecordRepsFallback": "Н/Д",
+  "@postCardRecordRepsFallback": {
+    "description": "Запасний текст для повторень, якщо недоступні"
+  },
+  "postCardRecordWeightFallback": "Н/Д",
+  "@postCardRecordWeightFallback": {
+    "description": "Запасний текст для ваги, якщо недоступна"
   }
 }
 --------------------------------------------------

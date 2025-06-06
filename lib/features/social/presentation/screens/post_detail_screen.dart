@@ -13,6 +13,7 @@ import '../widgets/post_card_content_widget.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import 'dart:developer' as developer;
 import 'create_post_screen.dart'; // NEW: Для навігації на редагування
+import 'view_user_profile_screen.dart'; // NEW: For navigation
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -214,26 +215,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
-                                        ? NetworkImage(post.authorProfilePicUrl!) : null,
-                                    child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
-                                        ? const Icon(Icons.person, size: 22) : null,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(post.authorUsername, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                                        Text(DateFormat.yMMMMd('en_US').add_jm().format(post.timestamp.toDate()), style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
-                                      ],
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(ViewUserProfileScreen.route(post.userId));
+                                },
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 22,
+                                      backgroundImage: post.authorProfilePicUrl != null && post.authorProfilePicUrl!.isNotEmpty
+                                          ? NetworkImage(post.authorProfilePicUrl!) : null,
+                                      child: post.authorProfilePicUrl == null || post.authorProfilePicUrl!.isEmpty
+                                          ? const Icon(Icons.person, size: 22) : null,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(post.authorUsername, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                                          Text(DateFormat.yMMMMd('en_US').add_jm().format(post.timestamp.toDate()), style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 16),
                               if(post.textContent.isNotEmpty) 

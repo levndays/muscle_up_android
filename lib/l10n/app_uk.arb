@@ -288,7 +288,7 @@
   "@dashboardStatsStreakLabel": {
     "description": "Мітка для статистики стріку тренувань на панелі приладів"
   },
-  "dashboardStatsAdherenceLabel": "ВІДВІДУВАНІСТЬ",
+  "dashboardStatsAdherenceLabel": "ДОТРИМАННЯ",
   "@dashboardStatsAdherenceLabel": {
     "description": "Мітка для відсотка відвідуваності тренувань на панелі приладів"
   },
@@ -1613,10 +1613,16 @@
       }
     }
   },
-  "progressScreenXpToNextLevel": "XP ДО НАСТУПНОГО РІВНЯ!",
+  "progressScreenXpToNextLevel": "{xp} XP ДО НАСТУПНОГО РІВНЯ!",
   "@progressScreenXpToNextLevel": {
-    "description": "Текст, що вказує на кількість XP, необхідну для наступного рівня"
-  },
+  "description": "Текст, що вказує на кількість XP, необхідну для наступного рівня",
+  "placeholders": {
+    "xp": {
+      "type": "int",
+      "example": "150"
+    }
+  }
+},
   "progressScreenVolumeTitle": "ОБ'ЄМ (ОСТАННІ 7 ДНІВ - ПІДХОДИ)",
   "@progressScreenVolumeTitle": {
     "description": "Заголовок для розділу карти м'язів за об'ємом"
@@ -1625,7 +1631,7 @@
   "@progressScreenNoVolumeData": {
     "description": "Повідомлення, коли немає даних про об'єм для карти м'язів"
   },
-  "progressScreenRpeTrendTitle": "НАТРУГА (RPE ТРЕНД - ОСТАННІ {maxWorkouts} ТРЕНУВАНЬ)",
+  "progressScreenRpeTrendTitle": "СЕР. ВИСНАЖЕННЯ (ТРЕНД ЗА ОСТАННІ {maxWorkouts} ТРЕНУВАНЬ)",
   "@progressScreenRpeTrendTitle": {
     "description": "Заголовок для розділу тренду RPE",
     "placeholders": {

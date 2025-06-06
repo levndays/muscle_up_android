@@ -1,7 +1,7 @@
 name: muscle_up
 description: "Next-gen Fitness App. New height, New companions."
 publish_to: 'none' 
-version: 0.7.1
+version: 0.9.5
 
 environment:
   sdk: ^3.8.0 

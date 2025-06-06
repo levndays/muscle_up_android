@@ -1174,7 +1174,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get progressScreenXpToNextLevel => 'XP TO NEXT LEVEL!';
+  String progressScreenXpToNextLevel(int xp) {
+    return '$xp XP TO NEXT LEVEL!';
+  }
 
   @override
   String get progressScreenVolumeTitle => 'VOLUME (LAST 7 DAYS - SETS)';
