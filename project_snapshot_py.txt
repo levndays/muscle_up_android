@@ -1,6 +1,6 @@
 Flutter Project Snapshot (Python Script)
 Project Root: C:\Users\levndays\Desktop\muscle_up2\muscle_up_android
-Snapshot created on: 2025-06-06T04:13:11.255123
+Snapshot created on: 2025-06-06T04:17:56.358885
 ================================================================================
 
 === FILE: .firebaserc ===
@@ -200,7 +200,7 @@ nullable-getter: false
 name: muscle_up
 description: "Next-gen Fitness App. New height, New companions."
 publish_to: 'none' 
-version: 0.7.1
+version: 0.9.5
 
 environment:
   sdk: ^3.8.0 
@@ -19833,7 +19833,7 @@ class _ProgressView extends StatelessWidget {
             if (xpToNextLevelTotal <= 0) xpToNextLevelTotal = xpPerLevelBase;
             
             final int currentXpInLevel = (userProfile.xp - currentLevelXpStart).clamp(0, xpToNextLevelTotal);
-            // final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel; // Not directly used in UI anymore
+            final int xpToNext = xpToNextLevelTotal - currentXpInLevel;
 
             final String gender = userProfile.gender?.toLowerCase() ?? 'male';
             final String frontSvgPath = gender == 'female'
@@ -19865,7 +19865,7 @@ class _ProgressView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     LeagueTitleWidget(
-                      leagueName: currentLeague.name, // This should ideally be localized too if leagues are dynamic
+                      leagueName: currentLeague.name, 
                       level: userProfile.level,
                       gradientColors: currentLeague.gradientColors,
                       onLeagueTap: () {
@@ -19882,7 +19882,7 @@ class _ProgressView extends StatelessWidget {
                     ),
                     Center(
                       child: Text(
-                        loc.progressScreenXpToNextLevel, 
+                        loc.progressScreenXpToNextLevel(xpToNext), // <<< FIXED
                         style: theme.textTheme.bodySmall?.copyWith(
                             color: primaryOrange,
                             fontWeight: FontWeight.bold,
