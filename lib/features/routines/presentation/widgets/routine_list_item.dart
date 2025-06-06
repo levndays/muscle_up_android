@@ -1,28 +1,26 @@
 // lib/features/routines/presentation/widgets/routine_list_item.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Потрібен для RepositoryProvider
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/domain/entities/routine.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
-// import '../cubit/user_routines_cubit.dart'; // Не потрібен для прямого виклику, якщо використовуємо колбеки
 import '../screens/create_edit_routine_screen.dart';
-import '../../../workout_tracking/presentation/screens/active_workout_screen.dart';
+import '../../../workout_tracking/presentation/screens/active_workout_screen.dart'; // ADDED THIS IMPORT
 import 'dart:developer' as developer;
 
-// NEW IMPORT FOR SOCIAL
 import '../../../social/presentation/screens/create_post_screen.dart';
 
 class RoutineListItem extends StatelessWidget {
   final UserRoutine routine;
-  final VoidCallback onRoutineUpdated; // Колбек для оновлення списку після редагування
-  final VoidCallback onRoutineDeleted; // Колбек для оновлення списку після видалення
-  final bool isSelectionMode; // NEW: Parameter to enable selection mode
+  final VoidCallback onRoutineUpdated;
+  final VoidCallback onRoutineDeleted;
+  final bool isSelectionMode;
 
   const RoutineListItem({
     super.key,
     required this.routine,
     required this.onRoutineUpdated,
     required this.onRoutineDeleted,
-    this.isSelectionMode = false, // Default to false
+    this.isSelectionMode = false,
   });
 
   Future<void> _confirmDelete(BuildContext context) async {
@@ -49,7 +47,7 @@ class RoutineListItem extends StatelessWidget {
       try {
         final routineRepository = RepositoryProvider.of<RoutineRepository>(context);
         await routineRepository.deleteRoutine(routine.id);
-        onRoutineDeleted(); // Викликаємо колбек
+        onRoutineDeleted();
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -92,8 +90,8 @@ class RoutineListItem extends StatelessWidget {
           ],
         ),
         isThreeLine: (routine.description != null && routine.description!.isNotEmpty) && routine.exercises.isNotEmpty,
-        trailing: isSelectionMode // NEW: Conditional trailing widget
-            ? const Icon(Icons.check_circle_outline) // Or another selection icon
+        trailing: isSelectionMode
+            ? const Icon(Icons.check_circle_outline)
             : PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
                 onSelected: (value) async {
@@ -121,8 +119,8 @@ class RoutineListItem extends StatelessWidget {
                 ],
               ),
         onTap: () {
-          if (isSelectionMode) { // NEW: Handle tap for selection mode
-            Navigator.pop(context, routine); // Return the selected routine
+          if (isSelectionMode) {
+            Navigator.pop(context, routine);
           } else {
             Navigator.of(context).push(ActiveWorkoutScreen.route(routine: routine));
           }

@@ -2360,7 +2360,7 @@ abstract class AppLocalizations {
   /// **'Log in to add this routine.'**
   String get postCardRoutineLoginToAdd;
 
-  /// Title overlay for a record claim post card
+  /// Title for a record claim post card
   ///
   /// In en, this message translates to:
   /// **'RECORD CLAIM'**
@@ -2389,6 +2389,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'N/A'**
   String get postCardRecordWeightFallback;
+
+  /// No description provided for @achievementEarlyBirdName.
+  ///
+  /// In en, this message translates to:
+  /// **'EARLY BIRD'**
+  String get achievementEarlyBirdName;
+
+  /// No description provided for @achievementEarlyBirdDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to the club! Thanks for joining MuscleUP.'**
+  String get achievementEarlyBirdDescription;
+
+  /// No description provided for @achievementFirstWorkoutName.
+  ///
+  /// In en, this message translates to:
+  /// **'FIRST STEP'**
+  String get achievementFirstWorkoutName;
+
+  /// No description provided for @achievementFirstWorkoutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You completed your first workout! Keep it up!'**
+  String get achievementFirstWorkoutDescription;
+
+  /// No description provided for @achievementConsistentKing10Name.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAK STAR (10)'**
+  String get achievementConsistentKing10Name;
+
+  /// No description provided for @achievementConsistentKing10Description.
+  ///
+  /// In en, this message translates to:
+  /// **'10-day workout streak! You are on fire!'**
+  String get achievementConsistentKing10Description;
+
+  /// No description provided for @achievementConsistentKing30Name.
+  ///
+  /// In en, this message translates to:
+  /// **'CONSISTENT KING (30)'**
+  String get achievementConsistentKing30Name;
+
+  /// No description provided for @achievementConsistentKing30Description.
+  ///
+  /// In en, this message translates to:
+  /// **'30-day workout streak! Unstoppable!'**
+  String get achievementConsistentKing30Description;
+
+  /// No description provided for @achievementVolumeStarterName.
+  ///
+  /// In en, this message translates to:
+  /// **'VOLUME STARTER'**
+  String get achievementVolumeStarterName;
+
+  /// No description provided for @achievementVolumeStarterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifted over 10,000 KG in total volume!'**
+  String get achievementVolumeStarterDescription;
+
+  /// No description provided for @achievementVolumeProName.
+  ///
+  /// In en, this message translates to:
+  /// **'VOLUME PRO'**
+  String get achievementVolumeProName;
+
+  /// No description provided for @achievementVolumeProDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifted over 100,000 KG in total volume! Incredible strength!'**
+  String get achievementVolumeProDescription;
+
+  /// No description provided for @achievementLevel5ReachedName.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVEL 5 REACHED'**
+  String get achievementLevel5ReachedName;
+
+  /// No description provided for @achievementLevel5ReachedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations on reaching level 5!'**
+  String get achievementLevel5ReachedDescription;
+
+  /// No description provided for @achievementLevel10ReachedName.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVEL 10 REACHED'**
+  String get achievementLevel10ReachedName;
+
+  /// No description provided for @achievementLevel10ReachedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Wow! Level 10! You\'re a true MuscleUP enthusiast!'**
+  String get achievementLevel10ReachedDescription;
+
+  /// No description provided for @achievementPersonalRecordSetName.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW RECORD: {detail}!'**
+  String achievementPersonalRecordSetName(String detail);
+
+  /// No description provided for @achievementPersonalRecordSetDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations on setting a new personal record for {detail}!'**
+  String achievementPersonalRecordSetDescription(String detail);
+
+  /// No description provided for @achievementConditionStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current best streak: {currentStreak}/{targetStreak} days.'**
+  String achievementConditionStreak(int currentStreak, int targetStreak);
+
+  /// No description provided for @achievementConditionVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires total volume tracking in profile.'**
+  String get achievementConditionVolume;
+
+  /// No description provided for @achievementConditionLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current level: {currentLevel}/{targetLevel}.'**
+  String achievementConditionLevel(int currentLevel, int targetLevel);
+
+  /// Placeholder text for muscle groups while exercise data is loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading muscle groups...'**
+  String get currentSetDisplayMuscleGroupsLoading;
 }
 
 class _AppLocalizationsDelegate

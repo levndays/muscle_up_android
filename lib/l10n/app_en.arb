@@ -1806,7 +1806,7 @@
   },
   "postCardRecordClaimTitle": "RECORD CLAIM",
   "@postCardRecordClaimTitle": {
-    "description": "Title overlay for a record claim post card"
+    "description": "Title for a record claim post card"
   },
   "postCardRecordExerciseNameFallback": "EXERCISE RECORD",
   "@postCardRecordExerciseNameFallback": {
@@ -1831,5 +1831,81 @@
   "postCardRecordWeightFallback": "N/A",
   "@postCardRecordWeightFallback": {
     "description": "Fallback for weight if not available"
+  },
+  "achievementEarlyBirdName": "EARLY BIRD",
+  "@achievementEarlyBirdName": {},
+  "achievementEarlyBirdDescription": "Welcome to the club! Thanks for joining MuscleUP.",
+  "@achievementEarlyBirdDescription": {},
+  "achievementFirstWorkoutName": "FIRST STEP",
+  "@achievementFirstWorkoutName": {},
+  "achievementFirstWorkoutDescription": "You completed your first workout! Keep it up!",
+  "@achievementFirstWorkoutDescription": {},
+  "achievementConsistentKing10Name": "STREAK STAR (10)",
+  "@achievementConsistentKing10Name": {},
+  "achievementConsistentKing10Description": "10-day workout streak! You are on fire!",
+  "@achievementConsistentKing10Description": {},
+  "achievementConsistentKing30Name": "CONSISTENT KING (30)",
+  "@achievementConsistentKing30Name": {},
+  "achievementConsistentKing30Description": "30-day workout streak! Unstoppable!",
+  "@achievementConsistentKing30Description": {},
+  "achievementVolumeStarterName": "VOLUME STARTER",
+  "@achievementVolumeStarterName": {},
+  "achievementVolumeStarterDescription": "Lifted over 10,000 KG in total volume!",
+  "@achievementVolumeStarterDescription": {},
+  "achievementVolumeProName": "VOLUME PRO",
+  "@achievementVolumeProName": {},
+  "achievementVolumeProDescription": "Lifted over 100,000 KG in total volume! Incredible strength!",
+  "@achievementVolumeProDescription": {},
+  "achievementLevel5ReachedName": "LEVEL 5 REACHED",
+  "@achievementLevel5ReachedName": {},
+  "achievementLevel5ReachedDescription": "Congratulations on reaching level 5!",
+  "@achievementLevel5ReachedDescription": {},
+  "achievementLevel10ReachedName": "LEVEL 10 REACHED",
+  "@achievementLevel10ReachedName": {},
+  "achievementLevel10ReachedDescription": "Wow! Level 10! You're a true MuscleUP enthusiast!",
+  "@achievementLevel10ReachedDescription": {},
+  "achievementPersonalRecordSetName": "NEW RECORD: {detail}!",
+  "@achievementPersonalRecordSetName": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "achievementPersonalRecordSetDescription": "Congratulations on setting a new personal record for {detail}!",
+  "@achievementPersonalRecordSetDescription": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "achievementConditionStreak": "Current best streak: {currentStreak}/{targetStreak} days.",
+  "@achievementConditionStreak": {
+    "placeholders": {
+      "currentStreak": {
+        "type": "int"
+      },
+      "targetStreak": {
+        "type": "int"
+      }
+    }
+  },
+  "achievementConditionVolume": "Requires total volume tracking in profile.",
+  "@achievementConditionVolume": {},
+  "achievementConditionLevel": "Current level: {currentLevel}/{targetLevel}.",
+  "@achievementConditionLevel": {
+    "placeholders": {
+      "currentLevel": {
+        "type": "int"
+      },
+      "targetLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "currentSetDisplayMuscleGroupsLoading": "Loading muscle groups...",
+  "@currentSetDisplayMuscleGroupsLoading": {
+    "description": "Placeholder text for muscle groups while exercise data is loading"
   }
 }

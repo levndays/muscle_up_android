@@ -1,6 +1,6 @@
 // lib/features/workout_tracking/presentation/cubit/active_workout_cubit.dart
 import 'dart:async';
-import 'package:bloc/bloc.dart'; // Імпорт пакету bloc
+import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
@@ -11,27 +11,53 @@ import '../../../../core/domain/entities/logged_exercise.dart';
 import '../../../../core/domain/entities/logged_set.dart';
 import '../../../../core/domain/entities/routine.dart';
 import '../../../../core/domain/entities/user_profile.dart';
+import '../../../../core/domain/entities/predefined_exercise.dart'; // NEW
 import '../../../../core/domain/repositories/workout_log_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../../../../core/domain/repositories/predefined_exercise_repository.dart'; // NEW
 
 part 'active_workout_state.dart';
 
 class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final WorkoutLogRepository _workoutLogRepository;
   final UserProfileRepository _userProfileRepository;
+  final PredefinedExerciseRepository _predefinedExerciseRepository; // NEW
   final fb_auth.FirebaseAuth _firebaseAuth;
   Timer? _durationTimer;
   StreamSubscription<WorkoutSession?>? _activeSessionSubscription;
 
+  List<PredefinedExercise> _allPredefinedExercises = []; // NEW: Cache for exercise details
+
   ActiveWorkoutCubit(
     this._workoutLogRepository,
     this._userProfileRepository,
+    this._predefinedExerciseRepository, // NEW
     this._firebaseAuth,
   ) : super(ActiveWorkoutInitial()) { 
     _subscribeToActiveSession();
   }
 
   String? get _currentUserId => _firebaseAuth.currentUser?.uid;
+
+  // NEW: Getter to access exercise details
+  PredefinedExercise? getPredefinedExerciseById(String exerciseId) {
+    try {
+      return _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<void> _loadPredefinedExercises() async {
+    if (_allPredefinedExercises.isNotEmpty) return; // Load only once
+    try {
+      _allPredefinedExercises = await _predefinedExerciseRepository.getAllExercises();
+      developer.log("ActiveWorkoutCubit: Loaded ${_allPredefinedExercises.length} predefined exercises.", name: "ActiveWorkoutCubit");
+    } catch (e) {
+      developer.log("ActiveWorkoutCubit: Failed to load predefined exercises: $e", name: "ActiveWorkoutCubit");
+      // Handle error if necessary, maybe emit an error state
+    }
+  }
 
   void _subscribeToActiveSession() {
     final userId = _currentUserId;
@@ -44,9 +70,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     emit(const ActiveWorkoutLoading(message: 'Checking for active workout...'));
     _activeSessionSubscription?.cancel();
     _activeSessionSubscription = _workoutLogRepository.getActiveWorkoutSessionStream(userId).listen(
-      (session) {
+      (session) async { // Make async to load exercises
         if (session != null) {
           developer.log('ActiveWorkoutCubit: Active session found: ${session.id}', name: 'ActiveWorkoutCubit');
+          await _loadPredefinedExercises(); // NEW: Load exercise details
           _startDurationTimer(session);
           emit(ActiveWorkoutInProgress(session: session, currentDuration: _calculateDuration(session.startedAt.toDate())));
         } else {
@@ -92,6 +119,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
     emit(const ActiveWorkoutLoading(message: 'Starting new workout...'));
     try {
+      await _loadPredefinedExercises(); // NEW: Ensure exercise details are loaded
       List<LoggedExercise> initialExercises = [];
       if (fromRoutine != null) {
         for (final routineExercise in fromRoutine.exercises) {
@@ -107,7 +135,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             routineExercise.numberOfSets > 0 ? routineExercise.numberOfSets : 1,
             (index) => LoggedSet(
               setNumber: index + 1,
-              // Pre-fill weight only for the first set if a suggestion exists
               weightKg: (index == 0 && suggestedWeight != null) ? suggestedWeight : null, 
             ),
           );
@@ -144,6 +171,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
+  // ... (rest of the methods: updateLoggedSet, addSetToExercise, completeWorkout, cancelWorkout, close) remain the same
+  
   Future<void> updateLoggedSet({
     required int exerciseIndex,
     required int setIndex,

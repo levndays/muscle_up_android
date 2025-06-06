@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/domain/entities/logged_exercise.dart';
 import '../../../../core/domain/entities/logged_set.dart';
+import '../../../../core/domain/entities/predefined_exercise.dart';
 import '../cubit/active_workout_cubit.dart'; 
 import 'dart:math' as math;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 // --- RpeSlider Widget ---
 class RpeSlider extends StatefulWidget {
@@ -108,6 +110,7 @@ class GradientRectSliderTrackShape extends SliderTrackShape with BaseSliderTrack
 // --- CurrentSetDisplay Widget ---
 class CurrentSetDisplay extends StatefulWidget {
   final LoggedExercise currentExercise;
+  final PredefinedExercise? fullExerciseDetails; // <-- THIS IS THE PARAMETER
   final LoggedSet currentSet;
   final int exerciseIndex;
   final int setIndex;
@@ -118,6 +121,7 @@ class CurrentSetDisplay extends StatefulWidget {
   const CurrentSetDisplay({
     super.key,
     required this.currentExercise,
+    this.fullExerciseDetails, // <-- THIS IS THE PARAMETER
     required this.currentSet,
     required this.exerciseIndex,
     required this.setIndex,
@@ -155,11 +159,9 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   void _initializeSetData(LoggedSet set, LoggedExercise exercise, int currentSetIndex) {
     double? weightForTextField;
 
-    // 1. Якщо сет вже має вагу (попередньо заповнену кубітом або введену користувачем)
     if (set.weightKg != null && set.weightKg! > 0) {
         weightForTextField = set.weightKg;
     } 
-    // 2. Якщо це НЕ перший сет І поточний сет порожній, копіюємо з попереднього
     else if (currentSetIndex > 0) { 
         if (exercise.completedSets.length > currentSetIndex - 1) {
             final previousSet = exercise.completedSets[currentSetIndex - 1];
@@ -168,9 +170,6 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
             }
         }
     }
-    // Якщо weightForTextField все ще null (наприклад, перший сет без попереднього заповнення,
-    // або попередній сет був порожній/не завершений),
-    // TextEditingController отримає '0'.
 
     _weightController = TextEditingController(text: weightForTextField?.toStringAsFixed(weightForTextField != null && weightForTextField % 1 == 0 ? 0 : 1) ?? '0');
     _repsCount = set.reps ?? 8;
@@ -226,24 +225,25 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   }
 
   Future<void> _showEditWeightDialog() async {
+    final loc = AppLocalizations.of(context)!;
     final tempWeightController = TextEditingController(text: _weightController.text);
     final newWeight = await showDialog<String>(
       context: context,
       builder: (dialogCtx) {
         return AlertDialog(
-          title: const Text("Set Weight (KG)", style: TextStyle(fontFamily: ibmPlexMonoFont)),
+          title: Text(loc.currentSetDisplayWeightDialogTitle, style: const TextStyle(fontFamily: ibmPlexMonoFont)),
           content: SingleChildScrollView(
             child: TextField(
               controller: tempWeightController,
               autofocus: true,
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-              decoration: const InputDecoration(hintText: "Enter weight"),
+              decoration: InputDecoration(hintText: loc.currentSetDisplayWeightDialogHint),
               style: const TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 18)
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text("Cancel")),
-            ElevatedButton(onPressed: () => Navigator.pop(dialogCtx, tempWeightController.text), child: const Text("Set"))
+            TextButton(onPressed: () => Navigator.pop(dialogCtx), child: Text(loc.currentSetDisplayWeightDialogButtonCancel)),
+            ElevatedButton(onPressed: () => Navigator.pop(dialogCtx, tempWeightController.text), child: Text(loc.currentSetDisplayWeightDialogButtonSet))
           ]
         );
       }
@@ -256,6 +256,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final workoutState = context.watch<ActiveWorkoutCubit>().state;
     int totalExercises = 0;
     if (workoutState is ActiveWorkoutInProgress) {
@@ -267,8 +268,17 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
     bool isLastExercise = totalExercises > 0 && widget.exerciseIndex == totalExercises - 1;
     bool isLastSetOverall = isLastExercise && isLastSetOfCurrentExercise;
     
-    // final double currentWeightValue = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0; // This line is not used
-
+    String muscleGroupsText = loc.currentSetDisplayMuscleGroupsLoading;
+    if (widget.fullExerciseDetails != null) {
+      final primary = widget.fullExerciseDetails!.getLocalizedPrimaryMuscleGroup(context);
+      final secondary = widget.fullExerciseDetails!.getLocalizedSecondaryMuscleGroups(context);
+      if (secondary.isNotEmpty) {
+        muscleGroupsText = '$primary, ${secondary.join(', ')}'.toUpperCase();
+      } else {
+        muscleGroupsText = primary.toUpperCase();
+      }
+    }
+    
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -279,11 +289,11 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.currentExercise.exerciseNameSnapshot.toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, fontSize: 24, color: textBlackColor)),
-                Text("CHEST, FRONT DELTOIDS", style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w600)), // TODO: Get real secondary muscles
+                Text(muscleGroupsText, style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 15),
                 Row(
                   children: [
-                    RichText(text: TextSpan(style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.w900), children: [ const TextSpan(text: 'SET ', style: TextStyle(color: textBlackColor)), TextSpan(text: '${widget.setIndex + 1}', style: const TextStyle(color: primaryOrange))])),
+                    RichText(text: TextSpan(style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.w900), children: [ TextSpan(text: loc.currentSetDisplaySetLabelPrefix, style: const TextStyle(color: textBlackColor)), TextSpan(text: '${widget.setIndex + 1}', style: const TextStyle(color: primaryOrange))])),
                     const Spacer(),
                     _buildWeightControlButton(Icons.remove, () {
                       double currentWeight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
@@ -300,10 +310,10 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                           children: [ 
                             const Icon(Icons.fitness_center, size: 18, color: textBlackColor), 
                             const SizedBox(width: 4), 
-                            Text('WEIGHT: ', style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 13, color: textBlackColor, fontWeight: FontWeight.bold)), 
+                            Text(loc.currentSetDisplayWeightLabelPrefix, style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 13, color: textBlackColor, fontWeight: FontWeight.bold)), 
                             Text(_weightController.text.isNotEmpty ? _weightController.text : "0", style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, fontWeight: FontWeight.bold, color: primaryOrange, fontSize: 15)), 
                             const SizedBox(width: 2), 
-                            Text(' KG', style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, color: primaryOrange, fontSize: 13, fontWeight: FontWeight.bold))
+                            Text(loc.currentSetDisplayUnitKgSuffix, style: theme.textTheme.bodyLarge?.copyWith(fontFamily: ibmPlexMonoFont, color: primaryOrange, fontSize: 13, fontWeight: FontWeight.bold))
                           ]
                         )
                       )
@@ -320,9 +330,9 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
             const SizedBox(height: 25),
             Column(
               children: [
-                RichText(text: TextSpan(style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, fontSize: 26), children: [TextSpan(text: '$_repsCount ', style: const TextStyle(color: primaryOrange)), const TextSpan(text: 'REPETITIONS', style: TextStyle(color: textBlackColor))])),
+                RichText(text: TextSpan(style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900, fontSize: 26), children: [TextSpan(text: '$_repsCount ', style: const TextStyle(color: primaryOrange)), TextSpan(text: loc.currentSetDisplayRepsLabelSuffix, style: const TextStyle(color: textBlackColor))])),
                 const SizedBox(height: 6),
-                Text('Describe how hard it was to make a repetition\non a 0-10 scale.', textAlign: TextAlign.center, style: theme.textTheme.bodySmall?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 12, color: textBlackColor, fontWeight: FontWeight.bold)),
+                Text(loc.currentSetDisplayRpeHelpText, textAlign: TextAlign.center, style: theme.textTheme.bodySmall?.copyWith(fontFamily: ibmPlexMonoFont, fontSize: 12, color: textBlackColor, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 15),
                 Container(
                     height: 220,
@@ -330,7 +340,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                     child: Row(children: [
                       _buildRepControlButton(Icons.remove, () { if (_repsCount > 0) { setState(() { _repsCount--; if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 0; }); } }),
                       const SizedBox(width: 5),
-                      Expanded(child: _repsCount > 0 ? SingleChildScrollView(scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(), child: Row(children: List.generate(_repsCount, (index) { return Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0), child: SizedBox(height: double.infinity, child: RpeSlider(initialValue: _rpePerRep[index], onChanged: (val) { setState(() { _rpePerRep[index] = val; }); }))); }))) : Center(child: Text("Add reps", style: TextStyle(fontFamily: ibmPlexMonoFont, color: Colors.grey.shade600)))),
+                      Expanded(child: _repsCount > 0 ? SingleChildScrollView(scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(), child: Row(children: List.generate(_repsCount, (index) { return Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0), child: SizedBox(height: double.infinity, child: RpeSlider(initialValue: _rpePerRep[index], onChanged: (val) { setState(() { _rpePerRep[index] = val; }); }))); }))) : Center(child: Text(loc.currentSetDisplayNoRepsPlaceholder, style: TextStyle(fontFamily: ibmPlexMonoFont, color: Colors.grey.shade600)))),
                       const SizedBox(width: 5),
                       _buildRepControlButton(Icons.add, () { if (_repsCount < _rpePerRep.length) { setState(() { if (_repsCount >= 0 && _repsCount < _rpePerRep.length) _rpePerRep[_repsCount] = 5; _repsCount++; }); } })
                     ])
@@ -343,13 +353,13 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
-                    child: Text('< PREV. SET', style: TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 13, fontWeight: FontWeight.bold, color: isFirstSetOverall ? Colors.grey.shade400 : textBlackColor)),
+                    child: Text(loc.currentSetDisplayButtonPrevSet, style: TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 13, fontWeight: FontWeight.bold, color: isFirstSetOverall ? Colors.grey.shade400 : textBlackColor)),
                     onPressed: isFirstSetOverall ? null : () { _saveSetDataToCubit(); widget.onRequestSetNavigation(next: false); },
                   ),
                   isLastSetOverall
                   ? ElevatedButton.icon(
                       icon: const Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-                      label: const Text('FINISH WORKOUT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      label: Text(loc.currentSetDisplayButtonFinishWorkout, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                       onPressed: () {
                         _saveSetDataToCubit();
                         widget.onCompleteWorkoutRequested();
@@ -360,7 +370,7 @@ class _CurrentSetDisplayState extends State<CurrentSetDisplay> {
                       ),
                     )
                   : TextButton(
-                      child: Text(isLastSetOfCurrentExercise ? 'NEXT EXERCISE >' : 'NEXT SET >', style: const TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 13, fontWeight: FontWeight.bold, color: textBlackColor)),
+                      child: Text(isLastSetOfCurrentExercise ? loc.currentSetDisplayButtonNextExercise : loc.currentSetDisplayButtonNextSet, style: const TextStyle(fontFamily: ibmPlexMonoFont, fontSize: 13, fontWeight: FontWeight.bold, color: textBlackColor)),
                       onPressed: () { _saveSetDataToCubit(); widget.onRequestSetNavigation(next: true); },
                     ),
                 ],

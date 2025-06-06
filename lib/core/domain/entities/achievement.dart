@@ -1,5 +1,5 @@
 // lib/core/domain/entities/achievement.dart
-import 'package:flutter/material.dart'; // Keep for potential future use or if other parts need it
+import 'package:muscle_up/l10n/app_localizations.dart';
 import 'user_profile.dart';
 
 enum AchievementId {
@@ -14,112 +14,106 @@ enum AchievementId {
   personalRecordSet,
 }
 
-typedef ConditionChecker = String? Function(UserProfile userProfile);
+typedef ConditionChecker = String? Function(UserProfile userProfile, AppLocalizations loc);
 
 class Achievement {
   final AchievementId id;
-  final String name;
-  final String description;
-  final String emblemAssetPath; // CHANGED: from IconData icon to String emblemAssetPath
+  final String emblemAssetPath;
   final ConditionChecker? conditionCheckerMessage;
   final bool isPersonalized;
 
   const Achievement({
     required this.id,
-    required this.name,
-    required this.description,
-    required this.emblemAssetPath, // CHANGED
+    required this.emblemAssetPath,
     this.conditionCheckerMessage,
     this.isPersonalized = false,
   });
 
-  String getDynamicName({String? detail}) {
-    if (isPersonalized && detail != null) {
-      return name.replaceFirst('[Detail]', detail);
+  String getLocalizedName(AppLocalizations loc, {String? detail}) {
+    String name;
+    switch (id) {
+      case AchievementId.earlyBird: name = loc.achievementEarlyBirdName; break;
+      case AchievementId.firstWorkout: name = loc.achievementFirstWorkoutName; break;
+      case AchievementId.consistentKing10: name = loc.achievementConsistentKing10Name; break;
+      case AchievementId.consistentKing30: name = loc.achievementConsistentKing30Name; break;
+      case AchievementId.volumeStarter: name = loc.achievementVolumeStarterName; break;
+      case AchievementId.volumePro: name = loc.achievementVolumeProName; break;
+      case AchievementId.level5Reached: name = loc.achievementLevel5ReachedName; break;
+      case AchievementId.level10Reached: name = loc.achievementLevel10ReachedName; break;
+      case AchievementId.personalRecordSet:
+        return loc.achievementPersonalRecordSetName(detail ?? loc.recordStatusVerified);
     }
     return name;
   }
 
-  String getDynamicDescription({String? detail}) {
-    if (isPersonalized && detail != null) {
-      return description.replaceFirst('[Detail]', detail);
+  String getLocalizedDescription(AppLocalizations loc, {String? detail}) {
+    String description;
+    switch (id) {
+      case AchievementId.earlyBird: description = loc.achievementEarlyBirdDescription; break;
+      case AchievementId.firstWorkout: description = loc.achievementFirstWorkoutDescription; break;
+      case AchievementId.consistentKing10: description = loc.achievementConsistentKing10Description; break;
+      case AchievementId.consistentKing30: description = loc.achievementConsistentKing30Description; break;
+      case AchievementId.volumeStarter: description = loc.achievementVolumeStarterDescription; break;
+      case AchievementId.volumePro: description = loc.achievementVolumeProDescription; break;
+      case AchievementId.level5Reached: description = loc.achievementLevel5ReachedDescription; break;
+      case AchievementId.level10Reached: description = loc.achievementLevel10ReachedDescription; break;
+      case AchievementId.personalRecordSet:
+        return loc.achievementPersonalRecordSetDescription(detail ?? loc.recordStatusVerified);
     }
     return description;
   }
 }
 
-// Placeholder asset paths - replace with actual paths when available
 final Map<AchievementId, Achievement> allAchievements = {
   AchievementId.earlyBird: const Achievement(
     id: AchievementId.earlyBird,
-    name: 'EARLY BIRD',
-    description: 'Welcome to the club! Thanks for joining MuscleUP.',
-    emblemAssetPath: 'assets/images/achievements/early_bird.png', // CHANGED
+    emblemAssetPath: 'assets/images/achievements/early_bird.png',
   ),
   AchievementId.firstWorkout: const Achievement(
     id: AchievementId.firstWorkout,
-    name: 'FIRST STEP',
-    description: 'You completed your first workout! Keep it up!',
-    emblemAssetPath: 'assets/images/achievements/first_workout.png', // CHANGED
+    emblemAssetPath: 'assets/images/achievements/first_workout.png',
   ),
   AchievementId.consistentKing10: Achievement(
       id: AchievementId.consistentKing10,
-      name: 'STREAK STAR (10)',
-      description: '10-day workout streak! You are on fire!',
-      emblemAssetPath: 'assets/images/achievements/streak_star_10.png', // CHANGED
-      conditionCheckerMessage: (UserProfile profile) {
+      emblemAssetPath: 'assets/images/achievements/streak_star_10.png',
+      conditionCheckerMessage: (UserProfile profile, AppLocalizations loc) {
         if (profile.longestStreak >= 10) return null;
-        return 'Current best streak: ${profile.longestStreak}/10 days.';
+        return loc.achievementConditionStreak(profile.longestStreak, 10);
       }),
   AchievementId.consistentKing30: Achievement(
       id: AchievementId.consistentKing30,
-      name: 'CONSISTENT KING (30)',
-      description: '30-day workout streak! Unstoppable!',
-      emblemAssetPath: 'assets/images/achievements/consistent_king_30.png', // CHANGED
-      conditionCheckerMessage: (UserProfile profile) {
+      emblemAssetPath: 'assets/images/achievements/consistent_king_30.png',
+      conditionCheckerMessage: (UserProfile profile, AppLocalizations loc) {
         if (profile.longestStreak >= 30) return null;
-        return 'Current best streak: ${profile.longestStreak}/30 days.';
+        return loc.achievementConditionStreak(profile.longestStreak, 30);
       }),
   AchievementId.volumeStarter: Achievement(
     id: AchievementId.volumeStarter,
-    name: 'VOLUME STARTER',
-    description: 'Lifted over 10,000 KG in total volume!',
-    emblemAssetPath: 'assets/images/achievements/volume_starter.png', // CHANGED
-    conditionCheckerMessage: (UserProfile profile) =>
-        "Needs total volume tracking in profile.",
+    emblemAssetPath: 'assets/images/achievements/volume_starter.png',
+    conditionCheckerMessage: (UserProfile profile, AppLocalizations loc) => loc.achievementConditionVolume,
   ),
   AchievementId.level5Reached: Achievement(
       id: AchievementId.level5Reached,
-      name: 'LEVEL 5 REACHED',
-      description: 'Congratulations on reaching level 5!',
-      emblemAssetPath: 'assets/images/achievements/level_5.png', // CHANGED
-      conditionCheckerMessage: (UserProfile profile) {
+      emblemAssetPath: 'assets/images/achievements/level_5.png',
+      conditionCheckerMessage: (UserProfile profile, AppLocalizations loc) {
         if (profile.level >= 5) return null;
-        return 'Current level: ${profile.level}/5.';
+        return loc.achievementConditionLevel(profile.level, 5);
       }),
   AchievementId.personalRecordSet: const Achievement(
     id: AchievementId.personalRecordSet,
-    name: 'NEW RECORD: [Detail]!',
-    description: 'Congratulations on setting a new personal record for [Detail]!',
-    emblemAssetPath: 'assets/images/achievements/personal_record.png', // CHANGED
+    emblemAssetPath: 'assets/images/achievements/personal_record.png',
     isPersonalized: true,
   ),
-  // Add other achievements with their emblemAssetPath
-  AchievementId.level10Reached: Achievement( // Example, add more if they exist
+  AchievementId.level10Reached: Achievement(
       id: AchievementId.level10Reached,
-      name: 'LEVEL 10 REACHED',
-      description: 'Wow! Level 10! You\'re a true MuscleUP enthusiast!',
-      emblemAssetPath: 'assets/images/achievements/level_10.png', // CHANGED
-      conditionCheckerMessage: (UserProfile profile) {
+      emblemAssetPath: 'assets/images/achievements/level_10.png',
+      conditionCheckerMessage: (UserProfile profile, AppLocalizations loc) {
         if (profile.level >= 10) return null;
-        return 'Current level: ${profile.level}/10.';
+        return loc.achievementConditionLevel(profile.level, 10);
       }),
-  AchievementId.volumePro: Achievement( // Example
+  AchievementId.volumePro: Achievement(
     id: AchievementId.volumePro,
-    name: 'VOLUME PRO',
-    description: 'Lifted over 100,000 KG in total volume! Incredible strength!',
-    emblemAssetPath: 'assets/images/achievements/volume_pro.png', // CHANGED
-    conditionCheckerMessage: (UserProfile profile) =>
-        "Needs total volume tracking in profile.",
+    emblemAssetPath: 'assets/images/achievements/volume_pro.png',
+    conditionCheckerMessage: (UserProfile profile, AppLocalizations loc) => loc.achievementConditionVolume,
   ),
 };

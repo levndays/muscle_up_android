@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
-import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/routines/presentation/screens/user_routines_screen.dart';
 import 'features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'core/domain/repositories/notification_repository.dart';
 import 'core/domain/repositories/workout_log_repository.dart';
-import 'core/domain/repositories/routine_repository.dart'; // For FAB logic
-import 'core/domain/entities/routine.dart'; // For FAB logic
-import 'features/routines/presentation/screens/create_edit_routine_screen.dart'; // For FAB logic
-import 'features/workout_tracking/presentation/screens/active_workout_screen.dart';
+import 'core/domain/repositories/routine_repository.dart';
+import 'core/domain/entities/routine.dart';
+import 'features/routines/presentation/screens/create_edit_routine_screen.dart';
+import 'features/workout_tracking/presentation/screens/active_workout_screen.dart'; // ADDED THIS IMPORT
 import 'core/domain/entities/workout_session.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/social/presentation/screens/explore_screen.dart';
@@ -24,7 +24,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provides NotificationsCubit to the entire HomePage widget tree
     return BlocProvider<NotificationsCubit>(
       create: (cubitContext) => NotificationsCubit(
         RepositoryProvider.of<NotificationRepository>(cubitContext),
@@ -43,7 +42,7 @@ class _HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<_HomePageContent> {
-  int _selectedIndex = -1; // -1 indicates the Dashboard (main tab, not in BottomNav)
+  int _selectedIndex = -1;
 
   static final List<Widget> _bottomNavScreens = <Widget>[
     const UserRoutinesScreen(),
@@ -52,7 +51,6 @@ class _HomePageContentState extends State<_HomePageContent> {
     const ProfileScreen(),
   ];
 
-  // This list is now primarily for AppBar titles, labels are taken from AppLocalizations
   static final List<String> _bottomNavScreenTitlesEnglishFallback = <String>[
     'My Routines',
     'Explore Posts', 
@@ -70,21 +68,21 @@ class _HomePageContentState extends State<_HomePageContent> {
   void _navigateToDashboard() {
     developer.log("Navigating to Dashboard (AppBar tap)", name: "HomePage");
     setState(() {
-      _selectedIndex = -1; // Special index for the dashboard
+      _selectedIndex = -1;
     });
   }
 
   void _navigateToProfileFromDashboard() {
     developer.log("Dashboard request: Navigating to Profile", name: "HomePage");
     setState(() {
-      _selectedIndex = 3; // Index for the "Profile" tab
+      _selectedIndex = 3;
     });
   }
 
   void _navigateToProgressFromDashboard() {
     developer.log("Dashboard request: Navigating to Progress", name: "HomePage");
     setState(() {
-      _selectedIndex = 2; // Index for the "Progress" tab
+      _selectedIndex = 2;
     });
   }
 
@@ -180,7 +178,7 @@ class _HomePageContentState extends State<_HomePageContent> {
     final Color defaultAppBarTextColor = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.black87;
 
 
-    if (_selectedIndex == -1) { // Dashboard
+    if (_selectedIndex == -1) {
       currentBody = DashboardScreen(
         onProfileTap: _navigateToProfileFromDashboard,
         onProgressTap: _navigateToProgressFromDashboard,
@@ -202,7 +200,6 @@ class _HomePageContentState extends State<_HomePageContent> {
       currentBody = _bottomNavScreens[_selectedIndex];
       showFab = false;
 
-      // Use AppLocalizations for screen titles, fallback to English if needed
       String screenTitleText;
       switch (_selectedIndex) {
         case 0:

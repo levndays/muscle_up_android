@@ -6,8 +6,10 @@ import 'dart:developer' as developer;
 
 import '../../../../core/domain/entities/routine.dart';
 import '../../../../core/domain/entities/workout_session.dart';
+import '../../../../core/domain/entities/predefined_exercise.dart';
 import '../../../../core/domain/repositories/workout_log_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
+import '../../../../core/domain/repositories/predefined_exercise_repository.dart';
 import '../cubit/active_workout_cubit.dart';
 import '../widgets/current_set_display.dart';
 import './workout_complete_screen.dart';
@@ -32,12 +34,12 @@ class ActiveWorkoutScreen extends StatelessWidget {
         final cubit = ActiveWorkoutCubit(
           RepositoryProvider.of<WorkoutLogRepository>(context),
           RepositoryProvider.of<UserProfileRepository>(context),
+          RepositoryProvider.of<PredefinedExerciseRepository>(context),
           RepositoryProvider.of<fb_auth.FirebaseAuth>(context),
         );
         if (routineForNewWorkout != null) {
           cubit.startNewWorkout(fromRoutine: routineForNewWorkout);
         }
-        // Якщо routineForNewWorkout == null, кубіт сам перевірить активну сесію в _subscribeToActiveSession
         return cubit;
       },
       child: _ActiveWorkoutView(),
@@ -71,14 +73,12 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
       int newSetIndex = _currentSetIndex + (next ? 1 : -1);
       int newExerciseIndex = validExerciseIndex;
 
-      // Перевірка, чи є сети у поточній вправі
       if (session.completedExercises[newExerciseIndex].completedSets.isEmpty) {
           developer.log("Warning: Exercise ${session.completedExercises[newExerciseIndex].exerciseNameSnapshot} has no sets. Cannot navigate within it.", name: "_ActiveWorkoutViewState");
-          // Якщо йдемо вперед і це остання вправа, або наступні теж порожні, показуємо діалог завершення
           if (next) {
-             _requestSetNavigationForNextExercise(newExerciseIndex + 1, session); // Спробувати перейти до наступної вправи
+             _requestSetNavigationForNextExercise(newExerciseIndex + 1, session);
           } else if (!next && newExerciseIndex > 0) {
-             _requestSetNavigationForPreviousExercise(newExerciseIndex -1, session); // Спробувати перейти до попередньої вправи
+             _requestSetNavigationForPreviousExercise(newExerciseIndex -1, session);
           }
           return;
       }
@@ -90,10 +90,8 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
           _currentExerciseIndex = newExerciseIndex;
         });
       } else if (next && newSetIndex >= session.completedExercises[newExerciseIndex].completedSets.length) {
-        // Перехід до наступної вправи
         _requestSetNavigationForNextExercise(newExerciseIndex + 1, session);
       } else if (!next && newSetIndex < 0) {
-        // Перехід до попередньої вправи
         _requestSetNavigationForPreviousExercise(newExerciseIndex - 1, session);
       }
     }
@@ -108,11 +106,9 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
                 _currentSetIndex = 0;
             });
         } else {
-            // Рекурсивний виклик для пропуску порожніх вправ
             _requestSetNavigationForNextExercise(targetExerciseIndex + 1, session);
         }
     } else {
-        // Досягли кінця всіх вправ
         _showCompleteWorkoutDialog(cubit);
     }
   }
@@ -125,11 +121,9 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
                 _currentSetIndex = session.completedExercises[targetExerciseIndex].completedSets.length - 1;
             });
         } else {
-            // Рекурсивний виклик для пропуску порожніх вправ
             _requestSetNavigationForPreviousExercise(targetExerciseIndex - 1, session);
         }
     }
-    // Якщо targetExerciseIndex < 0, ми на початку, нічого не робимо
  }
 
 
@@ -192,21 +186,18 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
               _currentSetIndex = 0;
               indicesChanged = true;
             }
-             // Перевірка, чи є сети у поточній (або новообраній) вправі
             if (session.completedExercises[_currentExerciseIndex].completedSets.isEmpty) {
                 developer.log("Warning in Listener: Current exercise ${session.completedExercises[_currentExerciseIndex].exerciseNameSnapshot} has no sets.", name: "_ActiveWorkoutViewStateListener");
-                // Спроба знайти першу валідну вправу з сетами
                 int firstValidExerciseIdx = session.completedExercises.indexWhere((ex) => ex.completedSets.isNotEmpty);
                 if (firstValidExerciseIdx != -1) {
                     _currentExerciseIndex = firstValidExerciseIdx;
                     _currentSetIndex = 0;
-                } else { // Якщо взагалі немає вправ з сетами
+                } else {
                     _currentExerciseIndex = 0;
                     _currentSetIndex = 0;
                 }
                 indicesChanged = true;
             } else if (_currentSetIndex >= session.completedExercises[_currentExerciseIndex].completedSets.length) {
-              // Якщо індекс сету виходить за межі, встановлюємо на останній валідний або 0
               _currentSetIndex = session.completedExercises[_currentExerciseIndex].completedSets.isNotEmpty
                   ? session.completedExercises[_currentExerciseIndex].completedSets.length - 1
                   : 0;
@@ -241,7 +232,6 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
         if (state is ActiveWorkoutInProgress) {
           final session = state.session;
           
-          // Захист від порожніх вправ (хоча це вже обробляється в _requestSetNavigation...)
           if (session.completedExercises.isEmpty) {
             return Scaffold(
                 appBar: AppBar(title: Text(session.routineNameSnapshot ?? 'Empty Workout'), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit))),
@@ -249,11 +239,8 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
             );
           }
           
-          // Гарантуємо, що індекси валідні
           final safeExerciseIndex = (_currentExerciseIndex < session.completedExercises.length) ? _currentExerciseIndex : 0;
            if (session.completedExercises[safeExerciseIndex].completedSets.isEmpty) {
-            // Цей блок не мав би досягатися, якщо логіка в listener та _requestSetNavigation працює правильно
-            // Але для безпеки, якщо ми сюди потрапили, покажемо помилку
             return Scaffold(
                 appBar: AppBar(title: Text(session.routineNameSnapshot ?? 'Workout Error'), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit))),
                 body: Center(child: Column(
@@ -261,7 +248,7 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
                   children: [
                     Text("Error: Exercise '${session.completedExercises[safeExerciseIndex].exerciseNameSnapshot}' has no sets."),
                     const SizedBox(height: 10),
-                    Text("Please edit the routine or contact support.", textAlign: TextAlign.center,),
+                    const Text("Please edit the routine or contact support.", textAlign: TextAlign.center,),
                      const SizedBox(height: 20),
                     ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Go Back'))
                   ],
@@ -272,27 +259,28 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
           
           final currentLoggedExercise = session.completedExercises[safeExerciseIndex];
           final currentLoggedSet = currentLoggedExercise.completedSets[safeSetIndex];
+          final PredefinedExercise? fullExerciseDetails = cubit.getPredefinedExerciseById(currentLoggedExercise.predefinedExerciseId);
+
 
           return Scaffold(
-            resizeToAvoidBottomInset: true, // За замовчуванням true, але для певності
+            resizeToAvoidBottomInset: true,
             appBar: AppBar(
               title: Text(session.routineNameSnapshot ?? 'Active Workout', style: const TextStyle(fontSize: 18)),
               centerTitle: true, elevation: 1,
               actions: [Padding(padding: const EdgeInsets.only(right: 16.0), child: Center(child: Text(formatDuration(state.currentDuration), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary))))],
               leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit)),
             ),
-            // Обгортаємо Column в SingleChildScrollView
             body: SingleChildScrollView(
-              child: ConstrainedBox( // Дозволяє Column зайняти всю доступну висоту, якщо вміст менший
+              child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: MediaQuery.of(context).size.height - (AppBar().preferredSize.height) - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Притискає кнопки до низу
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // CurrentSetDisplay тепер не Expanded, а просто частина Column
                     CurrentSetDisplay(
                       currentExercise: currentLoggedExercise,
+                      fullExerciseDetails: fullExerciseDetails,
                       currentSet: currentLoggedSet,
                       exerciseIndex: safeExerciseIndex,
                       setIndex: safeSetIndex,
@@ -306,7 +294,6 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
             ),
           );
         }
-        // Запасний варіант
         return Scaffold(appBar: AppBar(title: const Text('Workout')), body: const Center(child: Text('An unexpected state occurred. Please restart.')));
       },
     );

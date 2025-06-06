@@ -14,8 +14,8 @@ import 'dart:developer' as developer;
 import 'follow_list_screen.dart';
 import '../cubit/follow_list_cubit.dart' show FollowListType;
 import 'package:muscle_up/l10n/app_localizations.dart';
-import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
-import '../../../profile/presentation/widgets/achievement_details_dialog.dart'; // NEW
+import '../../../../widgets/fullscreen_image_viewer.dart';
+import '../../../profile/presentation/widgets/achievement_details_dialog.dart';
 
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
@@ -354,14 +354,9 @@ class ViewUserProfileScreen extends StatelessWidget {
   }
 
    Widget _buildRewardItem(BuildContext context, Achievement achievement) {
-    // Reusing the same logic as in profile_screen, but now it's encapsulated here.
     final loc = AppLocalizations.of(context)!;
-    String achievementName = achievement.name;
-    String achievementDescription = achievement.description;
-    if (achievement.isPersonalized) {
-      achievementName = achievement.name.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); 
-      achievementDescription = achievement.description.replaceAll('[Detail]', loc.recordStatusVerified.toLowerCase()); 
-    }
+    String achievementName = achievement.getLocalizedName(loc, detail: loc.recordStatusVerified);
+    String achievementDescription = achievement.getLocalizedDescription(loc, detail: loc.recordStatusVerified);
     
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
@@ -369,7 +364,11 @@ class ViewUserProfileScreen extends StatelessWidget {
         onTap: () {
           showDialog(
             context: context,
-            builder: (_) => AchievementDetailsDialog(achievement: achievement),
+            builder: (_) => AchievementDetailsDialog(
+              name: achievementName,
+              description: achievementDescription,
+              emblemAssetPath: achievement.emblemAssetPath,
+            ),
           );
         },
         borderRadius: BorderRadius.circular(12),

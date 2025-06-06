@@ -16,8 +16,8 @@ import '../../../social/presentation/screens/follow_list_screen.dart';
 import '../../../social/presentation/cubit/follow_list_cubit.dart' show FollowListType;
 import '../../../social/presentation/widgets/post_list_item.dart';
 import 'package:muscle_up/l10n/app_localizations.dart';
-import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
-import '../widgets/achievement_details_dialog.dart'; // NEW
+import '../../../../widgets/fullscreen_image_viewer.dart';
+import '../widgets/achievement_details_dialog.dart';
 
 
 const Color profilePrimaryOrange = Color(0xFFED5D1A);
@@ -80,7 +80,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
 
   String _getDisplayName(String? storedValue, Map<String, String> mapping, AppLocalizations loc) {
     if (storedValue == null || storedValue.isEmpty) {
-      return loc.profileSetupErrorUsernameEmpty; // Or a generic "N/A"
+      return loc.profileSetupErrorUsernameEmpty;
     }
     switch (storedValue) {
         case 'lose_weight': return loc.profileSetupFitnessGoalLoseWeight;
@@ -517,13 +517,21 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
   }
 
   Widget _buildRewardItem(BuildContext context, Achievement achievement) {
+    final loc = AppLocalizations.of(context)!;
+    String achievementName = achievement.getLocalizedName(loc, detail: loc.recordStatusVerified);
+    String achievementDescription = achievement.getLocalizedDescription(loc, detail: loc.recordStatusVerified);
+
     return Padding(
       padding: const EdgeInsets.only(right: 12.0),
       child: InkWell(
         onTap: () {
           showDialog(
             context: context,
-            builder: (_) => AchievementDetailsDialog(achievement: achievement),
+            builder: (_) => AchievementDetailsDialog(
+              name: achievementName,
+              description: achievementDescription,
+              emblemAssetPath: achievement.emblemAssetPath,
+            ),
           );
         },
         borderRadius: BorderRadius.circular(12),
@@ -545,7 +553,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
             SizedBox(
               width: 70,
               child: Text(
-                achievement.name,
+                achievementName,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

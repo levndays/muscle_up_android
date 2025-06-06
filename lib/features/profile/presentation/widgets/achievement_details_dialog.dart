@@ -1,29 +1,21 @@
 // lib/features/profile/presentation/widgets/achievement_details_dialog.dart
 import 'package:flutter/material.dart';
-import '../../../../core/domain/entities/achievement.dart';
 
 class AchievementDetailsDialog extends StatelessWidget {
-  final Achievement achievement;
+  final String name;
+  final String description;
+  final String emblemAssetPath;
 
   const AchievementDetailsDialog({
     super.key,
-    required this.achievement,
+    required this.name,
+    required this.description,
+    required this.emblemAssetPath,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // Dynamic name/description logic for personalized achievements like records
-    String achievementName = achievement.name;
-    String achievementDescription = achievement.description;
-    if (achievement.isPersonalized) {
-      // For now, using a generic placeholder. This can be expanded later
-      // if more details are passed to the dialog.
-      const detailPlaceholder = "Record"; 
-      achievementName = achievement.name.replaceAll('[Detail]', detailPlaceholder);
-      achievementDescription = achievement.description.replaceAll('[Detail]', detailPlaceholder);
-    }
     
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -35,22 +27,22 @@ class AchievementDetailsDialog extends StatelessWidget {
             width: 80,
             height: 80,
             child: Image.asset(
-              achievement.emblemAssetPath,
+              emblemAssetPath,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.shield_outlined, color: Colors.grey, size: 50);
+                return const Icon(Icons.shield_outlined, color: Colors.grey, size: 50);
               },
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            achievementName,
+            name,
             textAlign: TextAlign.center,
             style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            achievementDescription,
+            description,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
           ),

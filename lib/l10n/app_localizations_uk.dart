@@ -1335,4 +1335,88 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get postCardRecordWeightFallback => 'Н/Д';
+
+  @override
+  String get achievementEarlyBirdName => 'РАННЯ ПТАШКА';
+
+  @override
+  String get achievementEarlyBirdDescription =>
+      'Ласкаво просимо до клубу! Дякуємо, що приєдналися до MuscleUP.';
+
+  @override
+  String get achievementFirstWorkoutName => 'ПЕРШИЙ КРОК';
+
+  @override
+  String get achievementFirstWorkoutDescription =>
+      'Ви завершили своє перше тренування! Так тримати!';
+
+  @override
+  String get achievementConsistentKing10Name => 'ЗІРКА СТРІКУ (10)';
+
+  @override
+  String get achievementConsistentKing10Description =>
+      '10-денний стрік тренувань! Ви у вогні!';
+
+  @override
+  String get achievementConsistentKing30Name => 'КОРОЛЬ ПОСЛІДОВНОСТІ (30)';
+
+  @override
+  String get achievementConsistentKing30Description =>
+      '30-денний стрік тренувань! Нестримний!';
+
+  @override
+  String get achievementVolumeStarterName => 'СТАРТЕР ОБ\'ЄМУ';
+
+  @override
+  String get achievementVolumeStarterDescription =>
+      'Піднято понад 10 000 кг загального об\'єму!';
+
+  @override
+  String get achievementVolumeProName => 'ПРОФІ ОБ\'ЄМУ';
+
+  @override
+  String get achievementVolumeProDescription =>
+      'Піднято понад 100 000 кг загального об\'єму! Неймовірна сила!';
+
+  @override
+  String get achievementLevel5ReachedName => 'ДОСЯГНУТО 5 РІВЕНЬ';
+
+  @override
+  String get achievementLevel5ReachedDescription =>
+      'Вітаємо з досягненням 5-го рівня!';
+
+  @override
+  String get achievementLevel10ReachedName => 'ДОСЯГНУТО 10 РІВЕНЬ';
+
+  @override
+  String get achievementLevel10ReachedDescription =>
+      'Ого! 10-й рівень! Ви справжній ентузіаст MuscleUP!';
+
+  @override
+  String achievementPersonalRecordSetName(String detail) {
+    return 'НОВИЙ РЕКОРД: $detail!';
+  }
+
+  @override
+  String achievementPersonalRecordSetDescription(String detail) {
+    return 'Вітаємо зі встановленням нового особистого рекорду в $detail!';
+  }
+
+  @override
+  String achievementConditionStreak(int currentStreak, int targetStreak) {
+    return 'Поточний найкращий стрік: $currentStreak/$targetStreak днів.';
+  }
+
+  @override
+  String get achievementConditionVolume =>
+      'Потрібне відстеження загального об\'єму в профілі.';
+
+  @override
+  String achievementConditionLevel(int currentLevel, int targetLevel) {
+    return 'Поточний рівень: $currentLevel/$targetLevel.';
+  }
+
+  @override
+  String get currentSetDisplayMuscleGroupsLoading =>
+      'Завантаження груп м\'язів...';
 }

@@ -1318,4 +1318,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get postCardRecordWeightFallback => 'N/A';
+
+  @override
+  String get achievementEarlyBirdName => 'EARLY BIRD';
+
+  @override
+  String get achievementEarlyBirdDescription =>
+      'Welcome to the club! Thanks for joining MuscleUP.';
+
+  @override
+  String get achievementFirstWorkoutName => 'FIRST STEP';
+
+  @override
+  String get achievementFirstWorkoutDescription =>
+      'You completed your first workout! Keep it up!';
+
+  @override
+  String get achievementConsistentKing10Name => 'STREAK STAR (10)';
+
+  @override
+  String get achievementConsistentKing10Description =>
+      '10-day workout streak! You are on fire!';
+
+  @override
+  String get achievementConsistentKing30Name => 'CONSISTENT KING (30)';
+
+  @override
+  String get achievementConsistentKing30Description =>
+      '30-day workout streak! Unstoppable!';
+
+  @override
+  String get achievementVolumeStarterName => 'VOLUME STARTER';
+
+  @override
+  String get achievementVolumeStarterDescription =>
+      'Lifted over 10,000 KG in total volume!';
+
+  @override
+  String get achievementVolumeProName => 'VOLUME PRO';
+
+  @override
+  String get achievementVolumeProDescription =>
+      'Lifted over 100,000 KG in total volume! Incredible strength!';
+
+  @override
+  String get achievementLevel5ReachedName => 'LEVEL 5 REACHED';
+
+  @override
+  String get achievementLevel5ReachedDescription =>
+      'Congratulations on reaching level 5!';
+
+  @override
+  String get achievementLevel10ReachedName => 'LEVEL 10 REACHED';
+
+  @override
+  String get achievementLevel10ReachedDescription =>
+      'Wow! Level 10! You\'re a true MuscleUP enthusiast!';
+
+  @override
+  String achievementPersonalRecordSetName(String detail) {
+    return 'NEW RECORD: $detail!';
+  }
+
+  @override
+  String achievementPersonalRecordSetDescription(String detail) {
+    return 'Congratulations on setting a new personal record for $detail!';
+  }
+
+  @override
+  String achievementConditionStreak(int currentStreak, int targetStreak) {
+    return 'Current best streak: $currentStreak/$targetStreak days.';
+  }
+
+  @override
+  String get achievementConditionVolume =>
+      'Requires total volume tracking in profile.';
+
+  @override
+  String achievementConditionLevel(int currentLevel, int targetLevel) {
+    return 'Current level: $currentLevel/$targetLevel.';
+  }
+
+  @override
+  String get currentSetDisplayMuscleGroupsLoading => 'Loading muscle groups...';
 }
