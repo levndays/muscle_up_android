@@ -94,7 +94,7 @@ class _ProgressView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context)!; // For localization
+    final loc = AppLocalizations.of(context)!; 
 
     return Scaffold(
       body: BlocBuilder<ProgressCubit, ProgressState>(
@@ -125,11 +125,11 @@ class _ProgressView extends StatelessWidget {
                   children: [
                     const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
                     const SizedBox(height: 16),
-                    Text(loc.progressScreenErrorLoadingProfile(state.message), textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)), // LOCALIZED
+                    Text(loc.progressScreenErrorLoadingProfile(state.message), textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)), 
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => context.read<ProgressCubit>().refreshData(),
-                      child: Text(loc.progressScreenButtonTryAgain), // LOCALIZED
+                      child: Text(loc.progressScreenButtonTryAgain), 
                     )
                   ],
                 ),
@@ -140,7 +140,7 @@ class _ProgressView extends StatelessWidget {
             final currentLeague = state.currentLeague;
 
             final int currentXpInLevel = (userProfile.xp - state.xpForCurrentLevelStart).clamp(0, state.xpForNextLevelTotal);
-            final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel;
+            // final int xpToNext = state.xpForNextLevelTotal - currentXpInLevel; // Not directly used in UI anymore
 
             final String gender = userProfile.gender?.toLowerCase() ?? 'male';
             final String frontSvgPath = gender == 'female'
@@ -172,7 +172,7 @@ class _ProgressView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     LeagueTitleWidget(
-                      leagueName: currentLeague.name,
+                      leagueName: currentLeague.name, // This should ideally be localized too if leagues are dynamic
                       level: userProfile.level,
                       gradientColors: currentLeague.gradientColors,
                       onLeagueTap: () {
@@ -184,12 +184,12 @@ class _ProgressView extends StatelessWidget {
                     XPProgressBarWidget(
                       currentXp: currentXpInLevel,
                       xpForNextLevel: state.xpForNextLevelTotal,
-                      startLevelXpText: loc.progressScreenXpProgressText(currentXpInLevel.toString(), state.xpForNextLevelTotal.toString()), // LOCALIZED
-                      endLevelXpText: loc.progressScreenLevelLabel(userProfile.level + 1), // LOCALIZED
+                      startLevelXpText: loc.progressScreenXpProgressText(currentXpInLevel.toString(), state.xpForNextLevelTotal.toString()), 
+                      endLevelXpText: loc.progressScreenLevelLabel(userProfile.level + 1), 
                     ),
                     Center(
                       child: Text(
-                        loc.progressScreenXpToNextLevel, // LOCALIZED
+                        loc.progressScreenXpToNextLevel, 
                         style: theme.textTheme.bodySmall?.copyWith(
                             color: primaryOrange,
                             fontWeight: FontWeight.bold,
@@ -198,12 +198,12 @@ class _ProgressView extends StatelessWidget {
                     ),
                     const SizedBox(height: 30),
 
-                    Text(loc.progressScreenVolumeTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), // LOCALIZED
+                    Text(loc.progressScreenVolumeTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                     if (state.volumePerMuscleGroup7Days.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20.0),
-                        child: Center(child: Text(loc.progressScreenNoVolumeData, style: TextStyle(color: Colors.grey.shade600))), // LOCALIZED
+                        child: Center(child: Text(loc.progressScreenNoVolumeData, style: TextStyle(color: Colors.grey.shade600))), 
                       )
                     else
                       Row(
@@ -238,10 +238,10 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text(loc.progressScreenRpeTrendTitle(ProgressCubit.maxWorkoutsForTrend), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), // LOCALIZED
+                    Text(loc.progressScreenRpeTrendTitle(ProgressCubit.maxWorkoutsForTrend), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                     if (exercisesWithRpeTrend.isEmpty)
-                      Text(loc.progressScreenNoRpeData, style: const TextStyle(color: Colors.grey)) // LOCALIZED
+                      Text(loc.progressScreenNoRpeData, style: const TextStyle(color: Colors.grey)) 
                     else
                       ListView.builder(
                         shrinkWrap: true,
@@ -249,7 +249,7 @@ class _ProgressView extends StatelessWidget {
                         itemCount: exercisesWithRpeTrend.length,
                         itemBuilder: (context, index) {
                           final entry = exercisesWithRpeTrend[index];
-                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? loc.progressScreenExercisePlaceholder(entry.key.substring(0,5)); // LOCALIZED FALLBACK
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(context, entry.key);
                           final double rpeForColorAndAvg = state.avgRpePerExercise30Days[entry.key] ??
                                                      (entry.value.isNotEmpty ? entry.value.reduce((a,b) => a+b) / entry.value.length : 5.0);
                           final rpeColor = _getRpeColor(rpeForColorAndAvg);
@@ -277,7 +277,7 @@ class _ProgressView extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${loc.progressScreenAvgRpeLabel}${rpeForColorAndAvg.toStringAsFixed(1)}', // LOCALIZED
+                                          '${loc.progressScreenAvgRpeLabel}${rpeForColorAndAvg.toStringAsFixed(1)}', 
                                           style: theme.textTheme.bodyMedium?.copyWith(
                                             color: rpeColor,
                                             fontWeight: FontWeight.w600,
@@ -307,10 +307,10 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text(loc.progressScreenStrengthTrendTitle(ProgressCubit.maxWorkoutsForTrend), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), // LOCALIZED
+                    Text(loc.progressScreenStrengthTrendTitle(ProgressCubit.maxWorkoutsForTrend), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                      if (exercisesWithWeightTrend.isEmpty)
-                      Text(loc.progressScreenNoWeightData, style: const TextStyle(color: Colors.grey)) // LOCALIZED
+                      Text(loc.progressScreenNoWeightData, style: const TextStyle(color: Colors.grey)) 
                     else
                        ListView.builder(
                         shrinkWrap: true,
@@ -318,7 +318,7 @@ class _ProgressView extends StatelessWidget {
                         itemCount: exercisesWithWeightTrend.length,
                         itemBuilder: (context, index) {
                           final entry = exercisesWithWeightTrend[index];
-                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(entry.key) ?? loc.progressScreenExercisePlaceholder(entry.key.substring(0,5)); // LOCALIZED FALLBACK
+                          final exerciseName = context.read<ProgressCubit>().getExerciseNameById(context, entry.key);
                           final double avgWeight = entry.value.isNotEmpty ? entry.value.reduce((a,b) => a+b) / entry.value.length : 0.0;
                           final trendColor = _getTrendColor(entry.value);
 
@@ -345,7 +345,7 @@ class _ProgressView extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${loc.progressScreenAvgWeightLabel}${avgWeight.toStringAsFixed(1)} ${loc.progressScreenKgUnit}', // LOCALIZED
+                                          '${loc.progressScreenAvgWeightLabel}${avgWeight.toStringAsFixed(1)} ${loc.progressScreenKgUnit}', 
                                           style: theme.textTheme.bodyMedium?.copyWith(
                                             color: trendColor,
                                             fontWeight: FontWeight.w600,
@@ -375,7 +375,7 @@ class _ProgressView extends StatelessWidget {
                       ),
                     const SizedBox(height: 30),
 
-                    Text(loc.progressScreenAdviceTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), // LOCALIZED
+                    Text(loc.progressScreenAdviceTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)), 
                     const SizedBox(height: 10),
                     BlocBuilder<NotificationsCubit, NotificationsState>(
                       builder: (context, notificationsState) {
@@ -391,7 +391,7 @@ class _ProgressView extends StatelessWidget {
                                 color: Colors.blueGrey.shade50,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Text(loc.progressScreenNoAdvice, style: const TextStyle(color: Colors.blueGrey)), // LOCALIZED
+                              child: Text(loc.progressScreenNoAdvice, style: const TextStyle(color: Colors.blueGrey)), 
                             );
                           }
                           return ListView.builder(
@@ -405,9 +405,9 @@ class _ProgressView extends StatelessWidget {
                         } else if (notificationsState is NotificationsLoading) {
                           return const Center(child: CircularProgressIndicator());
                         } else if (notificationsState is NotificationsError) {
-                          return Text(loc.progressScreenErrorLoadAdvice(notificationsState.message), style: const TextStyle(color: Colors.red)); // LOCALIZED
+                          return Text(loc.progressScreenErrorLoadAdvice(notificationsState.message), style: const TextStyle(color: Colors.red)); 
                         }
-                        return Text(loc.progressScreenLoadingAdvice); // LOCALIZED
+                        return Text(loc.progressScreenLoadingAdvice); 
                       },
                     ),
                     const SizedBox(height: 10),
@@ -415,7 +415,7 @@ class _ProgressView extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.lightbulb_outline),
-                        label: Text(loc.progressScreenButtonSendTestAdvice), // LOCALIZED
+                        label: Text(loc.progressScreenButtonSendTestAdvice), 
                         onPressed: () => _createTestAdviceNotifications(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.tealAccent.shade400,
@@ -428,7 +428,7 @@ class _ProgressView extends StatelessWidget {
                 ),
               );
           } else {
-            contentToShow = Center(child: Text(loc.progressScreenNoData)); // LOCALIZED
+            contentToShow = Center(child: Text(loc.progressScreenNoData)); 
             developer.log("ProgressScreen: Reached unexpected state: $state", name: "ProgressScreen.Build");
           }
 

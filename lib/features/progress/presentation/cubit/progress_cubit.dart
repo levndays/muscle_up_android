@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:flutter/material.dart'; // Для Color у _getDefaultLeaguesInternal
+import 'package:flutter/material.dart'; // For Color in _getDefaultLeaguesInternal and BuildContext
 import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
@@ -13,7 +13,7 @@ import '../../../../core/domain/entities/user_profile.dart';
 import '../../../../core/domain/entities/league_info.dart';
 import '../../../../core/domain/entities/workout_session.dart';
 import '../../../../core/domain/entities/predefined_exercise.dart';
-
+import '../../../../l10n/app_localizations.dart'; // <<< ADDED THIS IMPORT
 
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../../../../core/domain/repositories/league_repository.dart';
@@ -32,8 +32,8 @@ class ProgressCubit extends Cubit<ProgressState> {
   StreamSubscription<UserProfile?>? _userProfileSubscription;
   List<LeagueInfo> _allLeagues = [];
   List<PredefinedExercise> _allPredefinedExercises = [];
-  
-  static const int maxWorkoutsForTrend = 15; // Узагальнена константа для трендів
+
+  static const int maxWorkoutsForTrend = 15;
 
   ProgressCubit(
     this._userProfileRepository,
@@ -130,16 +130,17 @@ class ProgressCubit extends Cubit<ProgressState> {
     }
   }
 
-  String? getExerciseNameById(String exerciseId) {
+  String getExerciseNameById(BuildContext context, String exerciseId) { // Added BuildContext
     if (_allPredefinedExercises.isEmpty) {
         developer.log("Attempted to get exercise name but _allPredefinedExercises is empty.", name: "ProgressCubit.getExerciseNameById");
-        return 'Loading...';
+        return AppLocalizations.of(context)!.exerciseExplorerLoading;
     }
     try {
-      return _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId).name;
+      final exercise = _allPredefinedExercises.firstWhere((ex) => ex.id == exerciseId);
+      return exercise.getLocalizedName(context);
     } catch (e) {
       developer.log("Exercise with ID $exerciseId not found in cached list.", name: "ProgressCubit.getExerciseNameById");
-      return null;
+      return AppLocalizations.of(context)!.progressScreenExercisePlaceholder(exerciseId.length > 5 ? exerciseId.substring(0,5) : exerciseId);
     }
   }
 
@@ -168,10 +169,7 @@ class ProgressCubit extends Cubit<ProgressState> {
       final volumeData = await _calculateVolumePerMuscleGroup7Days(userProfile.uid);
       final avgRpe30DaysData = await _calculateAvgRpePerExercise30Days(userProfile.uid);
       final rpeTrendData = await _calculateRpePerWorkoutTrend(userProfile.uid);
-      // Попередній avgWorkingWeights90Days нам вже не потрібен для основного стану,
-      // оскільки ми будемо використовувати новий тренд.
-      // final avgWorkingWeights90DaysData = await _calculateAvgWorkingWeights90Days(userProfile.uid);
-      final workingWeightTrendData = await _calculateWorkingWeightPerWorkoutTrend(userProfile.uid); // <--- НОВИЙ ВИКЛИК
+      final workingWeightTrendData = await _calculateWorkingWeightPerWorkoutTrend(userProfile.uid);
 
       emit(ProgressLoaded(
         userProfile: userProfile,
@@ -181,8 +179,8 @@ class ProgressCubit extends Cubit<ProgressState> {
         volumePerMuscleGroup7Days: volumeData,
         avgRpePerExercise30Days: avgRpe30DaysData,
         rpePerWorkoutTrend: rpeTrendData,
-        // avgWorkingWeights90Days: avgWorkingWeights90DaysData, // Можна прибрати, якщо не використовується
-        workingWeightPerWorkoutTrend: workingWeightTrendData, // <--- ПЕРЕДАЧА НОВИХ ДАНИХ
+        workingWeightPerWorkoutTrend: workingWeightTrendData,
+        // avgWorkingWeights90Days is not explicitly passed if not used for primary display
       ));
     } catch (e, s) {
       developer.log('Error processing workout logs for progress update: $e', error: e, stackTrace: s, name: 'ProgressCubit._processUserProfileUpdate');
@@ -250,22 +248,24 @@ class ProgressCubit extends Cubit<ProgressState> {
         }
 
         List<String> targetSvgIds = [];
+        String primaryGroupKeyEn = predefinedEx.primaryMuscleGroup['en']?.toLowerCase().replaceAll(' ', '-') ?? '';
 
-        String primaryGroupKey = predefinedEx.primaryMuscleGroup.toLowerCase().replaceAll(' ', '-');
-        if (muscleGroupMapping.containsKey(primaryGroupKey)) {
-          targetSvgIds.addAll(muscleGroupMapping[primaryGroupKey]!);
+        if (primaryGroupKeyEn.isNotEmpty && muscleGroupMapping.containsKey(primaryGroupKeyEn)) {
+          targetSvgIds.addAll(muscleGroupMapping[primaryGroupKeyEn]!);
         } else {
-          developer.log("No SVG mapping for primary group: ${predefinedEx.primaryMuscleGroup} (key: $primaryGroupKey)", name: "ProgressCubit.VolumeCalc");
+          developer.log("No SVG mapping for primary group (key: $primaryGroupKeyEn) from exercise: ${predefinedEx.name['en']}", name: "ProgressCubit.VolumeCalc");
         }
-
-        for (var secGroup in predefinedEx.secondaryMuscleGroups) {
-          String secGroupKey = secGroup.toLowerCase().replaceAll(' ', '-');
-          if (muscleGroupMapping.containsKey(secGroupKey)) {
-            targetSvgIds.addAll(muscleGroupMapping[secGroupKey]!);
+        
+        final secondaryGroupsEn = predefinedEx.secondaryMuscleGroups['en'] ?? [];
+        for (var secGroupEn in secondaryGroupsEn) {
+          String secGroupKeyEn = secGroupEn.toLowerCase().replaceAll(' ', '-');
+          if (muscleGroupMapping.containsKey(secGroupKeyEn)) {
+            targetSvgIds.addAll(muscleGroupMapping[secGroupKeyEn]!);
           } else {
-            developer.log("No SVG mapping for secondary group: $secGroup (key: $secGroupKey)", name: "ProgressCubit.VolumeCalc");
+            developer.log("No SVG mapping for secondary group (key: $secGroupKeyEn) from exercise: ${predefinedEx.name['en']}", name: "ProgressCubit.VolumeCalc");
           }
         }
+
         targetSvgIds = targetSvgIds.toSet().toList();
 
         int setCountForExercise = loggedEx.completedSets.where((s) => s.isCompleted && (s.reps ?? 0) > 0).length;
@@ -357,10 +357,10 @@ class ProgressCubit extends Cubit<ProgressState> {
     developer.log("RPE per workout trend: ${rpeTrendMap.entries.where((e) => e.value.isNotEmpty).length} exercises processed with trend data.", name: "ProgressCubit.RPETrendCalc");
     return rpeTrendMap;
   }
-
-  // Метод _calculateAvgWorkingWeights90Days можна видалити або залишити, якщо він ще десь потрібен.
-  // Якщо він використовується тільки для ProgressLoaded.avgWorkingWeights90Days, а це поле більше не основне,
-  // то можна його прибрати. Для прикладу, я його залишу, але він не буде використовуватися для нового тренду.
+  
+  // This declaration '_calculateAvgWorkingWeights90Days' isn't referenced.
+  // You can remove it if it's no longer needed.
+  // ignore: unused_element
   Future<Map<String, double>> _calculateAvgWorkingWeights90Days(String userId) async {
     final ninetyDaysAgo = DateTime.now().subtract(const Duration(days: 90));
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
@@ -389,15 +389,14 @@ class ProgressCubit extends Cubit<ProgressState> {
     return avgWeightsMap;
   }
 
-  // Новий метод для розрахунку тренду робочої ваги
   Future<Map<String, List<double>>> _calculateWorkingWeightPerWorkoutTrend(String userId) async {
     final workoutLogs = await _workoutLogRepository.getUserWorkoutHistory(
       userId,
-      limit: maxWorkoutsForTrend + 10, // Беремо трохи більше для запасу
+      limit: maxWorkoutsForTrend + 10, 
     );
 
     Map<String, List<double>> weightTrendMap = {};
-    workoutLogs.sort((a, b) => a.startedAt.compareTo(b.startedAt)); // Сортуємо від старих до нових
+    workoutLogs.sort((a, b) => a.startedAt.compareTo(b.startedAt)); 
 
     for (var session in workoutLogs) {
       if (session.status != WorkoutStatus.completed) continue;
@@ -411,8 +410,6 @@ class ProgressCubit extends Cubit<ProgressState> {
         }
 
         if (weightsForExerciseInSession.isNotEmpty) {
-          // Для тренду ваги ми можемо брати середню, максимальну або першу робочу вагу за сесію.
-          // Для простоти, візьмемо середню вагу з усіх робочих підходів у цій сесії для цієї вправи.
           final avgWeightForExerciseInSession = weightsForExerciseInSession.reduce((a, b) => a + b) / weightsForExerciseInSession.length;
           
           weightTrendMap.putIfAbsent(loggedEx.predefinedExerciseId, () => []).add(avgWeightForExerciseInSession);
@@ -420,7 +417,6 @@ class ProgressCubit extends Cubit<ProgressState> {
       }
     }
 
-    // Обмежуємо кількість точок
     weightTrendMap.forEach((exerciseId, trendList) {
       if (trendList.length > maxWorkoutsForTrend) {
         weightTrendMap[exerciseId] = trendList.sublist(trendList.length - maxWorkoutsForTrend);
@@ -434,7 +430,6 @@ class ProgressCubit extends Cubit<ProgressState> {
 
   Map<String, List<String>> _getMuscleGroupToSvgIdMapping() {
     return {
-      // Front Male / Female
       'chest': ['chest'],
       'front-shoulders': ['front-shoulders'],
       'biceps': ['biceps'],
@@ -445,8 +440,6 @@ class ProgressCubit extends Cubit<ProgressState> {
       'quadriceps': ['quads'],
       'calves': ['calves'],
       'traps': ['traps'],
-
-      // Back Male / Female
       'rear-shoulders': ['rear-shoulders'],
       'traps-middle': ['traps-middle'],
       'lats': ['lats'],
@@ -454,8 +447,6 @@ class ProgressCubit extends Cubit<ProgressState> {
       'triceps': ['triceps'],
       'glutes': ['glutes'],
       'hamstrings': ['hamstrings'],
-
-      // Спільні / агреговані
       'shoulders': ['front-shoulders', 'rear-shoulders', 'traps'],
       'back': ['lats', 'traps', 'traps-middle', 'lowerback', 'rear-shoulders'],
       'core': ['abdominals', 'obliques', 'lowerback'],

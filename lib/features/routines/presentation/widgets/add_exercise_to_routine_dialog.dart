@@ -1,27 +1,25 @@
 // lib/features/routines/presentation/widgets/add_exercise_to_routine_dialog.dart
 import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart'; // <--- ВИДАЛЕНО, якщо не використовується тут напряму
 import '../../../../core/domain/entities/predefined_exercise.dart';
 import '../../../../core/domain/entities/routine.dart';
 import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
+// Import AppLocalizations if needed for dialog titles, though exercise name is now localized via entity
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 
 Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) async {
+  final loc = AppLocalizations.of(context)!;
   final PredefinedExercise? selectedPredefinedExercise = await Navigator.of(context).push<PredefinedExercise>(
     MaterialPageRoute(
-      builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true), // <--- ВИПРАВЛЕНО
+      builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true),
     ),
   );
 
-  if (selectedPredefinedExercise == null) { // Перевірка mounted не потрібна перед pop
+  if (selectedPredefinedExercise == null) {
     return null;
   }
 
-  // Подальший код залишається без змін, але переконайся, що `context` для `showDialog` є валідним.
-  // Якщо `context` з попереднього екрану вже не валідний, це викличе помилку.
-  // Але оскільки ми одразу викликаємо showDialog, він, ймовірно, буде валідним.
-  // ignore: use_build_context_synchronously
-  if (!context.mounted) return null; // Додаємо перевірку для безпеки
+  if (!context.mounted) return null;
 
   return await showDialog<RoutineExercise>(
     context: context,
@@ -31,7 +29,7 @@ Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) as
       final formKey = GlobalKey<FormState>();
 
       return AlertDialog(
-        title: Text('Add "${selectedPredefinedExercise.name}"'),
+        title: Text(loc.addExerciseDialogTitle(selectedPredefinedExercise.getLocalizedName(context))), // USE LOCALIZED NAME
         content: SingleChildScrollView(
           child: Form(
             key: formKey,
@@ -40,21 +38,21 @@ Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) as
               children: <Widget>[
                 TextFormField(
                   controller: setsController,
-                  decoration: const InputDecoration(labelText: 'Number of Sets'),
+                  decoration: InputDecoration(labelText: loc.addExerciseDialogSetsLabel),
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Cannot be empty';
+                    if (value == null || value.isEmpty) return loc.addExerciseDialogSetsErrorEmpty;
                     final n = int.tryParse(value);
-                    if (n == null || n <= 0) return 'Must be a positive number';
+                    if (n == null || n <= 0) return loc.addExerciseDialogSetsErrorInvalid;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
-                    hintText: 'E.g., focus on form, pyramid sets'
+                  decoration: InputDecoration(
+                    labelText: loc.addExerciseDialogNotesLabel,
+                    hintText: loc.addExerciseDialogNotesHint
                   ),
                   maxLines: 2,
                 ),
@@ -64,16 +62,16 @@ Future<RoutineExercise?> showAddExerciseToRoutineDialog(BuildContext context) as
         ),
         actions: <Widget>[
           TextButton(
-            child: const Text('Cancel'),
+            child: Text(loc.addExerciseDialogButtonCancel),
             onPressed: () => Navigator.of(dialogContext).pop(null),
           ),
           ElevatedButton(
-            child: const Text('Add Exercise'),
+            child: Text(loc.addExerciseDialogButtonAdd),
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 Navigator.of(dialogContext).pop(RoutineExercise(
                   predefinedExerciseId: selectedPredefinedExercise.id,
-                  exerciseNameSnapshot: selectedPredefinedExercise.name,
+                  exerciseNameSnapshot: selectedPredefinedExercise.getLocalizedName(context), // Store localized name as snapshot
                   numberOfSets: int.parse(setsController.text),
                   notes: notesController.text.trim().isNotEmpty ? notesController.text.trim() : null,
                 ));

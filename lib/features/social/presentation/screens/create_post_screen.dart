@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../core/domain/entities/post.dart'; 
+import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/create_post_cubit.dart';
@@ -14,6 +14,7 @@ import '../../../../core/domain/entities/predefined_exercise.dart';
 import '../../../exercise_explorer/presentation/screens/exercise_explorer_screen.dart';
 import '../../../routines/presentation/screens/user_routines_screen.dart';
 import '../../../../core/services/image_picker_service.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final UserRoutine? routineToShare;
@@ -21,7 +22,7 @@ class CreatePostScreen extends StatefulWidget {
 
   const CreatePostScreen({super.key, this.routineToShare, this.postToEdit});
 
-  static Route<bool> route({UserRoutine? routineToShare, Post? postToEdit}) { 
+  static Route<bool> route({UserRoutine? routineToShare, Post? postToEdit}) {
     return MaterialPageRoute<bool>(
       builder: (_) => CreatePostScreen(routineToShare: routineToShare, postToEdit: postToEdit),
     );
@@ -67,18 +68,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       } else if (post.type == PostType.recordClaim && post.recordDetails != null) {
         _recordWeightController.text = post.recordDetails!['weightKg']?.toString() ?? '';
         _recordRepsController.text = post.recordDetails!['reps']?.toString() ?? '';
-        _recordVideoUrlController.text = post.recordDetails!['videoUrl'] ?? '';
-         if (post.recordDetails!['exerciseName'] != null && post.recordDetails!['exerciseId'] != null) {
+        _recordVideoUrlController.text = post.recordDetails!['videoUrl'] as String? ?? ''; // Cast
+         if (post.recordDetails!['exerciseId'] != null && post.recordDetails!['exerciseName'] != null) {
+            // Reconstruct the localized maps for PredefinedExercise
+            Map<String, String> nameMap = {'en': post.recordDetails!['exerciseName'] as String? ?? 'Unknown'};
+            if(post.recordDetails!['localizedExerciseNames'] is Map) {
+              nameMap = Map<String, String>.from(post.recordDetails!['localizedExerciseNames']);
+            }
+
             _selectedExerciseForRecord = PredefinedExercise(
-                id: post.recordDetails!['exerciseId'],
-                name: post.recordDetails!['exerciseName'],
-                normalizedName: post.recordDetails!['exerciseName'].toLowerCase(),
-                primaryMuscleGroup: post.recordDetails!['primaryMuscleGroup'] ?? '',
-                secondaryMuscleGroups: List<String>.from(post.recordDetails!['secondaryMuscleGroups'] ?? []),
-                equipmentNeeded: List<String>.from(post.recordDetails!['equipmentNeeded'] ?? []),
-                description: '',
-                difficultyLevel: '',
-                tags: []);
+                id: post.recordDetails!['exerciseId'] as String,
+                name: nameMap,
+                normalizedName: (post.recordDetails!['exerciseName'] as String? ?? 'unknown').toLowerCase(),
+                primaryMuscleGroup: {'en': post.recordDetails!['primaryMuscleGroup'] as String? ?? ''}, // Defaulting to 'en' map
+                secondaryMuscleGroups: {'en': List<String>.from(post.recordDetails!['secondaryMuscleGroups'] as List<dynamic>? ?? [])},
+                equipmentNeeded: {'en': List<String>.from(post.recordDetails!['equipmentNeeded'] as List<dynamic>? ?? [])},
+                description: {'en': post.recordDetails!['description'] as String? ?? ''}, // Assuming description was stored as string
+                difficultyLevel: post.recordDetails!['difficultyLevel'] as String? ?? '',
+                tags: List<String>.from(post.recordDetails!['tags'] as List<dynamic>? ?? []));
         }
       }
     } else if (widget.routineToShare != null) {
@@ -110,19 +117,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildPostTypeSelector() {
+    final loc = AppLocalizations.of(context)!;
     if (_isEditing) {
+      String postTypeName;
+      switch(_selectedPostType){
+        case PostType.standard: postTypeName = loc.createPostSegmentStandard; break;
+        case PostType.routineShare: postTypeName = loc.createPostSegmentRoutine; break;
+        case PostType.recordClaim: postTypeName = loc.createPostSegmentRecord; break;
+      }
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
-        child: Text("Post Type: ${_selectedPostType.name.toUpperCase()}", style: Theme.of(context).textTheme.titleMedium),
+        child: Text(loc.createPostScreenLabelPostType(postTypeName.toUpperCase()), style: Theme.of(context).textTheme.titleMedium),
       );
     }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SegmentedButton<PostType>(
-        segments: const <ButtonSegment<PostType>>[
-          ButtonSegment<PostType>(value: PostType.standard, label: Text('Standard'), icon: Icon(Icons.note_outlined)),
-          ButtonSegment<PostType>(value: PostType.routineShare, label: Text('Routine'), icon: Icon(Icons.share_outlined)),
-          ButtonSegment<PostType>(value: PostType.recordClaim, label: Text('Record'), icon: Icon(Icons.emoji_events_outlined)),
+        segments: <ButtonSegment<PostType>>[
+          ButtonSegment<PostType>(value: PostType.standard, label: Text(loc.createPostSegmentStandard), icon: const Icon(Icons.note_outlined)),
+          ButtonSegment<PostType>(value: PostType.routineShare, label: Text(loc.createPostSegmentRoutine), icon: const Icon(Icons.share_outlined)),
+          ButtonSegment<PostType>(value: PostType.recordClaim, label: Text(loc.createPostSegmentRecord), icon: const Icon(Icons.emoji_events_outlined)),
         ],
         selected: <PostType>{_selectedPostType},
         onSelectionChanged: (Set<PostType> newSelection) {
@@ -148,16 +162,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildRoutineShareFields() {
+    final loc = AppLocalizations.of(context)!;
     if (_isEditing && _selectedPostType == PostType.routineShare) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          Text('Shared Routine:', style: Theme.of(context).textTheme.titleMedium),
+          Text(loc.createPostLabelSharedRoutine, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           ListTile(
-            title: Text(_selectedRoutine?.name ?? 'Routine details unavailable'),
-            subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length} exercises') : null,
+            title: Text(_selectedRoutine?.name ?? loc.createPostErrorRoutineUnavailable),
+            subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length}${loc.createPostRoutineExerciseCountSuffix}') : null,
             leading: const Icon(Icons.list_alt_rounded),
             tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
             shape: Theme.of(context).inputDecorationTheme.border,
@@ -169,17 +184,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text('Routine to Share:', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.createPostLabelSharedRoutine, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         ListTile(
-          title: Text(_selectedRoutine?.name ?? 'Select Routine*', style: _selectedRoutine == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
-          subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length} exercises') : null,
+          title: Text(_selectedRoutine?.name ?? '${loc.createPostSegmentRoutine}*', style: _selectedRoutine == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
+          subtitle: _selectedRoutine != null ? Text('${_selectedRoutine!.exercises.length}${loc.createPostRoutineExerciseCountSuffix}') : null,
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
-            final UserRoutine? selectedRoutine = await Navigator.of(context).push<UserRoutine?>(UserRoutinesScreen.route(isSelectionMode: true));
-            if (selectedRoutine != null) {
+            final UserRoutine? selectedRoutineFromList = await Navigator.of(context).push<UserRoutine?>(UserRoutinesScreen.route(isSelectionMode: true));
+            if (selectedRoutineFromList != null) {
               setState(() {
-                _selectedRoutine = selectedRoutine;
+                _selectedRoutine = selectedRoutineFromList;
                 if (_textController.text.trim().isEmpty || _textController.text.contains("Check out my new routine")) {
                   _textController.text = "Check out my new routine: ${_selectedRoutine!.name}!";
                 }
@@ -195,21 +210,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Widget _buildRecordClaimFields() {
+     final loc = AppLocalizations.of(context)!;
      if (_isEditing && _selectedPostType == PostType.recordClaim) {
         return Column(
          crossAxisAlignment: CrossAxisAlignment.start,
          children: [
            const SizedBox(height: 16),
-           Text('Record Details (Read-only):', style: Theme.of(context).textTheme.titleMedium),
+           Text(loc.createPostLabelRecordDetailsReadOnly, style: Theme.of(context).textTheme.titleMedium),
            const SizedBox(height: 8),
-           ListTile(title: Text('Exercise: ${_selectedExerciseForRecord?.name ?? 'N/A'}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+           ListTile(title: Text('${loc.createPostLabelRecordExercise}${_selectedExerciseForRecord?.getLocalizedName(context) ?? 'N/A'}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            const SizedBox(height: 8),
-           ListTile(title: Text('Weight: ${_recordWeightController.text} kg'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+           ListTile(title: Text('${loc.createPostLabelRecordWeight}${_recordWeightController.text}${loc.createPostUnitKgSuffix}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            const SizedBox(height: 8),
-           ListTile(title: Text('Reps: ${_recordRepsController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+           ListTile(title: Text('${loc.createPostLabelRecordReps}${_recordRepsController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            if (_recordVideoUrlController.text.isNotEmpty) ...[
              const SizedBox(height: 8),
-             ListTile(title: Text('Video: ${_recordVideoUrlController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+             ListTile(title: Text('${loc.createPostLabelRecordVideo}${_recordVideoUrlController.text}'), tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
            ]
          ],
         );
@@ -218,10 +234,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text('Record Details:', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.createPostLabelRecordDetails, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         ListTile(
-          title: Text(_selectedExerciseForRecord?.name ?? 'Select Exercise*', style: _selectedExerciseForRecord == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
+          title: Text(_selectedExerciseForRecord?.getLocalizedName(context) ?? loc.createPostHintSelectExercise, style: _selectedExerciseForRecord == null ? Theme.of(context).inputDecorationTheme.hintStyle : Theme.of(context).textTheme.bodyLarge),
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
             final PredefinedExercise? selectedExercise = await Navigator.of(context).push<PredefinedExercise>(MaterialPageRoute(builder: (_) => const ExerciseExplorerScreen(isSelectionMode: true)));
@@ -232,16 +248,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           tileColor: Theme.of(context).inputDecorationTheme.fillColor,
         ),
         const SizedBox(height: 16),
-        TextFormField(controller: _recordWeightController, decoration: const InputDecoration(labelText: 'Weight (kg)*'), keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false), validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null || double.parse(v) <= 0) ? 'Invalid weight' : null),
+        TextFormField(controller: _recordWeightController, decoration: InputDecoration(labelText: loc.createPostHintRecordWeight), keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false), validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null || double.parse(v) <= 0) ? loc.createPostErrorRecordWeightInvalid : null),
         const SizedBox(height: 16),
-        TextFormField(controller: _recordRepsController, decoration: const InputDecoration(labelText: 'Repetitions*'), keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), validator: (v) => (v == null || v.trim().isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? 'Invalid repetitions' : null),
+        TextFormField(controller: _recordRepsController, decoration: InputDecoration(labelText: loc.createPostHintRecordReps), keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false), validator: (v) => (v == null || v.trim().isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? loc.createPostErrorRecordRepsInvalid : null),
         const SizedBox(height: 16),
-        TextFormField(controller: _recordVideoUrlController, decoration: const InputDecoration(labelText: 'Video URL (optional)'), keyboardType: TextInputType.url, validator: (v) => (v != null && v.isNotEmpty && (Uri.tryParse(v) == null || !Uri.tryParse(v)!.hasAbsolutePath)) ? 'Enter a valid URL' : null),
+        TextFormField(controller: _recordVideoUrlController, decoration: InputDecoration(labelText: loc.createPostHintRecordVideoUrl), keyboardType: TextInputType.url, validator: (v) => (v != null && v.isNotEmpty && (Uri.tryParse(v) == null || !Uri.tryParse(v)!.hasAbsolutePath)) ? loc.createPostErrorRecordVideoUrlInvalid : null),
       ],
     );
   }
 
  Widget _buildMediaPicker() {
+    final loc = AppLocalizations.of(context)!;
     if (_selectedPostType != PostType.standard && _isEditing) {
       if (_existingMediaUrl != null && _existingMediaUrl!.isNotEmpty) {
         return Padding(
@@ -249,7 +266,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Attached Media (Read-only):', style: Theme.of(context).textTheme.titleMedium),
+              Text(loc.createPostLabelAttachImageOptionalReplace, style: Theme.of(context).textTheme.titleMedium), // Read-only indication is removed, action is via close button
               const SizedBox(height: 8),
               ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(_existingMediaUrl!, height: 180, width: double.infinity, fit: BoxFit.cover)),
             ],
@@ -263,14 +280,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text('Attach Image${_isEditing && _existingMediaUrl != null ? " (Optional - Replaces Existing)" : " (Optional)"}:', style: Theme.of(context).textTheme.titleMedium),
+        Text(_isEditing && _existingMediaUrl != null ? loc.createPostLabelAttachImageOptionalReplace : loc.createPostLabelAttachImageOptional, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (_selectedMediaImage != null)
           Stack(
             alignment: Alignment.topRight,
             children: [
               ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.file(_selectedMediaImage!, height: 180, width: double.infinity, fit: BoxFit.cover)),
-              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _selectedMediaImage = null; _removeExistingMedia = _existingMediaUrl != null; }), tooltip: 'Remove Image'),
+              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _selectedMediaImage = null; _removeExistingMedia = _existingMediaUrl != null; }), tooltip: loc.createPostTooltipRemoveImage),
             ],
           )
         else if (_existingMediaUrl != null && !_removeExistingMedia)
@@ -278,13 +295,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             alignment: Alignment.topRight,
             children: [
               ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(_existingMediaUrl!, height: 180, width: double.infinity, fit: BoxFit.cover)),
-              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _removeExistingMedia = true; }), tooltip: 'Remove Existing Image'),
+              IconButton(icon: CircleAvatar(backgroundColor: Colors.black54, child: Icon(Icons.close, color: Colors.white, size: 18)), onPressed: () => setState(() { _removeExistingMedia = true; }), tooltip: loc.createPostTooltipRemoveExistingImage),
             ],
           )
         else
           OutlinedButton.icon(
             icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: const Text('Add Image'),
+            label: Text(loc.createPostButtonAddImage),
             onPressed: _pickMediaImage,
             style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), textStyle: const TextStyle(fontSize: 15)),
           ),
@@ -295,6 +312,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return BlocProvider(
       create: (context) => CreatePostCubit(
         RepositoryProvider.of<PostRepository>(context),
@@ -304,7 +322,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEditing ? 'Edit Post' : (widget.routineToShare != null ? 'Share Routine' : 'Create Post')),
+          title: Text(_isEditing ? loc.createPostAppBarTitleEdit : (widget.routineToShare != null ? loc.createPostAppBarTitleShareRoutine : loc.createPostAppBarTitleCreate)),
           actions: [
             BlocBuilder<CreatePostCubit, CreatePostState>(
               builder: (context, state) {
@@ -319,14 +337,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
                             if (_selectedPostType == PostType.recordClaim && !_isEditing) {
                               if (_selectedExerciseForRecord == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an exercise.'), backgroundColor: Colors.red)); return;
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.createPostErrorRecordWeightInvalid), backgroundColor: Colors.red)); return; // Placeholder for actual error
                               }
-                              recordDetails = { 'exerciseId': _selectedExerciseForRecord!.id, 'exerciseName': _selectedExerciseForRecord!.name, 'weightKg': double.parse(_recordWeightController.text), 'reps': int.parse(_recordRepsController.text), if (_recordVideoUrlController.text.isNotEmpty) 'videoUrl': _recordVideoUrlController.text };
+                              recordDetails = {
+                                'exerciseId': _selectedExerciseForRecord!.id,
+                                'exerciseName': _selectedExerciseForRecord!.nameFallback, // Storing English/fallback name
+                                'localizedExerciseNames': _selectedExerciseForRecord!.name, // Storing the map
+                                'weightKg': double.parse(_recordWeightController.text),
+                                'reps': int.parse(_recordRepsController.text),
+                                if (_recordVideoUrlController.text.isNotEmpty) 'videoUrl': _recordVideoUrlController.text,
+                                // Include other non-localized fields from PredefinedExercise if needed by functions
+                                'primaryMuscleGroup': _selectedExerciseForRecord!.primaryMuscleGroup['en'], // Example
+                                'secondaryMuscleGroups': _selectedExerciseForRecord!.secondaryMuscleGroups['en'], // Example
+                                'equipmentNeeded': _selectedExerciseForRecord!.equipmentNeeded['en'], // Example
+                              };
                             } else if (_selectedPostType == PostType.routineShare && !_isEditing) {
                                if (_selectedRoutine == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a routine.'), backgroundColor: Colors.red)); return;
                               }
-                              routineSnapshot = _selectedRoutine!.toMap();
+                              routineSnapshot = _selectedRoutine!.toMap(); // This already contains localized exerciseNameSnapshot
                               relatedRoutineId = _selectedRoutine!.id;
                             }
                             
@@ -344,7 +373,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         },
                   child: state is CreatePostLoading
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(_isEditing ? 'Save Changes' : 'Publish', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      : Text(_isEditing ? loc.createPostButtonSaveChanges : loc.createPostButtonPublish, style: const TextStyle(fontWeight: FontWeight.bold)),
                 );
               },
             ),
@@ -354,12 +383,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           listener: (context, state) {
             if (state is CreatePostSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Post ${state.isUpdate ? "updated" : "published"} successfully!'), backgroundColor: Colors.green),
+                SnackBar(content: Text(loc.createPostSnackbarSuccess(state.isUpdate ? loc.createPostStatusUpdated : loc.createPostStatusPublished)), backgroundColor: Colors.green),
               );
               Navigator.of(context).pop(true);
             } else if (state is CreatePostFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+                SnackBar(content: Text(loc.createPostSnackbarError(state.error)), backgroundColor: Colors.red),
               );
             }
           },
@@ -379,22 +408,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _textController,
-                          decoration: const InputDecoration(hintText: 'What\'s on your mind?', border: OutlineInputBorder()),
+                          decoration: InputDecoration(hintText: loc.createPostHintTextContent, border: const OutlineInputBorder()),
                           maxLines: 8,
                           maxLength: 500,
                            validator: (value) {
-                            if (_isEditing && widget.postToEdit?.type == PostType.standard) { // При редагуванні стандартного поста, текст може бути пустим, якщо є медіа
+                            if (_isEditing && widget.postToEdit?.type == PostType.standard) { 
                                 if ((value == null || value.trim().isEmpty) && _selectedMediaImage == null && (_existingMediaUrl == null || _removeExistingMedia)) {
-                                    return 'Post content or image is required.';
+                                    return loc.createPostErrorContentOrImageRequired;
                                 }
                                 return null;
                             }
-                            // Для нових постів
                             if (value == null || value.trim().isEmpty) {
                               if (_selectedPostType == PostType.standard && _selectedMediaImage == null) {
-                                return 'Post content or image is required.';
+                                return loc.createPostErrorContentOrImageRequired;
                               }
-                              if (_selectedPostType != PostType.standard) return null; // Для routine/record текст не обов'язковий
+                              if (_selectedPostType != PostType.standard) return null;
                             }
                             return null;
                           },
@@ -404,8 +432,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         const SizedBox(height: 16),
                         if (!_isEditing || (_isEditing && widget.postToEdit?.type == PostType.standard))
                           SwitchListTile(
-                            title: const Text('Enable Comments'),
-                            subtitle: Text(_areCommentsEnabled ? 'Users can comment on this post' : 'Comments are disabled'),
+                            title: Text(loc.createPostToggleEnableComments),
+                            subtitle: Text(_areCommentsEnabled ? loc.createPostCommentsEnabledSubtitle : loc.createPostCommentsDisabledSubtitle),
                             value: _areCommentsEnabled,
                             onChanged: (bool value) => setState(() => _areCommentsEnabled = value),
                             activeColor: Theme.of(context).colorScheme.primary,
@@ -462,7 +490,7 @@ class _DummyDocumentSnapshot implements DocumentSnapshot<Map<String, dynamic>> {
   dynamic get(Object field) => _data[field];
 
   @override
-  dynamic operator [](Object field) => _data[field as String]; // ВИПРАВЛЕНО ТУТ
+  dynamic operator [](Object field) => _data[field as String]; 
 
   @override
   SnapshotMetadata get metadata => throw UnimplementedError('metadata not implemented for _DummyDocumentSnapshot');
