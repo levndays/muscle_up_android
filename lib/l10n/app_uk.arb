@@ -1734,5 +1734,96 @@
   "progressScreenKgUnit": "КГ",
   "@progressScreenKgUnit": {
     "description": "Одиниця для кілограмів, скорочена форма"
+  },
+
+  "postCardRoutineShareTitle": "ПОШИРЕНА ПРОГРАМА",
+  "@postCardRoutineShareTitle": {
+    "description": "Заголовок для картки поширеної програми"
+  },
+  "postCardRoutineAuthorPrefix": "від @{authorUsername}",
+  "@postCardRoutineAuthorPrefix": {
+    "description": "Префікс автора для картки поширеної програми",
+    "placeholders": {
+      "authorUsername": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineExercisesLabel": "ВПРАВА",
+  "@postCardRoutineExercisesLabel": {
+    "description": "Мітка для кількості вправ у картці поширеної програми (однина)"
+  },
+  "postCardRoutineExercisesLabelPlural": "ВПРАВ",
+  "@postCardRoutineExercisesLabelPlural": {
+    "description": "Мітка для кількості вправ у картці поширеної програми (множина)"
+  },
+  "postCardRoutineNoSchedule": "БЕЗ РОЗКЛАДУ",
+  "@postCardRoutineNoSchedule": {
+    "description": "Текст, коли поширена програма не має запланованих днів"
+  },
+  "postCardRoutineScheduledDaysLabel": "ЗАПЛАНОВАНІ ДНІ",
+  "@postCardRoutineScheduledDaysLabel": {
+    "description": "Мітка для запланованих днів у картці поширеної програми"
+  },
+  "postCardRoutineButtonAddToList": "ДОДАТИ ДО МОГО СПИСКУ",
+  "@postCardRoutineButtonAddToList": {
+    "description": "Текст кнопки для додавання поширеної програми до списку користувача"
+  },
+  "postCardRoutineSnackbarLoginToAdd": "Будь ласка, увійдіть, щоб додавати програми.",
+  "@postCardRoutineSnackbarLoginToAdd": {
+    "description": "Повідомлення снекбару, якщо користувач намагається додати програму без входу"
+  },
+  "postCardRoutineSnackbarAlreadyOwn": "Це вже ваша програма!",
+  "@postCardRoutineSnackbarAlreadyOwn": {
+    "description": "Повідомлення снекбару, якщо користувач намагається додати власну програму"
+  },
+  "postCardRoutineSnackbarAdded": "Програму додано до вашого списку!",
+  "@postCardRoutineSnackbarAdded": {
+    "description": "Повідомлення снекбару при успішному додаванні програми"
+  },
+  "postCardRoutineSnackbarErrorAdd": "Не вдалося додати програму: {errorDetails}",
+  "@postCardRoutineSnackbarErrorAdd": {
+    "description": "Повідомлення снекбару при помилці додавання програми",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineIsYours": "Це ваша поширена програма.",
+  "@postCardRoutineIsYours": {
+    "description": "Повідомлення, що вказує, що поширена програма належить поточному користувачеві"
+  },
+  "postCardRoutineLoginToAdd": "Увійдіть, щоб додати цю програму.",
+  "@postCardRoutineLoginToAdd": {
+    "description": "Повідомлення, що пропонує увійти, щоб додати поширену програму"
+  },
+  "postCardRecordClaimTitle": "ЗАЯВКА НА РЕКОРД",
+  "@postCardRecordClaimTitle": {
+    "description": "Заголовок для картки заявки на рекорд"
+  },
+  "postCardRecordExerciseNameFallback": "РЕКОРД ВПРАВИ",
+  "@postCardRecordExerciseNameFallback": {
+    "description": "Запасна назва вправи для заявки на рекорд, якщо не вказано"
+  },
+  "postCardRecordRepsKgFormat": "{reps} ПОВТОРЕНЬ / {weight} КГ",
+  "@postCardRecordRepsKgFormat": {
+    "description": "Формат для відображення повторень та ваги в заявці на рекорд",
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRecordRepsFallback": "Н/Д",
+  "@postCardRecordRepsFallback": {
+    "description": "Запасний текст для повторень, якщо недоступні"
+  },
+  "postCardRecordWeightFallback": "Н/Д",
+  "@postCardRecordWeightFallback": {
+    "description": "Запасний текст для ваги, якщо недоступна"
   }
 }

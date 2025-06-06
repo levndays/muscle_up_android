@@ -1254,4 +1254,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressScreenKgUnit => 'KG';
+
+  @override
+  String get postCardRoutineShareTitle => 'SHARED ROUTINE';
+
+  @override
+  String postCardRoutineAuthorPrefix(String authorUsername) {
+    return 'by @$authorUsername';
+  }
+
+  @override
+  String get postCardRoutineExercisesLabel => 'EXERCISE';
+
+  @override
+  String get postCardRoutineExercisesLabelPlural => 'EXERCISES';
+
+  @override
+  String get postCardRoutineNoSchedule => 'NO SCHEDULE';
+
+  @override
+  String get postCardRoutineScheduledDaysLabel => 'SCHEDULED DAYS';
+
+  @override
+  String get postCardRoutineButtonAddToList => 'ADD TO MY LIST';
+
+  @override
+  String get postCardRoutineSnackbarLoginToAdd =>
+      'Please log in to add routines.';
+
+  @override
+  String get postCardRoutineSnackbarAlreadyOwn =>
+      'This is your routine already!';
+
+  @override
+  String get postCardRoutineSnackbarAdded => 'Routine added to your list!';
+
+  @override
+  String postCardRoutineSnackbarErrorAdd(String errorDetails) {
+    return 'Failed to add routine: $errorDetails';
+  }
+
+  @override
+  String get postCardRoutineIsYours => 'This is your shared routine.';
+
+  @override
+  String get postCardRoutineLoginToAdd => 'Log in to add this routine.';
+
+  @override
+  String get postCardRecordClaimTitle => 'RECORD CLAIM';
+
+  @override
+  String get postCardRecordExerciseNameFallback => 'EXERCISE RECORD';
+
+  @override
+  String postCardRecordRepsKgFormat(String reps, String weight) {
+    return '$reps REPS / $weight KG';
+  }
+
+  @override
+  String get postCardRecordRepsFallback => 'N/A';
+
+  @override
+  String get postCardRecordWeightFallback => 'N/A';
 }

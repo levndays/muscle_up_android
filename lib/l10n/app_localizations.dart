@@ -2281,6 +2281,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'KG'**
   String get progressScreenKgUnit;
+
+  /// Title overlay for a shared routine post card
+  ///
+  /// In en, this message translates to:
+  /// **'SHARED ROUTINE'**
+  String get postCardRoutineShareTitle;
+
+  /// Author prefix for shared routine post card
+  ///
+  /// In en, this message translates to:
+  /// **'by @{authorUsername}'**
+  String postCardRoutineAuthorPrefix(String authorUsername);
+
+  /// Label for exercises count in shared routine card (singular)
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISE'**
+  String get postCardRoutineExercisesLabel;
+
+  /// Label for exercises count in shared routine card (plural)
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISES'**
+  String get postCardRoutineExercisesLabelPlural;
+
+  /// Text when a shared routine has no scheduled days
+  ///
+  /// In en, this message translates to:
+  /// **'NO SCHEDULE'**
+  String get postCardRoutineNoSchedule;
+
+  /// Label for scheduled days in shared routine card
+  ///
+  /// In en, this message translates to:
+  /// **'SCHEDULED DAYS'**
+  String get postCardRoutineScheduledDaysLabel;
+
+  /// Button text to add a shared routine to user's list
+  ///
+  /// In en, this message translates to:
+  /// **'ADD TO MY LIST'**
+  String get postCardRoutineButtonAddToList;
+
+  /// Snackbar message if user tries to add routine without login
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to add routines.'**
+  String get postCardRoutineSnackbarLoginToAdd;
+
+  /// Snackbar message if user tries to add their own routine
+  ///
+  /// In en, this message translates to:
+  /// **'This is your routine already!'**
+  String get postCardRoutineSnackbarAlreadyOwn;
+
+  /// Snackbar message on successful routine addition
+  ///
+  /// In en, this message translates to:
+  /// **'Routine added to your list!'**
+  String get postCardRoutineSnackbarAdded;
+
+  /// Snackbar message on error adding routine
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add routine: {errorDetails}'**
+  String postCardRoutineSnackbarErrorAdd(String errorDetails);
+
+  /// Message indicating the shared routine belongs to the current user
+  ///
+  /// In en, this message translates to:
+  /// **'This is your shared routine.'**
+  String get postCardRoutineIsYours;
+
+  /// Message prompting login to add a shared routine
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to add this routine.'**
+  String get postCardRoutineLoginToAdd;
+
+  /// Title overlay for a record claim post card
+  ///
+  /// In en, this message translates to:
+  /// **'RECORD CLAIM'**
+  String get postCardRecordClaimTitle;
+
+  /// Fallback exercise name for record claim if not specified
+  ///
+  /// In en, this message translates to:
+  /// **'EXERCISE RECORD'**
+  String get postCardRecordExerciseNameFallback;
+
+  /// Format for displaying reps and weight in record claim
+  ///
+  /// In en, this message translates to:
+  /// **'{reps} REPS / {weight} KG'**
+  String postCardRecordRepsKgFormat(String reps, String weight);
+
+  /// Fallback for reps if not available
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get postCardRecordRepsFallback;
+
+  /// Fallback for weight if not available
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get postCardRecordWeightFallback;
 }
 
 class _AppLocalizationsDelegate

@@ -1684,7 +1684,6 @@
   "@progressScreenButtonSendTestAdvice": {
     "description": "Button text to send test advice notifications"
   },
-
   "progressScreenButtonTryAgain": "Try Again",
   "@progressScreenButtonTryAgain": {
     "description": "Button text to retry loading data on error"
@@ -1735,5 +1734,96 @@
   "progressScreenKgUnit": "KG",
   "@progressScreenKgUnit": {
     "description": "Unit for kilograms, short form"
+  },
+
+  "postCardRoutineShareTitle": "SHARED ROUTINE",
+  "@postCardRoutineShareTitle": {
+    "description": "Title overlay for a shared routine post card"
+  },
+  "postCardRoutineAuthorPrefix": "by @{authorUsername}",
+  "@postCardRoutineAuthorPrefix": {
+    "description": "Author prefix for shared routine post card",
+    "placeholders": {
+      "authorUsername": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineExercisesLabel": "EXERCISE",
+  "@postCardRoutineExercisesLabel": {
+    "description": "Label for exercises count in shared routine card (singular)"
+  },
+  "postCardRoutineExercisesLabelPlural": "EXERCISES",
+  "@postCardRoutineExercisesLabelPlural": {
+    "description": "Label for exercises count in shared routine card (plural)"
+  },
+  "postCardRoutineNoSchedule": "NO SCHEDULE",
+  "@postCardRoutineNoSchedule": {
+    "description": "Text when a shared routine has no scheduled days"
+  },
+  "postCardRoutineScheduledDaysLabel": "SCHEDULED DAYS",
+  "@postCardRoutineScheduledDaysLabel": {
+    "description": "Label for scheduled days in shared routine card"
+  },
+  "postCardRoutineButtonAddToList": "ADD TO MY LIST",
+  "@postCardRoutineButtonAddToList": {
+    "description": "Button text to add a shared routine to user's list"
+  },
+  "postCardRoutineSnackbarLoginToAdd": "Please log in to add routines.",
+  "@postCardRoutineSnackbarLoginToAdd": {
+    "description": "Snackbar message if user tries to add routine without login"
+  },
+  "postCardRoutineSnackbarAlreadyOwn": "This is your routine already!",
+  "@postCardRoutineSnackbarAlreadyOwn": {
+    "description": "Snackbar message if user tries to add their own routine"
+  },
+  "postCardRoutineSnackbarAdded": "Routine added to your list!",
+  "@postCardRoutineSnackbarAdded": {
+    "description": "Snackbar message on successful routine addition"
+  },
+  "postCardRoutineSnackbarErrorAdd": "Failed to add routine: {errorDetails}",
+  "@postCardRoutineSnackbarErrorAdd": {
+    "description": "Snackbar message on error adding routine",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRoutineIsYours": "This is your shared routine.",
+  "@postCardRoutineIsYours": {
+    "description": "Message indicating the shared routine belongs to the current user"
+  },
+  "postCardRoutineLoginToAdd": "Log in to add this routine.",
+  "@postCardRoutineLoginToAdd": {
+    "description": "Message prompting login to add a shared routine"
+  },
+  "postCardRecordClaimTitle": "RECORD CLAIM",
+  "@postCardRecordClaimTitle": {
+    "description": "Title overlay for a record claim post card"
+  },
+  "postCardRecordExerciseNameFallback": "EXERCISE RECORD",
+  "@postCardRecordExerciseNameFallback": {
+    "description": "Fallback exercise name for record claim if not specified"
+  },
+  "postCardRecordRepsKgFormat": "{reps} REPS / {weight} KG",
+  "@postCardRecordRepsKgFormat": {
+    "description": "Format for displaying reps and weight in record claim",
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "postCardRecordRepsFallback": "N/A",
+  "@postCardRecordRepsFallback": {
+    "description": "Fallback for reps if not available"
+  },
+  "postCardRecordWeightFallback": "N/A",
+  "@postCardRecordWeightFallback": {
+    "description": "Fallback for weight if not available"
   }
 }

@@ -1,27 +1,28 @@
 // lib/features/social/presentation/widgets/post_card_content_widget.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; 
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth; 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
-import '../cubit/post_interaction_cubit.dart'; 
+import '../cubit/post_interaction_cubit.dart';
 import 'vote_progress_bar_widget.dart';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 // NEW COLORS FOR RECORD CLAIM
-const Color recordClaimBaseBlue = Color(0xFF067BC2); 
-const Color recordClaimLighterBlue = Color(0xFF4FA8D8); 
-const Color recordClaimDarkerBlue = Color(0xFF045C9B); 
+const Color recordClaimBaseBlue = Color(0xFF067BC2);
+const Color recordClaimLighterBlue = Color(0xFF4FA8D8);
+const Color recordClaimDarkerBlue = Color(0xFF045C9B);
 
-const Color recordVerifyColor = Color(0xFF0A8754); 
-const Color recordDisputeColor = Color(0xFFEF2917); 
+const Color recordVerifyColor = Color(0xFF0A8754);
+const Color recordDisputeColor = Color(0xFFEF2917);
 
 
 class PostCardContentWidget extends StatelessWidget {
   final Post post;
-  final VoteType? currentUserVote; 
-  final bool isDetailedView; 
+  final VoteType? currentUserVote;
+  final bool isDetailedView;
 
   const PostCardContentWidget({
     super.key,
@@ -31,17 +32,18 @@ class PostCardContentWidget extends StatelessWidget {
   });
 
   Future<void> _addRoutineToMyRoutines(BuildContext context, Map<String, dynamic> routineSnapshot) async {
+    final loc = AppLocalizations.of(context)!;
     final userId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to add routines.'), backgroundColor: Colors.red),
+        SnackBar(content: Text(loc.postCardRoutineSnackbarLoginToAdd), backgroundColor: Colors.red),
       );
       return;
     }
     final originalRoutineUserId = routineSnapshot['userId'];
     if (originalRoutineUserId == userId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This is your routine already!'), backgroundColor: Colors.orange),
+        SnackBar(content: Text(loc.postCardRoutineSnackbarAlreadyOwn), backgroundColor: Colors.orange),
       );
       return;
     }
@@ -50,52 +52,53 @@ class PostCardContentWidget extends StatelessWidget {
       await routineRepository.copyRoutineFromSnapshot(routineSnapshot, userId);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Routine added to your list!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(loc.postCardRoutineSnackbarAdded), backgroundColor: Colors.green),
         );
       }
     } catch (e, s) {
       developer.log('Error adding shared routine: $e', name: 'PostCardContentWidget', error: e, stackTrace: s);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add routine: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(content: Text(loc.postCardRoutineSnackbarErrorAdd(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
   }
 
-  String _getRecordStatusText(RecordVerificationStatus? status, bool? isVerified) {
-    if (isVerified == true) return "VERIFIED";
+  String _getRecordStatusText(RecordVerificationStatus? status, bool? isVerified, AppLocalizations loc) {
+    if (isVerified == true) return loc.recordStatusVerified;
     if (isVerified == false) {
-        if (status == RecordVerificationStatus.rejected) return "REJECTED";
-        if (status == RecordVerificationStatus.expired) return "EXPIRED";
+        if (status == RecordVerificationStatus.rejected) return loc.recordStatusRejected;
+        if (status == RecordVerificationStatus.expired) return loc.recordStatusExpired;
     }
-    if (status == RecordVerificationStatus.pending || status == null) return "AWAITS VOTING";
-    if (status == RecordVerificationStatus.contested) return "CONTESTED";
-    return "UNKNOWN";
+    if (status == RecordVerificationStatus.pending || status == null) return loc.recordStatusPending;
+    if (status == RecordVerificationStatus.contested) return loc.recordStatusContested;
+    return loc.recordStatusUnknown;
   }
 
   Color _getRecordStatusColor(RecordVerificationStatus? status, bool? isVerified, BuildContext context) {
     if (isVerified == true) return recordVerifyColor;
     if (isVerified == false) {
-        if (status == RecordVerificationStatus.rejected) return recordDisputeColor; 
-        if (status == RecordVerificationStatus.expired) return recordDisputeColor.withOpacity(0.8); 
+        if (status == RecordVerificationStatus.rejected) return recordDisputeColor;
+        if (status == RecordVerificationStatus.expired) return recordDisputeColor.withOpacity(0.8);
     }
     switch (status) {
-      case RecordVerificationStatus.pending: return Colors.yellow.shade700; 
+      case RecordVerificationStatus.pending: return Colors.yellow.shade700;
       case RecordVerificationStatus.verified: return recordVerifyColor;
       case RecordVerificationStatus.rejected: return recordDisputeColor;
       case RecordVerificationStatus.expired: return recordDisputeColor.withOpacity(0.8);
-      case RecordVerificationStatus.contested: return Colors.orange.shade600; 
-      default: return Colors.yellow.shade700; 
+      case RecordVerificationStatus.contested: return Colors.orange.shade600;
+      default: return Colors.yellow.shade700;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
     final bool isAuthorOfPost = currentAuthUserId == post.userId;
-    
+
     int verifyCount = 0;
     int disputeCount = 0;
     post.verificationVotes.forEach((_, voteStr) {
@@ -109,7 +112,10 @@ class PostCardContentWidget extends StatelessWidget {
 
 
     if (post.type == PostType.routineShare && post.routineSnapshot != null) {
-      return Padding( 
+      final exerciseCount = (post.routineSnapshot!['exercises'] as List<dynamic>?)?.length ?? 0;
+      final scheduledDaysString = (post.routineSnapshot!['scheduledDays'] as List<dynamic>?)?.join(', ').toUpperCase() ?? loc.postCardRoutineNoSchedule;
+
+      return Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
           padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
@@ -121,21 +127,21 @@ class PostCardContentWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(post.routineSnapshot!['name']?.toUpperCase() ?? 'UNNAMED ROUTINE', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, shadows: [const Shadow(color: Colors.black26, offset: Offset(1,1), blurRadius: 2)])),
-              Text('SHARED ROUTINE', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+              Text((post.routineSnapshot!['name'] as String?)?.toUpperCase() ?? 'UNNAMED ROUTINE', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, shadows: [const Shadow(color: Colors.black26, offset: Offset(1,1), blurRadius: 2)])),
+              Text(loc.postCardRoutineShareTitle, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.bold, letterSpacing: 1.1)),
               const SizedBox(height: 6),
-              Text('by @${post.authorUsername}', style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+              Text(loc.postCardRoutineAuthorPrefix(post.authorUsername), style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Column(children: [
-                    Text('${(post.routineSnapshot!['exercises'] as List<dynamic>?)?.length ?? 0}', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
-                    Text('EXERCISE${(post.routineSnapshot!['exercises'] as List<dynamic>?)?.length == 1 ? '' : 'S'}', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+                    Text('$exerciseCount', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
+                    Text(exerciseCount == 1 ? loc.postCardRoutineExercisesLabel : loc.postCardRoutineExercisesLabelPlural, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
                   ]),
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text((post.routineSnapshot!['scheduledDays'] as List<dynamic>?)?.join(', ').toUpperCase() ?? 'NO SCHEDULE', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
-                    Text('SCHEDULED DAYS', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+                    Text(scheduledDaysString, style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
+                    Text(loc.postCardRoutineScheduledDaysLabel, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
                   ]),
                 ]),
               ),
@@ -146,16 +152,23 @@ class PostCardContentWidget extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _addRoutineToMyRoutines(context, post.routineSnapshot!),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFFED5D1A), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)), elevation: 3),
-                    child: const Text('ADD TO MY LIST', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 0.5)),
+                    child: Text(loc.postCardRoutineButtonAddToList, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 0.5)),
                   ),
                 ),
-              if (isAuthorOfPost) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text("This is your shared routine.", style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
-              if (!isAuthorOfPost && currentAuthUserId == null) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text("Log in to add this routine.", style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
+              if (isAuthorOfPost) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text(loc.postCardRoutineIsYours, style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
+              if (!isAuthorOfPost && currentAuthUserId == null) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text(loc.postCardRoutineLoginToAdd, style: TextStyle(color: Colors.white.withOpacity(0.7), fontStyle: FontStyle.italic, fontSize: 12))),
+              const SizedBox(height: 8), // Added padding at the bottom
             ],
           ),
         ),
       );
     } else if (post.type == PostType.recordClaim && post.recordDetails != null) {
+      final String exerciseDisplayName = (post.recordDetails!['localizedExerciseNames'] is Map
+          ? (Map<String, String>.from(post.recordDetails!['localizedExerciseNames'])[loc.localeName.split('_').first] ??
+             Map<String, String>.from(post.recordDetails!['localizedExerciseNames'])['en'] ??
+             post.recordDetails!['exerciseName'])
+          : post.recordDetails!['exerciseName']) ?? loc.postCardRecordExerciseNameFallback;
+
       return Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Container(
@@ -175,11 +188,11 @@ class PostCardContentWidget extends StatelessWidget {
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text((post.recordDetails!['exerciseName'] ?? 'EXERCISE RECORD').toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, height: 1.1)),
-                  Text('RECORD CLAIM', style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Text(exerciseDisplayName.toUpperCase(), style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, height: 1.1)),
+                  Text(loc.postCardRecordClaimTitle, style: theme.textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold, letterSpacing: 1)),
                 ])),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  Text('by @${post.authorUsername}', style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text(loc.postCardRoutineAuthorPrefix(post.authorUsername), style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
@@ -187,34 +200,39 @@ class PostCardContentWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      _getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified),
+                      _getRecordStatusText(post.recordVerificationStatus, post.isRecordVerified, loc),
                       style: theme.textTheme.bodySmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 0.5),
                     ),
                   ),
                 ]),
               ]),
               const SizedBox(height: 12),
-              Text('${post.recordDetails!['reps'] ?? 'N/A'} REPS / ${post.recordDetails!['weightKg']?.toStringAsFixed(1) ?? 'N/A'} KG', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)),
+              Text(
+                loc.postCardRecordRepsKgFormat(
+                    post.recordDetails!['reps']?.toString() ?? loc.postCardRecordRepsFallback,
+                    (post.recordDetails!['weightKg'] as num?)?.toStringAsFixed(1) ?? loc.postCardRecordWeightFallback
+                ),
+                style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w900)
+              ),
               const SizedBox(height: 10),
               VoteProgressBarWidget(
-                verifyCount: verifyCount, 
-                disputeCount: disputeCount, 
-                height: 22, 
-                verifyColor: recordVerifyColor, 
-                disputeColor: recordDisputeColor, 
-                backgroundColor: Colors.black.withOpacity(0.3), 
+                verifyCount: verifyCount,
+                disputeCount: disputeCount,
+                height: 22,
+                verifyColor: recordVerifyColor,
+                disputeColor: recordDisputeColor,
+                backgroundColor: Colors.black.withOpacity(0.3),
                 centerTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, shadows: [Shadow(color: Colors.black87, blurRadius: 2, offset: Offset(0,1))])
               ),
-              if (post.recordDetails!['videoUrl'] != null && post.recordDetails!['videoUrl'].isNotEmpty)
-                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO: Launch URL */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: const Text('Watch Proof', style: TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
-              // Show vote buttons only in detailed view AND if user can vote
-              if (isDetailedView && canVote) 
+              if (post.recordDetails!['videoUrl'] != null && (post.recordDetails!['videoUrl'] as String).isNotEmpty)
+                Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () { /* TODO: Launch URL */ }, icon: const Icon(Icons.play_circle_outline, color: Colors.white70, size: 20), label: Text(loc.postDetailButtonWatchProof, style: const TextStyle(color: Colors.white, fontSize: 13)), style: TextButton.styleFrom(padding: const EdgeInsets.only(left:0, top: 8, bottom: 4)))),
+              if (isDetailedView && canVote)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: Row(children: [
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? recordVerifyColor.withOpacity(0.7) : recordVerifyColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('VALIDATE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.verify), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.verify ? recordVerifyColor.withOpacity(0.7) : recordVerifyColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: Text(loc.postDetailButtonValidate, style: const TextStyle(fontWeight: FontWeight.bold)))),
                     const SizedBox(width: 12),
-                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? recordDisputeColor.withOpacity(0.7) : recordDisputeColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('DISPUTE', style: TextStyle(fontWeight: FontWeight.bold)))),
+                    Expanded(child: ElevatedButton(onPressed: () => context.read<PostInteractionCubit>().castVote(VoteType.dispute), style: ElevatedButton.styleFrom(backgroundColor: currentUserVote == VoteType.dispute ? recordDisputeColor.withOpacity(0.7) : recordDisputeColor, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: Text(loc.postDetailButtonDispute, style: const TextStyle(fontWeight: FontWeight.bold)))),
                   ]),
                 )
             ],
@@ -222,7 +240,6 @@ class PostCardContentWidget extends StatelessWidget {
         ),
       );
     }
-    // For PostType.standard, this widget returns nothing, as text and media are handled by PostListItem directly.
-    return const SizedBox.shrink(); 
+    return const SizedBox.shrink();
   }
 }

@@ -1271,4 +1271,66 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get progressScreenKgUnit => 'КГ';
+
+  @override
+  String get postCardRoutineShareTitle => 'ПОШИРЕНА ПРОГРАМА';
+
+  @override
+  String postCardRoutineAuthorPrefix(String authorUsername) {
+    return 'від @$authorUsername';
+  }
+
+  @override
+  String get postCardRoutineExercisesLabel => 'ВПРАВА';
+
+  @override
+  String get postCardRoutineExercisesLabelPlural => 'ВПРАВ';
+
+  @override
+  String get postCardRoutineNoSchedule => 'БЕЗ РОЗКЛАДУ';
+
+  @override
+  String get postCardRoutineScheduledDaysLabel => 'ЗАПЛАНОВАНІ ДНІ';
+
+  @override
+  String get postCardRoutineButtonAddToList => 'ДОДАТИ ДО МОГО СПИСКУ';
+
+  @override
+  String get postCardRoutineSnackbarLoginToAdd =>
+      'Будь ласка, увійдіть, щоб додавати програми.';
+
+  @override
+  String get postCardRoutineSnackbarAlreadyOwn => 'Це вже ваша програма!';
+
+  @override
+  String get postCardRoutineSnackbarAdded =>
+      'Програму додано до вашого списку!';
+
+  @override
+  String postCardRoutineSnackbarErrorAdd(String errorDetails) {
+    return 'Не вдалося додати програму: $errorDetails';
+  }
+
+  @override
+  String get postCardRoutineIsYours => 'Це ваша поширена програма.';
+
+  @override
+  String get postCardRoutineLoginToAdd => 'Увійдіть, щоб додати цю програму.';
+
+  @override
+  String get postCardRecordClaimTitle => 'ЗАЯВКА НА РЕКОРД';
+
+  @override
+  String get postCardRecordExerciseNameFallback => 'РЕКОРД ВПРАВИ';
+
+  @override
+  String postCardRecordRepsKgFormat(String reps, String weight) {
+    return '$reps ПОВТОРЕНЬ / $weight КГ';
+  }
+
+  @override
+  String get postCardRecordRepsFallback => 'Н/Д';
+
+  @override
+  String get postCardRecordWeightFallback => 'Н/Д';
 }
