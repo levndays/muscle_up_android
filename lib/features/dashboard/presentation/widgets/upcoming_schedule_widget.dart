@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'dart:developer' as developer;
 import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
 
 import '../cubit/upcoming_schedule_cubit.dart';
@@ -13,9 +12,9 @@ class UpcomingScheduleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     // Явно вказуємо локаль для DateFormat
-    final String currentLocale = AppLocalizations.of(context)!.localeName;
+    final String currentLocale = AppLocalizations.of(context).localeName;
     final DateFormat dayFormatter = DateFormat('EEE', currentLocale);
     final DateFormat dateFormatter = DateFormat('d MMM', currentLocale);
 
@@ -60,14 +59,14 @@ class UpcomingScheduleWidget extends StatelessWidget {
               Text(
                 loc.upcomingScheduleTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.textTheme.bodyLarge?.color, 
+                      color: theme.textTheme.bodyLarge?.color,
                       fontFamily: 'IBMPlexMono',
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: 110, 
+                height: 110,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: scheduleEntries.length,
@@ -90,7 +89,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
                         ),
                       ),
                       child: Container(
-                        width: 120, 
+                        width: 120,
                         padding: const EdgeInsets.all(10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +122,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
                                         color: Colors.grey.shade500,
                                       ),
                                     ))
-                                  : ListView( 
+                                  : ListView(
                                       shrinkWrap: true,
                                       children: routinesForDay.map((routineName) => Text(
                                         routineName,

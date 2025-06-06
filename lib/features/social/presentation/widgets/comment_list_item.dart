@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:intl/intl.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 import '../../../../core/domain/entities/comment.dart';
 import '../cubit/post_interaction_cubit.dart';
 import 'dart:developer' as developer;
 import '../screens/view_user_profile_screen.dart';
-import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
+import '../../../../widgets/fullscreen_image_viewer.dart';
 
 class CommentListItem extends StatelessWidget {
   final Comment comment;
@@ -17,12 +18,13 @@ class CommentListItem extends StatelessWidget {
   void _showEditCommentDialog(BuildContext context, PostInteractionCubit cubit) {
     final TextEditingController textController = TextEditingController(text: comment.text);
     final formKey = GlobalKey<FormState>();
+    final loc = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Edit Comment'),
+          title: Text(loc.commentListItemEditDialogTitle),
           content: Form(
             key: formKey,
             child: TextFormField(
@@ -30,19 +32,19 @@ class CommentListItem extends StatelessWidget {
               autofocus: true,
               maxLines: null,
               keyboardType: TextInputType.multiline,
-              decoration: const InputDecoration(
-                hintText: 'Your comment...',
+              decoration: InputDecoration(
+                hintText: loc.commentListItemEditDialogHint,
               ),
-               validator: (value) => value == null || value.trim().isEmpty ? 'Comment cannot be empty' : null,
+               validator: (value) => value == null || value.trim().isEmpty ? loc.addExerciseDialogSetsErrorEmpty : null,
             ),
           ),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(loc.commentListItemDialogButtonCancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             ElevatedButton(
-              child: const Text('Save'),
+              child: Text(loc.commentListItemDialogButtonSave),
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                     cubit.updateComment(comment.id, textController.text.trim());
@@ -57,25 +59,26 @@ class CommentListItem extends StatelessWidget {
   }
 
   void _showDeleteCommentDialog(BuildContext context, PostInteractionCubit cubit) {
+    final loc = AppLocalizations.of(context)!;
      showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Delete Comment?'),
-          content: const Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+          title: Text(loc.commentListItemDeleteDialogTitle),
+          content: Text(loc.commentListItemDeleteDialogMessage),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(loc.commentListItemDialogButtonCancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Delete'),
+              child: Text(loc.commentListItemDialogButtonDelete),
               onPressed: () {
                  cubit.deleteComment(comment.id);
                  Navigator.of(dialogContext).pop();
                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Comment deleted.'), backgroundColor: Colors.orangeAccent, duration: Duration(seconds: 2))
+                    SnackBar(content: Text(loc.commentListItemSnackbarDeleted), backgroundColor: Colors.orangeAccent, duration: const Duration(seconds: 2))
                  );
               },
             ),
@@ -89,6 +92,7 @@ class CommentListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final timeAgo = DateFormat.yMMMd().add_jm().format(comment.timestamp.toDate());
     final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
     final bool isAuthor = currentUserId == comment.userId;
@@ -147,15 +151,15 @@ class CommentListItem extends StatelessWidget {
                         child: PopupMenuButton<String>(
                           icon: Icon(Icons.more_vert, size: 18, color: Colors.grey.shade600),
                           padding: EdgeInsets.zero,
-                          tooltip: "Comment options",
+                          tooltip: loc.commentListItemMenuEdit, // Re-using, consider a specific one
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
+                            PopupMenuItem<String>(
                               value: 'edit',
-                              child: ListTile(leading: Icon(Icons.edit_outlined, size: 20), title: Text('Edit', style: TextStyle(fontSize: 14)), dense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                              child: ListTile(leading: const Icon(Icons.edit_outlined, size: 20), title: Text(loc.commentListItemMenuEdit, style: const TextStyle(fontSize: 14)), dense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 8)),
                             ),
-                            const PopupMenuItem<String>(
+                            PopupMenuItem<String>(
                               value: 'delete',
-                              child: ListTile(leading: Icon(Icons.delete_outline, size: 20, color: Colors.redAccent), title: Text('Delete', style: TextStyle(fontSize: 14, color: Colors.redAccent)), dense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                              child: ListTile(leading: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent), title: Text(loc.commentListItemMenuDelete, style: const TextStyle(fontSize: 14, color: Colors.redAccent)), dense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 8)),
                             ),
                           ],
                           onSelected: (String value) {

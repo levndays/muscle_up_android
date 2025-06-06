@@ -36,7 +36,7 @@ class UpcomingScheduleCubit extends Cubit<UpcomingScheduleState> {
 
       final Map<DateTime, List<String>> weeklySchedule = {};
       final DateTime today = DateTime.now();
-      final DateFormat dayKeyFormat = DateFormat('E')..format(DateTime.now()).toUpperCase(); // MON, TUE...
+      final DateFormat dayKeyFormat = DateFormat('E');
 
       for (int i = 0; i < 7; i++) {
         final date = DateTime(today.year, today.month, today.day + i);

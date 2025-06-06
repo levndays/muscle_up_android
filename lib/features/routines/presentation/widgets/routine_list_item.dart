@@ -1,10 +1,11 @@
 // lib/features/routines/presentation/widgets/routine_list_item.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 import '../../../../core/domain/entities/routine.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
 import '../screens/create_edit_routine_screen.dart';
-import '../../../workout_tracking/presentation/screens/active_workout_screen.dart'; // ADDED THIS IMPORT
+import '../../../workout_tracking/presentation/screens/active_workout_screen.dart';
 import 'dart:developer' as developer;
 
 import '../../../social/presentation/screens/create_post_screen.dart';
@@ -24,17 +25,18 @@ class RoutineListItem extends StatelessWidget {
   });
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: Text('Are you sure you want to delete "${routine.name}"? This action cannot be undone.'),
+          title: Text(loc.routineListItemDeleteConfirmTitle),
+          content: Text(loc.routineListItemDeleteConfirmMessage(routine.name)),
           actions: <Widget>[
-            TextButton(child: const Text('Cancel'), onPressed: () => Navigator.of(dialogContext).pop(false)),
+            TextButton(child: Text(loc.routineListItemDeleteConfirmButtonCancel), onPressed: () => Navigator.of(dialogContext).pop(false)),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Delete'),
+              child: Text(loc.routineListItemDeleteConfirmButtonDelete),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
@@ -51,14 +53,14 @@ class RoutineListItem extends StatelessWidget {
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Routine "${routine.name}" deleted.'), backgroundColor: Colors.green),
+            SnackBar(content: Text(loc.routineListItemSnackbarDeleted(routine.name)), backgroundColor: Colors.green),
           );
         }
       } catch (e) {
         developer.log('Error deleting routine: $e', name: 'RoutineListItem');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting routine: $e'), backgroundColor: Colors.red),
+            SnackBar(content: Text(loc.routineListItemSnackbarErrorDelete(e.toString())), backgroundColor: Colors.red),
           );
         }
       }
@@ -67,6 +69,7 @@ class RoutineListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
@@ -83,7 +86,7 @@ class RoutineListItem extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
-                '${routine.exercises.length} exercise(s)${routine.scheduledDays.isNotEmpty ? " | ${routine.scheduledDays.join(", ")}" : ""}',
+                '${routine.exercises.length}${loc.createPostRoutineExerciseCountSuffix}${routine.scheduledDays.isNotEmpty ? " | ${routine.scheduledDays.join(", ")}" : ""}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
             ),
@@ -112,10 +115,10 @@ class RoutineListItem extends StatelessWidget {
                   }
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(value: 'start', child: ListTile(leading: Icon(Icons.play_circle_fill, color: Colors.green), title: Text('Start Workout'))),
-                  const PopupMenuItem<String>(value: 'edit', child: ListTile(leading: Icon(Icons.edit_note), title: Text('Edit Routine'))),
-                  const PopupMenuItem<String>(value: 'share', child: ListTile(leading: Icon(Icons.share), title: Text('Share Routine'))),
-                  const PopupMenuItem<String>(value: 'delete', child: ListTile(leading: Icon(Icons.delete_sweep_outlined, color: Colors.redAccent), title: Text('Delete Routine', style: TextStyle(color: Colors.redAccent)))),
+                  PopupMenuItem<String>(value: 'start', child: ListTile(leading: const Icon(Icons.play_circle_fill, color: Colors.green), title: Text(loc.routineListItemMenuStartWorkout))),
+                  PopupMenuItem<String>(value: 'edit', child: ListTile(leading: const Icon(Icons.edit_note), title: Text(loc.routineListItemMenuEditRoutine))),
+                  PopupMenuItem<String>(value: 'share', child: ListTile(leading: const Icon(Icons.share), title: Text(loc.routineListItemMenuShareRoutine))),
+                  PopupMenuItem<String>(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent), title: Text(loc.routineListItemMenuDeleteRoutine, style: const TextStyle(color: Colors.redAccent)))),
                 ],
               ),
         onTap: () {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import '../../../../core/domain/entities/routine.dart';
 import '../../../../core/domain/entities/workout_session.dart';
@@ -128,17 +129,18 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
 
 
   void _showCancelWorkoutDialog(ActiveWorkoutCubit cubit) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text('Cancel Workout?'),
-        content: const Text('Are you sure you want to cancel this workout? Progress will not be saved.'),
+        title: Text(loc.activeWorkoutDialogCancelTitle),
+        content: Text(loc.activeWorkoutDialogCancelMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: Text(loc.activeWorkoutDialogButtonNo)),
           TextButton(
             onPressed: () { Navigator.of(dialogCtx).pop(); cubit.cancelWorkout(); },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Yes, Cancel'),
+            child: Text(loc.activeWorkoutDialogButtonYesCancel),
           ),
         ],
       ),
@@ -146,16 +148,17 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
   }
 
   void _showCompleteWorkoutDialog(ActiveWorkoutCubit cubit) {
+    final loc = AppLocalizations.of(context)!;
      showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text('Complete Workout?'),
-        content: const Text('Are you sure you want to finish and save this workout?'),
+        title: Text(loc.activeWorkoutDialogCompleteTitle),
+        content: Text(loc.activeWorkoutDialogCompleteMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: const Text('No, Continue')),
+          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: Text(loc.activeWorkoutDialogButtonNoContinue)),
           ElevatedButton(
             onPressed: () { Navigator.of(dialogCtx).pop(); cubit.completeWorkout(); },
-            child: const Text('Yes, Complete'),
+            child: Text(loc.activeWorkoutDialogButtonYesComplete),
           ),
         ],
       ),
@@ -164,6 +167,7 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return BlocConsumer<ActiveWorkoutCubit, ActiveWorkoutState>(
       listener: (context, state) {
         if (state is ActiveWorkoutSuccessfullyCompleted) {
@@ -210,13 +214,13 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
       builder: (context, state) {
         final cubit = context.read<ActiveWorkoutCubit>();
 
-        if (state is ActiveWorkoutInitial || (state is ActiveWorkoutLoading && state.message?.contains('Starting new') == false)) {
+        if (state is ActiveWorkoutInitial || (state is ActiveWorkoutLoading && state.message?.contains(loc.activeWorkoutLoadingStartingNew) == false)) {
           return Scaffold(
-            appBar: AppBar(title: Text(state is ActiveWorkoutLoading ? (state.message ?? 'Loading...') : 'Loading Workout...')),
+            appBar: AppBar(title: Text(state is ActiveWorkoutLoading ? (state.message ?? loc.activeWorkoutLoading) : loc.activeWorkoutLoading)),
             body: const Center(child: CircularProgressIndicator())
           );
         }
-        if (state is ActiveWorkoutLoading && state.message?.contains('Starting new') == true) {
+        if (state is ActiveWorkoutLoading && state.message?.contains(loc.activeWorkoutLoadingStartingNew) == true) {
              return Scaffold(
                 appBar: AppBar(title: Text(state.message!)),
                 body: const Center(child: CircularProgressIndicator())
@@ -224,8 +228,8 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
         }
         if (state is ActiveWorkoutNone) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Start Workout'), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop())),
-            body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [ const Text('No active workout found.'), const SizedBox(height: 20), ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Back to Routines'))]))
+            appBar: AppBar(title: Text(loc.startWorkoutButton), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop())),
+            body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text(loc.activeWorkoutNoneMessage), const SizedBox(height: 20), ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: Text(loc.activeWorkoutButtonBackToRoutines))]))
           );
         }
 
@@ -234,23 +238,23 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
           
           if (session.completedExercises.isEmpty) {
             return Scaffold(
-                appBar: AppBar(title: Text(session.routineNameSnapshot ?? 'Empty Workout'), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit))),
-                body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [ const Text('This workout has no exercises.'), const SizedBox(height: 20), ElevatedButton(onPressed: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add exercise: TBD'))); }, child: const Text('Add First Exercise')), const SizedBox(height: 10), ElevatedButton(onPressed: () => _showCompleteWorkoutDialog(cubit), style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.errorContainer), child: const Text('Finish Empty Workout'))]))
+                appBar: AppBar(title: Text(session.routineNameSnapshot ?? loc.activeWorkoutErrorNoExercises), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit))),
+                body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text(loc.activeWorkoutErrorNoExercises), const SizedBox(height: 20), ElevatedButton(onPressed: () { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.activeWorkoutButtonAddFirstExercise))); }, child: Text(loc.activeWorkoutButtonAddFirstExercise)), const SizedBox(height: 10), ElevatedButton(onPressed: () => _showCompleteWorkoutDialog(cubit), style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.errorContainer), child: Text(loc.activeWorkoutButtonFinishEmpty))]))
             );
           }
           
           final safeExerciseIndex = (_currentExerciseIndex < session.completedExercises.length) ? _currentExerciseIndex : 0;
            if (session.completedExercises[safeExerciseIndex].completedSets.isEmpty) {
             return Scaffold(
-                appBar: AppBar(title: Text(session.routineNameSnapshot ?? 'Workout Error'), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit))),
+                appBar: AppBar(title: Text(session.routineNameSnapshot ?? loc.activeWorkoutAppBarTitleFallback), leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit))),
                 body: Center(child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Error: Exercise '${session.completedExercises[safeExerciseIndex].exerciseNameSnapshot}' has no sets."),
+                    Text(loc.activeWorkoutErrorExerciseNoSets(session.completedExercises[safeExerciseIndex].exerciseNameSnapshot)),
                     const SizedBox(height: 10),
-                    const Text("Please edit the routine or contact support.", textAlign: TextAlign.center,),
+                    Text(loc.activeWorkoutErrorExerciseNoSetsHelp, textAlign: TextAlign.center,),
                      const SizedBox(height: 20),
-                    ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Go Back'))
+                    ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: Text(loc.activeWorkoutButtonGoBack))
                   ],
                 ))
             );
@@ -265,7 +269,7 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
           return Scaffold(
             resizeToAvoidBottomInset: true,
             appBar: AppBar(
-              title: Text(session.routineNameSnapshot ?? 'Active Workout', style: const TextStyle(fontSize: 18)),
+              title: Text(session.routineNameSnapshot ?? loc.activeWorkoutAppBarTitleFallback, style: const TextStyle(fontSize: 18)),
               centerTitle: true, elevation: 1,
               actions: [Padding(padding: const EdgeInsets.only(right: 16.0), child: Center(child: Text(formatDuration(state.currentDuration), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary))))],
               leading: IconButton(icon: const Icon(Icons.close), onPressed: () => _showCancelWorkoutDialog(cubit)),
@@ -294,7 +298,7 @@ class _ActiveWorkoutViewState extends State<_ActiveWorkoutView> {
             ),
           );
         }
-        return Scaffold(appBar: AppBar(title: const Text('Workout')), body: const Center(child: Text('An unexpected state occurred. Please restart.')));
+        return Scaffold(appBar: AppBar(title: Text(loc.activeWorkoutAppBarTitleFallback)), body: Center(child: Text(loc.activeWorkoutErrorUnexpected)));
       },
     );
   }

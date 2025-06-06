@@ -1,5 +1,6 @@
 // lib/features/profile/presentation/widgets/achievement_details_dialog.dart
 import 'package:flutter/material.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 class AchievementDetailsDialog extends StatelessWidget {
   final String name;
@@ -16,6 +17,7 @@ class AchievementDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -51,7 +53,7 @@ class AchievementDetailsDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: Text(loc.commentListItemDialogButtonCancel),
         )
       ],
       actionsAlignment: MainAxisAlignment.center,

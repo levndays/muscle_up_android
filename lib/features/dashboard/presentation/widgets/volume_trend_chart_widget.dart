@@ -34,7 +34,6 @@ class VolumeTrendChartWidget extends StatelessWidget {
           end: Alignment.centerRight,
         );
       case VolumeTrend.neutral:
-      default:
         return const LinearGradient(
           colors: [Color.fromRGBO(255, 157, 0, 1), Color.fromRGBO(255, 0, 0, 1)],
           stops: [0.0, 1.0],
@@ -125,11 +124,11 @@ class _VolumeChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     
     final Paint pointPaint = Paint()
-        ..color = gradient.colors.first.withOpacity(0.9) 
+        ..color = gradient.colors.first.withAlpha((255 * 0.9).round())
         ..style = PaintingStyle.fill;
 
     final Paint gridPaint = Paint()
-      ..color = gridColor.withOpacity(0.5) // Використовуємо переданий колір сітки
+      ..color = gridColor.withAlpha((255 * 0.5).round()) // Використовуємо переданий колір сітки
       ..strokeWidth = 0.5;
 
     const double yAxisLabelPadding = 28.0;
@@ -210,8 +209,8 @@ class _VolumeChartPainter extends CustomPainter {
       ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
     
-    final Color startColor = gradient.colors.first.withOpacity(0.35);
-    final Color endColor = gradient.colors.last.withOpacity(0.05);
+    final Color startColor = gradient.colors.first.withAlpha((255 * 0.35).round());
+    final Color endColor = gradient.colors.last.withAlpha((255 * 0.05).round());
 
     areaFillPaint.shader = LinearGradient(
         colors: [startColor, endColor],

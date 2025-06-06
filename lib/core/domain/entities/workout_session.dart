@@ -34,7 +34,7 @@ class WorkoutSession extends Equatable {
 
   // Розраховує загальний об'єм для всієї сесії
   double calculateTotalVolume() {
-    return completedExercises.fold(0.0, (sum, exercise) => sum + exercise.totalVolume);
+    return completedExercises.fold(0.0, (total, exercise) => total + exercise.totalVolume);
   }
 
   WorkoutSession copyWith({

@@ -1741,7 +1741,6 @@
   "@progressScreenKgUnit": {
     "description": "Unit for kilograms, short form"
   },
-
   "postCardRoutineShareTitle": "SHARED ROUTINE",
   "@postCardRoutineShareTitle": {
     "description": "Title overlay for a shared routine post card"
@@ -1907,5 +1906,37 @@
   "currentSetDisplayMuscleGroupsLoading": "Loading muscle groups...",
   "@currentSetDisplayMuscleGroupsLoading": {
     "description": "Placeholder text for muscle groups while exercise data is loading"
+  },
+  "leaderboardPlayerNameFallback": "Player",
+  "@leaderboardPlayerNameFallback": {
+    "description": "Fallback name for a user in the leaderboard if no other name is available"
+  },
+  "xpAbbreviation": "XP",
+  "@xpAbbreviation": {
+    "description": "Abbreviation for Experience Points"
+  },
+  "levelAbbreviation": "LVL",
+  "@levelAbbreviation": {
+    "description": "Abbreviation for Level"
+  },
+  "dialogButtonClose": "Close",
+  "@dialogButtonClose": {
+    "description": "Generic 'Close' button text for dialogs"
+  },
+  "routineListItemExerciseCountSuffix": " exercise(s)",
+  "@routineListItemExerciseCountSuffix": {
+    "description": "Suffix for the number of exercises in a routine list item"
+  },
+  "postDetailMenuTooltipOptions": "Post Options",
+  "@postDetailMenuTooltipOptions": {
+    "description": "Tooltip for the post options menu button in post detail screen"
+  },
+  "commentListItemErrorEmpty": "Comment cannot be empty",
+  "@commentListItemErrorEmpty": {
+    "description": "Validation error for an empty comment"
+  },
+  "commentListItemMenuTooltip": "Comment options",
+  "@commentListItemMenuTooltip": {
+    "description": "Tooltip for the comment options menu button"
   }
 }

@@ -30,26 +30,26 @@ class PredefinedExercise {
 
   // Helper method to get the localized name based on BuildContext
   String getLocalizedName(BuildContext context) {
-    final locale = AppLocalizations.of(context)!.localeName.split('_').first; // 'en' or 'uk'
+    final locale = AppLocalizations.of(context).localeName.split('_').first; // 'en' or 'uk'
     return name[locale] ?? name['en'] ?? name.values.firstOrNull ?? id;
   }
 
   String getLocalizedPrimaryMuscleGroup(BuildContext context) {
-    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    final locale = AppLocalizations.of(context).localeName.split('_').first;
     return primaryMuscleGroup[locale] ?? primaryMuscleGroup['en'] ?? primaryMuscleGroup.values.firstOrNull ?? '';
   }
 
   List<String> getLocalizedSecondaryMuscleGroups(BuildContext context) {
-    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    final locale = AppLocalizations.of(context).localeName.split('_').first;
     return secondaryMuscleGroups[locale] ?? secondaryMuscleGroups['en'] ?? secondaryMuscleGroups.values.firstOrNull ?? [];
   }
    List<String> getLocalizedEquipmentNeeded(BuildContext context) {
-    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    final locale = AppLocalizations.of(context).localeName.split('_').first;
     return equipmentNeeded[locale] ?? equipmentNeeded['en'] ?? equipmentNeeded.values.firstOrNull ?? [];
   }
 
   String getLocalizedDescription(BuildContext context) {
-    final locale = AppLocalizations.of(context)!.localeName.split('_').first;
+    final locale = AppLocalizations.of(context).localeName.split('_').first;
     return description[locale] ?? description['en'] ?? description.values.firstOrNull ?? '';
   }
 
@@ -64,7 +64,7 @@ class PredefinedExercise {
     final data = snapshot.data();
     if (data == null) throw Exception("Exercise data is null for ID: ${snapshot.id}!");
 
-    Map<String, String> _parseLocalizedMap(dynamic fieldData, String defaultFallbackValue, String fieldName) {
+    Map<String, String> parseLocalizedMap(dynamic fieldData, String defaultFallbackValue, String fieldName) {
       if (fieldData is Map) {
         return Map<String, String>.from(fieldData.map((k, v) => MapEntry(k.toString(), v.toString())));
       } else if (fieldData is String) {
@@ -75,7 +75,7 @@ class PredefinedExercise {
       return {'en': defaultFallbackValue};
     }
 
-    Map<String, List<String>> _parseLocalizedListMap(dynamic fieldData, String fieldName) {
+    Map<String, List<String>> parseLocalizedListMap(dynamic fieldData, String fieldName) {
       if (fieldData is Map) {
         return Map<String, List<String>>.from(fieldData.map((k, v) => MapEntry(
           k.toString(),
@@ -102,12 +102,12 @@ class PredefinedExercise {
 
     return PredefinedExercise(
       id: snapshot.id,
-      name: _parseLocalizedMap(data['name'], snapshot.id, 'name'),
+      name: parseLocalizedMap(data['name'], snapshot.id, 'name'),
       normalizedName: data['normalizedName'] as String? ?? englishName.toLowerCase(),
-      primaryMuscleGroup: _parseLocalizedMap(data['primaryMuscleGroup'], 'Unknown', 'primaryMuscleGroup'),
-      secondaryMuscleGroups: _parseLocalizedListMap(data['secondaryMuscleGroups'], 'secondaryMuscleGroups'),
-      equipmentNeeded: _parseLocalizedListMap(data['equipmentNeeded'], 'equipmentNeeded'),
-      description: _parseLocalizedMap(data['description'], '', 'description'),
+      primaryMuscleGroup: parseLocalizedMap(data['primaryMuscleGroup'], 'Unknown', 'primaryMuscleGroup'),
+      secondaryMuscleGroups: parseLocalizedListMap(data['secondaryMuscleGroups'], 'secondaryMuscleGroups'),
+      equipmentNeeded: parseLocalizedListMap(data['equipmentNeeded'], 'equipmentNeeded'),
+      description: parseLocalizedMap(data['description'], '', 'description'),
       videoDemonstrationUrl: data['videoDemonstrationUrl'] as String?,
       difficultyLevel: data['difficultyLevel'] as String? ?? 'Unknown',
       tags: List<String>.from(data['tags'] as List<dynamic>? ?? []),

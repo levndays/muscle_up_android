@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:intl/intl.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/comment.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
@@ -14,7 +15,7 @@ import '../../../../core/domain/entities/vote_type.dart';
 import 'dart:developer' as developer;
 import 'create_post_screen.dart';
 import 'view_user_profile_screen.dart';
-import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
+import '../../../../widgets/fullscreen_image_viewer.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -61,6 +62,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     final currentAuthUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
 
     return BlocProvider(
@@ -75,7 +77,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: BlocBuilder<PostInteractionCubit, PostInteractionState>(
             builder: (context, state) {
-              String titleText = "Post";
+              String titleText = loc.postDetailScreenAppBarTitleFallback;
               Post? appBarPost = _extractPostFromState(state);
               if (appBarPost != null) titleText = appBarPost.authorUsername;
               return Text(titleText);
@@ -88,7 +90,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 if (post != null && post.userId == currentAuthUserId) {
                   return PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
-                    tooltip: "Post Options",
+                    tooltip: loc.exploreScreenFabTooltipCreatePost, // Re-using, consider a specific one
                     onSelected: (String value) async {
                        if (value == 'edit_comments') {
                         context.read<PostInteractionCubit>().toggleCommentsEnabled();
@@ -100,13 +102,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                          final confirmed = await showDialog<bool>(
                            context: context,
                            builder: (ctx) => AlertDialog(
-                             title: const Text('Delete Post?'),
-                             content: const Text('Are you sure you want to delete this post? This action cannot be undone and will remove all associated comments and media.'),
+                             title: Text(loc.postDetailDeleteConfirmTitle),
+                             content: Text(loc.postDetailDeleteConfirmMessage),
                              actions: [
-                               TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+                               TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(loc.postDetailDeleteConfirmButtonCancel)),
                                TextButton(
                                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                                 child: const Text('Delete'),
+                                 child: Text(loc.postDetailDeleteConfirmButtonDelete),
                                  onPressed: () => Navigator.of(ctx).pop(true),
                                ),
                              ],
@@ -119,21 +121,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     },
                     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                        if (post.type == PostType.standard)
-                        const PopupMenuItem<String>(
+                        PopupMenuItem<String>(
                           value: 'edit_post',
-                          child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Edit Post')),
+                          child: ListTile(leading: const Icon(Icons.edit_outlined), title: Text(loc.postDetailMenuEditPost)),
                         ),
                       PopupMenuItem<String>(
                         value: 'edit_comments',
                         child: ListTile(
                           leading: Icon(post.isCommentsEnabled ? Icons.comment_outlined : Icons.comments_disabled_outlined),
-                          title: Text(post.isCommentsEnabled ? 'Disable Comments' : 'Enable Comments'),
+                          title: Text(post.isCommentsEnabled ? loc.postDetailMenuDisableComments : loc.postDetailMenuEnableComments),
                         ),
                       ),
                       const PopupMenuDivider(),
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'delete_post',
-                        child: ListTile(leading: Icon(Icons.delete_forever_outlined, color: Colors.redAccent), title: Text('Delete Post', style: TextStyle(color: Colors.redAccent))),
+                        child: ListTile(leading: const Icon(Icons.delete_forever_outlined, color: Colors.redAccent), title: Text(loc.postDetailMenuDeletePost, style: const TextStyle(color: Colors.redAccent))),
                       ),
                     ],
                   );
@@ -147,16 +149,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           listener: (context, state) {
             if (state is PostInteractionFailure && state.post == null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+                SnackBar(content: Text(loc.postDetailSnackbarErrorGeneric(state.error)), backgroundColor: Colors.red),
               );
               Navigator.of(context).pop();
             } else if (state is PostInteractionFailure) {
                ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red),
+                SnackBar(content: Text(loc.postDetailSnackbarErrorGeneric(state.error)), backgroundColor: Colors.red),
               );
             } else if (state is PostDeletedSuccessfully) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Post "${state.postId}" has been deleted.'), backgroundColor: Colors.orangeAccent, duration: const Duration(seconds: 3)),
+                  SnackBar(content: Text(loc.postDetailSnackbarPostDeleted(state.postId)), backgroundColor: Colors.orangeAccent, duration: const Duration(seconds: 3)),
                 );
                 Navigator.of(context).pop(true);
             }
@@ -187,9 +189,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             }
             if (post == null) {
               if (state is PostInteractionFailure && state.post == null) {
-                 return const Center(child: Text("Post not found or could not be loaded."));
+                 return Center(child: Text(loc.postDetailErrorPostNotFound));
               }
-              return const Center(child: Text("Loading post details..."));
+              return Center(child: Text(loc.postDetailLoading));
             }
             
             final bool isLikedByCurrentUser = currentAuthUserId != null && post.likedBy.contains(currentAuthUserId);
@@ -287,12 +289,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   children: [
                                     TextButton.icon(
                                       icon: Icon(isLikedByCurrentUser ? Icons.thumb_up_alt : Icons.thumb_up_alt_outlined, color: isLikedByCurrentUser ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color),
-                                      label: Text('${post.likesCount} Like${post.likesCount == 1 ? "" : "s"}', style: TextStyle(color: isLikedByCurrentUser ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color)),
+                                      label: Text('${post.likesCount}${post.likesCount == 1 ? loc.postDetailLikesSuffixSingular : loc.postDetailLikesSuffixPlural}', style: TextStyle(color: isLikedByCurrentUser ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color)),
                                       onPressed: () => cubit.toggleLike(),
                                     ),
                                     TextButton.icon(
                                       icon: Icon(Icons.chat_bubble_outline, color: theme.textTheme.bodyMedium?.color),
-                                      label: Text('${post.commentsCount} Comment${post.commentsCount == 1 ? "" : "s"}', style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+                                      label: Text('${post.commentsCount}${post.commentsCount == 1 ? loc.postDetailCommentsSuffixSingular : loc.postDetailCommentsSuffixPlural}', style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
                                       onPressed: post.isCommentsEnabled ? () => _commentFocusNode.requestFocus() : null,
                                     ),
                                   ],
@@ -300,7 +302,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               ),
                               Divider(height: 1, color: Colors.grey.shade300),
                               if (post.isCommentsEnabled) const SizedBox(height: 16),
-                              if (post.isCommentsEnabled) Text("Comments", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                              if (post.isCommentsEnabled) Text(loc.postDetailCommentsSectionTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
@@ -311,14 +313,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                          SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16),
-                            child: Center(child: Text("Comments are disabled for this post.", style: TextStyle(color: Colors.grey.shade600))),
+                            child: Center(child: Text(loc.postDetailCommentsDisabledMessage, style: TextStyle(color: Colors.grey.shade600))),
                           ),
                         ),
                       if (post.isCommentsEnabled && comments.isEmpty && !isLoadingComments)
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16),
-                            child: Center(child: Text("No comments yet. Be the first!", style: TextStyle(color: Colors.grey.shade600))),
+                            child: Center(child: Text(loc.postDetailCommentsEmptyMessage, style: TextStyle(color: Colors.grey.shade600))),
                           ),
                         ),
                       if (comments.isNotEmpty)
@@ -347,7 +349,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               controller: _commentController,
                               focusNode: _commentFocusNode,
                               decoration: InputDecoration(
-                                hintText: 'Write a comment...',
+                                hintText: loc.postDetailCommentInputHint,
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
                                 filled: true,
                                 fillColor: theme.scaffoldBackgroundColor.withOpacity(0.8),

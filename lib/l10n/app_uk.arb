@@ -1559,7 +1559,7 @@
   "@currentSetDisplayButtonPrevSet": {
     "description": "Текст кнопки для переходу до попереднього підходу"
   },
-  "currentSetDisplayButtonFinishWorkout": "ЗАВЕРШИТИ",
+  "currentSetDisplayButtonFinishWorkout": "ЗАВЕРШИТИ ТРЕНУВАННЯ",
   "@currentSetDisplayButtonFinishWorkout": {
     "description": "Текст кнопки для завершення тренування, коли на останньому підході"
   },
@@ -1741,7 +1741,6 @@
   "@progressScreenKgUnit": {
     "description": "Одиниця для кілограмів, скорочена форма"
   },
-
   "postCardRoutineShareTitle": "ПОШИРЕНА ПРОГРАМА",
   "@postCardRoutineShareTitle": {
     "description": "Заголовок для картки поширеної програми"
@@ -1907,5 +1906,37 @@
    "currentSetDisplayMuscleGroupsLoading": "Завантаження груп м'язів...",
   "@currentSetDisplayMuscleGroupsLoading": {
     "description": "Текст-заповнювач для груп м'язів, поки завантажуються дані про вправу"
+  },
+  "leaderboardPlayerNameFallback": "Гравець",
+  "@leaderboardPlayerNameFallback": {
+    "description": "Запасне ім'я для користувача в таблиці лідерів, якщо інше ім'я недоступне"
+  },
+  "xpAbbreviation": "XP",
+  "@xpAbbreviation": {
+    "description": "Скорочення для Очок Досвіду"
+  },
+  "levelAbbreviation": "РІВ",
+  "@levelAbbreviation": {
+    "description": "Скорочення для Рівня"
+  },
+  "dialogButtonClose": "Закрити",
+  "@dialogButtonClose": {
+    "description": "Загальний текст кнопки 'Закрити' для діалогових вікон"
+  },
+  "routineListItemExerciseCountSuffix": " вправ(и)",
+  "@routineListItemExerciseCountSuffix": {
+    "description": "Суфікс для кількості вправ в елементі списку програм"
+  },
+  "postDetailMenuTooltipOptions": "Опції допису",
+  "@postDetailMenuTooltipOptions": {
+    "description": "Підказка для кнопки меню опцій допису на екрані деталей допису"
+  },
+  "commentListItemErrorEmpty": "Коментар не може бути порожнім",
+  "@commentListItemErrorEmpty": {
+    "description": "Помилка валідації для порожнього коментаря"
+  },
+  "commentListItemMenuTooltip": "Опції коментаря",
+  "@commentListItemMenuTooltip": {
+    "description": "Підказка для кнопки меню опцій коментаря"
   }
 }

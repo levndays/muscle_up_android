@@ -70,7 +70,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     developer.log("DashboardScreen: Building UI", name: "DashboardScreen");
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
 
     return MultiBlocProvider(
       providers: [
@@ -201,8 +201,8 @@ class DashboardScreen extends StatelessWidget {
                           height: 150,
                           decoration: BoxDecoration(
                              color: Theme.of(context).brightness == Brightness.dark
-                                ? Colors.grey[850]?.withOpacity(0.3)
-                                : Colors.grey[200]?.withOpacity(0.3),
+                                ? Colors.grey[850]?.withAlpha((0.3 * 255).round())
+                                : Colors.grey[200]?.withAlpha((0.3 * 255).round()),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Center(child: CircularProgressIndicator(color: primaryOrange)),
@@ -214,8 +214,8 @@ class DashboardScreen extends StatelessWidget {
                           height: 150,
                            decoration: BoxDecoration(
                              color: Theme.of(context).brightness == Brightness.dark
-                                ? Colors.red[900]?.withOpacity(0.3)
-                                : Colors.red[100]?.withOpacity(0.3),
+                                ? Colors.red[900]?.withAlpha((0.3 * 255).round())
+                                : Colors.red[100]?.withAlpha((0.3 * 255).round()),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -234,8 +234,8 @@ class DashboardScreen extends StatelessWidget {
                         height: 150,
                         decoration: BoxDecoration(
                            color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[850]?.withOpacity(0.3)
-                              : Colors.grey[200]?.withOpacity(0.3),
+                              ? Colors.grey[850]?.withAlpha((0.3 * 255).round())
+                              : Colors.grey[200]?.withAlpha((0.3 * 255).round()),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(child: Text(loc.volumeTrendChartLoading, style: const TextStyle(color: Colors.grey))), // LOCALIZED

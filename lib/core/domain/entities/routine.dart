@@ -83,8 +83,12 @@ class UserRoutine extends Equatable { // Зробимо Equatable
   factory UserRoutine.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
     final data = snapshot.data();
     if (data == null) throw Exception("Routine data is null!");
-    return UserRoutine(
-      id: snapshot.id,
+    return UserRoutine.fromMap(data, snapshot.id);
+  }
+
+  factory UserRoutine.fromMap(Map<String, dynamic> data, String id) {
+     return UserRoutine(
+      id: id,
       userId: data['userId'] ?? '',
       name: data['name'] ?? '',
       description: data['description'],
@@ -94,7 +98,6 @@ class UserRoutine extends Equatable { // Зробимо Equatable
           [],
       scheduledDays: List<String>.from(data['scheduledDays'] ?? []),
       isPublic: data['isPublic'] ?? false,
-      // Важливо правильно обробляти Timestamps
       createdAt: data['createdAt'] is Timestamp ? data['createdAt'] : Timestamp.now(),
       updatedAt: data['updatedAt'] is Timestamp ? data['updatedAt'] : Timestamp.now(),
     );

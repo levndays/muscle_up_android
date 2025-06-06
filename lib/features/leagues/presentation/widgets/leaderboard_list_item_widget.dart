@@ -1,9 +1,10 @@
 // lib/features/leagues/presentation/widgets/leaderboard_list_item_widget.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 import '../../../../core/domain/entities/user_profile.dart';
 import '../../../social/presentation/screens/view_user_profile_screen.dart';
-import '../../../../widgets/fullscreen_image_viewer.dart'; // NEW
+import '../../../../widgets/fullscreen_image_viewer.dart';
 
 class LeaderboardListItemWidget extends StatelessWidget {
   final UserProfile userProfile;
@@ -49,7 +50,7 @@ class LeaderboardListItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCurrentUser = userProfile.uid == currentUserId;
     final NumberFormat xpFormatter = NumberFormat("#,###", "en_US");
-
+    final loc = AppLocalizations.of(context)!;
 
     return Card(
       elevation: isCurrentUser ? 4 : 1.5,
@@ -92,7 +93,7 @@ class LeaderboardListItemWidget extends StatelessWidget {
           ],
         ),
         title: Text(
-          userProfile.displayName ?? userProfile.username ?? 'Player',
+          userProfile.displayName ?? userProfile.username ?? loc.profileScreenNameFallbackUser,
           style: TextStyle(
             color: isCurrentUser ? Colors.amber.shade300 : Colors.white,
             fontWeight: isCurrentUser ? FontWeight.w900 : FontWeight.w600,

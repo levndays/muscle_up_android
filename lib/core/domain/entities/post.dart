@@ -1,7 +1,6 @@
 // lib/core/domain/entities/post.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'vote_type.dart';
 
 enum PostType {
   standard,
@@ -114,7 +113,7 @@ class Post extends Equatable {
       'userId': userId,
       'authorUsername': authorUsername,
       'authorProfilePicUrl': authorProfilePicUrl,
-      'timestamp': timestamp, 
+      'timestamp': timestamp,
       'updatedAt': updatedAt, // Додамо
       'type': type.name,
       'textContent': textContent,

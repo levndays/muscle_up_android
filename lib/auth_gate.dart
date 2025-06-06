@@ -43,7 +43,6 @@ class _ProfileCheckGate extends StatelessWidget {
   final String userId;
 
   const _ProfileCheckGate({
-    super.key,
     required this.userId,
   });
 
@@ -51,7 +50,7 @@ class _ProfileCheckGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final userProfileRepository = RepositoryProvider.of<UserProfileRepository>(context);
     final firebaseAuthFromProvider = RepositoryProvider.of<fb_auth.FirebaseAuth>(context); // Для UserProfileCubit
-    final loc = AppLocalizations.of(context)!; // For localization
+    final loc = AppLocalizations.of(context); // For localization
 
     developer.log("_ProfileCheckGate: Building StreamBuilder for userId: $userId", name: "AuthGate._ProfileCheckGate");
 

@@ -33,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
     if (currentUserId == null) {
-      return const Scaffold(body: Center(child: Text("Error: User not logged in.")));
+      return Scaffold(body: Center(child: Text(AppLocalizations.of(context)!.profileSetupErrorUserNotLoggedIn)));
     }
 
     return MultiBlocProvider(
@@ -70,15 +70,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
     }
   }
 
-  static const Map<String, String> _fitnessGoalDisplayNames = {
-    'lose_weight': 'Lose Weight',
-    'gain_muscle': 'Gain Muscle',
-    'improve_stamina': 'Improve Stamina',
-    'general_fitness': 'General Fitness',
-    'improve_strength': 'Improve Strength',
-  };
-
-  String _getDisplayName(String? storedValue, Map<String, String> mapping, AppLocalizations loc) {
+  String _getDisplayName(String? storedValue, AppLocalizations loc) {
     if (storedValue == null || storedValue.isEmpty) {
       return loc.profileSetupErrorUsernameEmpty;
     }
@@ -94,7 +86,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
         case 'active': return loc.profileSetupActivityLevelActive.split(' ').first;
         case 'very_active': return loc.profileSetupActivityLevelVeryActive.split(' ').first;
         default: 
-          return mapping[storedValue] ?? storedValue.replaceAll('_', ' ').split(' ').map((e) => e[0].toUpperCase() + e.substring(1)).join(' ');
+          return storedValue.replaceAll('_', ' ').split(' ').map((e) => e[0].toUpperCase() + e.substring(1)).join(' ');
     }
   }
 
@@ -362,7 +354,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                             TextSpan(children: [
                               TextSpan(text: loc.profileScreenGoalLabel, style: const TextStyle(color: profileTextBlack, fontWeight: FontWeight.bold)),
                               TextSpan(
-                                  text: _getDisplayName(userProfile.fitnessGoal, _fitnessGoalDisplayNames, loc).toUpperCase(),
+                                  text: _getDisplayName(userProfile.fitnessGoal, loc).toUpperCase(),
                                   style: const TextStyle(color: profilePrimaryOrange, fontWeight: FontWeight.bold)
                               ),
                             ]),
@@ -423,7 +415,7 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
                       if (postState is UserPostsFeedLoading) {
                         return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 40.0), child: CircularProgressIndicator()));
                       } else if (postState is UserPostsFeedError) {
-                        return Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 40.0), child: Text('Error loading posts: ${postState.message}')));
+                        return Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 40.0), child: Text(loc.exploreScreenErrorLoad(postState.message))));
                       } else if (postState is UserPostsFeedLoaded) {
                         if (postState.posts.isEmpty) {
                           return Container(

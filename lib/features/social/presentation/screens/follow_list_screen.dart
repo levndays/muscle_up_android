@@ -1,14 +1,15 @@
 // lib/features/social/presentation/screens/follow_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muscle_up/l10n/app_localizations.dart';
 import '../../../../core/domain/repositories/user_profile_repository.dart';
 import '../cubit/follow_list_cubit.dart';
 import '../widgets/follow_list_item_widget.dart';
 import 'dart:developer' as developer;
 
 class FollowListScreen extends StatefulWidget {
-  final String userIdToList; // ID користувача, чий список ми переглядаємо
-  final FollowListType listType; // Тип списку: followers або following
+  final String userIdToList;
+  final FollowListType listType;
 
   const FollowListScreen({
     super.key,
@@ -43,14 +44,15 @@ class _FollowListScreenState extends State<FollowListScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.extentAfter < 200) { // Завантажувати, коли до кінця списку < 200px
+    if (_scrollController.position.extentAfter < 200) {
       context.read<FollowListCubit>().fetchMore();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.listType == FollowListType.followers ? 'Followers' : 'Following';
+    final loc = AppLocalizations.of(context)!;
+    final String title = widget.listType == FollowListType.followers ? loc.followListScreenTitleFollowers : loc.followListScreenTitleFollowing;
 
     return BlocProvider(
       create: (context) => FollowListCubit(
@@ -76,11 +78,11 @@ class _FollowListScreenState extends State<FollowListScreen> {
                     children: [
                       const Icon(Icons.error_outline, color: Colors.red, size: 48),
                       const SizedBox(height: 16),
-                      Text('Error: ${state.message}', textAlign: TextAlign.center),
+                      Text(loc.followListScreenErrorLoad(state.message), textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => context.read<FollowListCubit>().fetchInitialList(),
-                        child: const Text('Try Again'),
+                        child: Text(loc.followListScreenButtonTryAgain),
                       )
                     ],
                   ),
@@ -89,14 +91,14 @@ class _FollowListScreenState extends State<FollowListScreen> {
             }
             if (state is FollowListLoaded || (state is FollowListLoading && !state.isInitialLoad)) {
               final profiles = (state is FollowListLoaded) ? state.profiles : (state as FollowListLoading).currentProfiles;
-              final hasMore = (state is FollowListLoaded) ? state.hasMore : true; // Assume hasMore while loading more
+              final hasMore = (state is FollowListLoaded) ? state.hasMore : true;
 
               if (profiles.isEmpty && !(state is FollowListLoading && !state.isInitialLoad)) {
                 return Center(
                   child: Text(
                     widget.listType == FollowListType.followers
-                        ? 'This user has no followers yet.'
-                        : 'This user is not following anyone yet.',
+                        ? loc.followListScreenEmptyFollowers
+                        : loc.followListScreenEmptyFollowing,
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
                   ),
                 );
@@ -118,7 +120,7 @@ class _FollowListScreenState extends State<FollowListScreen> {
                 ),
               );
             }
-            return const Center(child: Text("Something went wrong."));
+            return Center(child: Text(loc.followListScreenErrorUnexpected));
           },
         ),
       ),

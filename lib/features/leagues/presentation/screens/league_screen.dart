@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
-import 'package:muscle_up/l10n/app_localizations.dart'; // Import AppLocalizations
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import '../../../../core/domain/entities/league_info.dart';
 import '../../../../core/domain/entities/user_profile.dart';
@@ -55,9 +55,8 @@ class _LeagueScreenView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context)!; // For localization
+    final loc = AppLocalizations.of(context)!;
     final leagueInfo = context.watch<LeagueCubit>().state.currentLeague;
-    // We don't need currentUserProfileData for the title anymore on this screen.
 
     return Scaffold(
       body: Stack(
@@ -73,7 +72,7 @@ class _LeagueScreenView extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
                         onPressed: () => Navigator.of(context).pop(),
-                        tooltip: loc.leagueScreenButtonBackTooltip, // LOCALIZED
+                        tooltip: loc.leagueScreenButtonBackTooltip,
                       ),
                       const Spacer(),
                     ],
@@ -83,14 +82,14 @@ class _LeagueScreenView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
                   child: LeagueTitleWidget(
                     leagueName: leagueInfo.name,
-                    level: leagueInfo.minLevel, // Pass minLevel, but it won't be shown
+                    level: leagueInfo.minLevel,
                     gradientColors: leagueInfo.gradientColors,
-                    showLevel: false, // <-- MODIFIED: Do not show level
+                    showLevel: false,
                   ),
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  loc.leagueScreenLeaderboardTitle, // LOCALIZED
+                  loc.leagueScreenLeaderboardTitle,
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: Colors.white.withOpacity(0.9),
                     fontWeight: FontWeight.bold,
@@ -116,12 +115,12 @@ class _LeagueScreenView extends StatelessWidget {
                               children: [
                                 Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
                                 const SizedBox(height: 16),
-                                Text(loc.leagueScreenErrorLoad(state.errorMessage ?? 'Unknown error'), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)), // LOCALIZED
+                                Text(loc.leagueScreenErrorLoad(state.errorMessage ?? loc.recordStatusUnknown), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)),
                                 const SizedBox(height: 16),
                                 ElevatedButton(
                                   onPressed: () => context.read<LeagueCubit>().fetchLeaderboard(),
                                   style: ElevatedButton.styleFrom(backgroundColor: Colors.white24),
-                                  child: Text(loc.leagueScreenButtonTryAgain, style: const TextStyle(color: Colors.white)), // LOCALIZED
+                                  child: Text(loc.leagueScreenButtonTryAgain, style: const TextStyle(color: Colors.white)),
                                 )
                               ],
                             ),
@@ -131,7 +130,7 @@ class _LeagueScreenView extends StatelessWidget {
                       if (state.leaderboard.isEmpty) {
                         return Center(
                           child: Text(
-                            loc.leagueScreenNoPlayers, // LOCALIZED
+                            loc.leagueScreenNoPlayers,
                             style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
                           ),
                         );

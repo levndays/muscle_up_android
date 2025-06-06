@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer' as developer;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 import '../../../../core/domain/entities/routine.dart';
 import '../../../../core/domain/repositories/routine_repository.dart';
@@ -59,6 +60,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
   }
 
   void _saveRoutine() {
+    final loc = AppLocalizations.of(context)!;
     if (_formKey.currentState!.validate()) {
       _manageRoutineCubit.updateRoutineName(_nameController.text);
       _manageRoutineCubit.updateRoutineDescription(_descriptionController.text);
@@ -66,23 +68,24 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
       _manageRoutineCubit.saveRoutine();
     } else {
         ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please correct the errors in the form.'), backgroundColor: Colors.orangeAccent),
-      );
+          SnackBar(content: Text(loc.createEditRoutineSnackbarFormErrors), backgroundColor: Colors.orangeAccent),
+        );
     }
   }
 
   Future<void> _deleteRoutine() async {
+    final loc = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete "${_nameController.text}"?'),
+        title: Text(loc.routineListItemDeleteConfirmTitle),
+        content: Text(loc.routineListItemDeleteConfirmMessage(_nameController.text)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(loc.routineListItemDeleteConfirmButtonCancel)),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(loc.routineListItemDeleteConfirmButtonDelete),
           ),
         ],
       ),
@@ -93,6 +96,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
   }
 
   Widget _buildExerciseItem(BuildContext context, RoutineExercise exercise, int index) {
+    final loc = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
@@ -112,26 +116,26 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           final RoutineExercise? updatedExerciseDetails = await showDialog<RoutineExercise>(
             context: context,
             builder: (dialogCtx) => AlertDialog(
-              title: Text('Edit "${exercise.exerciseNameSnapshot}"'),
+              title: Text(loc.editExerciseDialogTitle(exercise.exerciseNameSnapshot)),
               content: Form(
                 key: formKeyDialog,
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   TextFormField(
                     controller: setsCtrl,
-                    decoration: const InputDecoration(labelText: 'Number of Sets*'),
+                    decoration: InputDecoration(labelText: '${loc.addExerciseDialogSetsLabel}*'),
                     keyboardType: TextInputType.number,
-                    validator: (v) => (v == null || v.isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? 'Invalid sets count' : null,
+                    validator: (v) => (v == null || v.isEmpty || int.tryParse(v) == null || int.parse(v) <= 0) ? loc.addExerciseDialogSetsErrorInvalid : null,
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: notesCtrl,
-                    decoration: const InputDecoration(labelText: 'Notes (optional)'),
+                    decoration: InputDecoration(labelText: loc.addExerciseDialogNotesLabel),
                     maxLines: 2,
                   ),
                 ]),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('Cancel')),
+                TextButton(onPressed: () => Navigator.pop(dialogCtx), child: Text(loc.addExerciseDialogButtonCancel)),
                 ElevatedButton(
                   onPressed: () {
                     if (formKeyDialog.currentState!.validate()) {
@@ -143,7 +147,7 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                       ));
                     }
                   },
-                  child: const Text('Update'),
+                  child: Text(loc.editExerciseDialogButtonUpdate),
                 ),
               ],
             ),
@@ -158,27 +162,47 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return BlocProvider.value(
       value: _manageRoutineCubit,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_manageRoutineCubit.isEditingMode ? 'Edit Routine' : 'Create Routine'),
+          title: Text(_manageRoutineCubit.isEditingMode ? loc.createEditRoutineScreenTitleEdit : loc.createEditRoutineScreenTitleCreate),
           actions: [
             if (_manageRoutineCubit.isEditingMode)
-              IconButton(icon: const Icon(Icons.delete_forever, color: Colors.red), onPressed: _deleteRoutine, tooltip: 'Delete Routine'),
-            // Кнопка "Зберегти" видалена з AppBar
+              IconButton(icon: const Icon(Icons.delete_forever, color: Colors.red), onPressed: _deleteRoutine, tooltip: loc.createEditRoutineTooltipDelete),
           ],
         ),
         body: BlocConsumer<ManageRoutineCubit, ManageRoutineState>(
           listener: (context, state) {
             if (state is ManageRoutineSuccess) {
+              String statusMessage;
+              if (state.message.contains("updated")) {
+                statusMessage = loc.createEditRoutineStatusUpdated;
+              } else if (state.message.contains("created")) {
+                statusMessage = loc.createEditRoutineStatusCreated;
+              } else if (state.message.contains("deleted")) {
+                statusMessage = loc.createEditRoutineStatusDeleted;
+              } else {
+                statusMessage = loc.createEditRoutineSuccessMessage(state.message);
+              }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.green, duration: const Duration(seconds: 2)),
+                SnackBar(content: Text(statusMessage), backgroundColor: Colors.green, duration: const Duration(seconds: 2)),
               );
               Navigator.of(context).pop(true);
             } else if (state is ManageRoutineFailure) {
+              String errorMessage;
+              if (state.error.contains("name cannot be empty")) {
+                errorMessage = loc.createEditRoutineErrorNameEmpty;
+              } else if (state.error.contains("must have at least one exercise")) {
+                errorMessage = loc.createEditRoutineErrorNoExercises;
+              } else if (state.error.contains("Cannot delete a new or unsaved routine")) {
+                errorMessage = loc.createEditRoutineErrorDeleteNew;
+              } else {
+                errorMessage = loc.createEditRoutineErrorMessage(state.error);
+              }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.error}'), backgroundColor: Colors.red,  duration: const Duration(seconds: 3)),
+                SnackBar(content: Text(errorMessage), backgroundColor: Colors.red,  duration: const Duration(seconds: 3)),
               );
             }
           },
@@ -195,20 +219,26 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
             bool canSave = currentDisplayRoutine.name.trim().isNotEmpty && currentDisplayRoutine.exercises.isNotEmpty;
 
             if (state is ManageRoutineLoading) {
+              String loadingMessage = state.loadingMessage ?? '';
+              if (loadingMessage.contains("Saving")) {
+                loadingMessage = loc.createEditRoutineLoadingMessageSaving;
+              } else if (loadingMessage.contains("Deleting")) {
+                loadingMessage = loc.createEditRoutineLoadingMessageDeleting;
+              }
               return Center(child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(),
-                  if(state.loadingMessage != null) ...[
+                  if(loadingMessage.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text(state.loadingMessage!),
+                    Text(loadingMessage),
                   ]
                 ],
               ));
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0), // Додано відступ знизу для кнопки
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -216,18 +246,18 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                   children: <Widget>[
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Routine Name*'),
-                      validator: (value) => value == null || value.trim().isEmpty ? 'Name cannot be empty' : null,
-                      onChanged: (_) => setState((){}), // Для оновлення стану кнопки
+                      decoration: InputDecoration(labelText: loc.createEditRoutineNameLabel),
+                      validator: (value) => value == null || value.trim().isEmpty ? loc.createEditRoutineNameErrorEmpty : null,
+                      onChanged: (_) => setState((){}),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _descriptionController,
-                      decoration: const InputDecoration(labelText: 'Description (optional)'),
+                      decoration: InputDecoration(labelText: loc.createEditRoutineDescriptionLabel),
                       maxLines: 3,
                     ),
                     const SizedBox(height: 24),
-                    Text('Scheduled Days:', style: Theme.of(context).textTheme.titleMedium),
+                    Text(loc.createEditRoutineScheduledDaysLabel, style: Theme.of(context).textTheme.titleMedium),
                     Wrap(
                       spacing: 8.0,
                       children: _availableDays.map((day) {
@@ -253,15 +283,15 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Exercises (${currentDisplayRoutine.exercises.length}):', style: Theme.of(context).textTheme.titleMedium),
+                        Text(loc.createEditRoutineExercisesLabel(currentDisplayRoutine.exercises.length), style: Theme.of(context).textTheme.titleMedium),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Add'),
+                          label: Text(loc.createEditRoutineButtonAddExercise),
                           onPressed: () async {
                             final RoutineExercise? newExercise = await showAddExerciseToRoutineDialog(context);
                             if (newExercise != null) {
                               _manageRoutineCubit.addExerciseToRoutine(newExercise);
-                               setState((){}); // Для оновлення стану кнопки
+                               setState((){});
                             }
                           },
                         ),
@@ -269,9 +299,9 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                     ),
                     const SizedBox(height: 8),
                     if (currentDisplayRoutine.exercises.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.0),
-                        child: Center(child: Text('No exercises added yet. Tap "Add" to begin.', style: TextStyle(color: Colors.grey))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(child: Text(loc.createEditRoutineNoExercisesPlaceholder, style: const TextStyle(color: Colors.grey))),
                       )
                     else
                       ListView.builder(
@@ -289,12 +319,12 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
           },
         ),
         persistentFooterButtons: [
-          BlocBuilder<ManageRoutineCubit, ManageRoutineState>( // Обертаємо кнопку в BlocBuilder
+          BlocBuilder<ManageRoutineCubit, ManageRoutineState>(
             builder: (context, state) {
               bool canSave = _manageRoutineCubit.currentRoutineSnapshot.name.trim().isNotEmpty &&
                              _manageRoutineCubit.currentRoutineSnapshot.exercises.isNotEmpty;
               
-              if(state is ManageRoutineExercisesUpdated){ // Додатково перевіряємо зі стану, якщо він оновився
+              if(state is ManageRoutineExercisesUpdated){
                   canSave = state.updatedRoutine.name.trim().isNotEmpty && state.updatedRoutine.exercises.isNotEmpty;
               } else if (state is ManageRoutineInitial) {
                   canSave = state.routine.name.trim().isNotEmpty && state.routine.exercises.isNotEmpty;
@@ -317,13 +347,13 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                           )
                         : Text(
-                            _manageRoutineCubit.isEditingMode ? 'Save Changes' : 'Create Routine',
+                            _manageRoutineCubit.isEditingMode ? loc.createEditRoutineButtonSaveChanges : loc.createEditRoutineButtonCreateRoutine,
                             style: const TextStyle(fontSize: 16),
                           ),
                   ),
                 );
               }
-              return const SizedBox.shrink(); // Порожній віджет, якщо кнопка невидима
+              return const SizedBox.shrink();
             },
           ),
         ],

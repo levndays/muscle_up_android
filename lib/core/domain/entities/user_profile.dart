@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart' show ValueGetter;
-import 'achievement.dart'; 
 
 class UserProfile extends Equatable {
   final String uid;
@@ -18,11 +17,11 @@ class UserProfile extends Equatable {
   final String? activityLevel;
   final int xp;
   final int level;
-  final int currentStreak; 
-  final int longestStreak; 
-  final Timestamp? lastWorkoutTimestamp; 
-  final Timestamp? lastScheduledWorkoutCompletionTimestamp; 
-  final String? lastScheduledWorkoutDayKey; 
+  final int currentStreak;
+  final int longestStreak;
+  final Timestamp? lastWorkoutTimestamp;
+  final Timestamp? lastScheduledWorkoutCompletionTimestamp;
+  final String? lastScheduledWorkoutDayKey;
 
   final int followersCount;
   final int followingCount;
@@ -50,8 +49,8 @@ class UserProfile extends Equatable {
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.lastWorkoutTimestamp,
-    this.lastScheduledWorkoutCompletionTimestamp, 
-    this.lastScheduledWorkoutDayKey,         
+    this.lastScheduledWorkoutCompletionTimestamp,
+    this.lastScheduledWorkoutDayKey,
     this.followersCount = 0,
     this.followingCount = 0,
     this.achievedRewardIds = const [],
@@ -144,8 +143,8 @@ class UserProfile extends Equatable {
     int? currentStreak,
     int? longestStreak,
     ValueGetter<Timestamp?>? lastWorkoutTimestamp,
-    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp, 
-    ValueGetter<String?>? lastScheduledWorkoutDayKey,             
+    ValueGetter<Timestamp?>? lastScheduledWorkoutCompletionTimestamp,
+    ValueGetter<String?>? lastScheduledWorkoutDayKey,
     int? followersCount,
     int? followingCount,
     List<String>? achievedRewardIds,
@@ -188,9 +187,9 @@ class UserProfile extends Equatable {
         uid, email, displayName, profilePictureUrl, username, gender, dateOfBirth,
         heightCm, weightKg, fitnessGoal, activityLevel, xp, level,
         currentStreak, longestStreak, lastWorkoutTimestamp,
-        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey, 
+        lastScheduledWorkoutCompletionTimestamp, lastScheduledWorkoutDayKey,
         followersCount, followingCount,
-        achievedRewardIds, 
+        achievedRewardIds,
         following, // NEW
         profileSetupComplete, createdAt, updatedAt
       ];
