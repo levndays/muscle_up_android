@@ -92,6 +92,19 @@ class PostCardContentWidget extends StatelessWidget {
     }
   }
 
+  String _getLocalizedDay(AppLocalizations loc, String dayKey) {
+    switch (dayKey.toUpperCase()) {
+      case 'MON': return loc.dayMon;
+      case 'TUE': return loc.dayTue;
+      case 'WED': return loc.dayWed;
+      case 'THU': return loc.dayThu;
+      case 'FRI': return loc.dayFri;
+      case 'SAT': return loc.daySat;
+      case 'SUN': return loc.daySun;
+      default: return dayKey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -113,7 +126,10 @@ class PostCardContentWidget extends StatelessWidget {
 
     if (post.type == PostType.routineShare && post.routineSnapshot != null) {
       final exerciseCount = (post.routineSnapshot!['exercises'] as List<dynamic>?)?.length ?? 0;
-      final scheduledDaysString = (post.routineSnapshot!['scheduledDays'] as List<dynamic>?)?.join(', ').toUpperCase() ?? loc.postCardRoutineNoSchedule;
+      final dayKeys = List<String>.from(post.routineSnapshot!['scheduledDays'] as List<dynamic>? ?? []);
+      final scheduledDaysString = dayKeys.isNotEmpty
+          ? dayKeys.map((key) => _getLocalizedDay(loc, key)).join(', ')
+          : loc.postCardRoutineNoSchedule;
 
       return Padding(
         padding: const EdgeInsets.only(top: 12.0),

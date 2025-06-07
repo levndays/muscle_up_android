@@ -1401,4 +1401,172 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currentSetDisplayMuscleGroupsLoading => 'Loading muscle groups...';
+
+  @override
+  String get leaderboardPlayerNameFallback => 'Player';
+
+  @override
+  String get xpAbbreviation => 'XP';
+
+  @override
+  String get levelAbbreviation => 'LVL';
+
+  @override
+  String get dialogButtonClose => 'Close';
+
+  @override
+  String get routineListItemExerciseCountSuffix => ' exercise(s)';
+
+  @override
+  String get postDetailMenuTooltipOptions => 'Post Options';
+
+  @override
+  String get commentListItemErrorEmpty => 'Comment cannot be empty';
+
+  @override
+  String get commentListItemMenuTooltip => 'Comment options';
+
+  @override
+  String get testNotificationWelcomeTitle => 'Welcome Bonus!';
+
+  @override
+  String get testNotificationWelcomeMessage =>
+      'You\'ve received 100 XP for joining!';
+
+  @override
+  String get testNotificationReminderTitle => 'Workout Scheduled';
+
+  @override
+  String get testNotificationReminderMessage =>
+      'Your \'Full Body Blast\' is set for tomorrow.';
+
+  @override
+  String get testNotificationSystemTitle => 'App Maintenance';
+
+  @override
+  String get testNotificationSystemMessage =>
+      'Scheduled maintenance on Sunday, 2 AM.';
+
+  @override
+  String get testNotificationAdviceTitle1 => 'Hydration Tip';
+
+  @override
+  String get testNotificationAdviceMessage1 =>
+      'Remember to drink at least 8 glasses of water today, especially on training days!';
+
+  @override
+  String get testNotificationAdviceTitle2 => 'Rest & Recovery';
+
+  @override
+  String get testNotificationAdviceMessage2 =>
+      'Muscles grow during rest. Ensure you\'re getting 7-9 hours of sleep for optimal recovery.';
+
+  @override
+  String get testNotificationAdviceTitle3 => 'Nutrition Insight';
+
+  @override
+  String get testNotificationAdviceMessage3 =>
+      'Prioritize protein intake within an hour after your workout to aid muscle repair.';
+
+  @override
+  String get testNotificationAdviceSentSnackbar =>
+      'Test advice sent! Check your notifications and ADVICE section.';
+
+  @override
+  String get notificationNewFollowerTitle => 'New Follower!';
+
+  @override
+  String notificationNewFollowerMessage(String username) {
+    return '$username started following you.';
+  }
+
+  @override
+  String get notificationXpForVotingTitle => 'XP for Voting!';
+
+  @override
+  String notificationXpForVotingMessage(String xp) {
+    return 'You received $xp XP for voting on a record claim.';
+  }
+
+  @override
+  String get notificationRecordVerifiedTitle => 'Record Verified!';
+
+  @override
+  String notificationRecordVerifiedMessage(
+    String exerciseName,
+    String weight,
+    String reps,
+  ) {
+    return 'Congratulations! Your record for \"$exerciseName\" (${weight}kg x $reps reps) has been verified by the community!';
+  }
+
+  @override
+  String get notificationRecordRejectedTitle => 'Record Claim Denied';
+
+  @override
+  String notificationRecordRejectedMessage(String exerciseName) {
+    return 'Your record claim for \"$exerciseName\" was not verified by the community this time.';
+  }
+
+  @override
+  String get notificationRecordExpiredTitle => 'Record Claim Expired';
+
+  @override
+  String notificationRecordExpiredMessage(String exerciseName) {
+    return 'Voting for your record claim on \"$exerciseName\" has ended without a clear result.';
+  }
+
+  @override
+  String notificationXpForRecordTitle(String exerciseName) {
+    return 'New Record: $exerciseName Verified!';
+  }
+
+  @override
+  String notificationXpForRecordMessage(
+    String xp,
+    String weight,
+    String reps,
+    String exerciseName,
+  ) {
+    return 'You earned $xp XP for your verified record of ${weight}kg x $reps reps!';
+  }
+
+  @override
+  String get achievement_firstWorkout_title => 'First Step';
+
+  @override
+  String get achievement_firstWorkout_message =>
+      'You completed your first workout! Keep it up!';
+
+  @override
+  String get achievement_profileSetup_title => 'Early Bird';
+
+  @override
+  String get achievement_profileSetup_message =>
+      'Welcome to the club! Thanks for joining MuscleUP.';
+
+  @override
+  String get dayMon => 'MON';
+
+  @override
+  String get dayTue => 'TUE';
+
+  @override
+  String get dayWed => 'WED';
+
+  @override
+  String get dayThu => 'THU';
+
+  @override
+  String get dayFri => 'FRI';
+
+  @override
+  String get daySat => 'SAT';
+
+  @override
+  String get daySun => 'SUN';
+
+  @override
+  String get loginPageErrorInvalidCredential =>
+      'Invalid credentials. Please check your email and password.';
 }

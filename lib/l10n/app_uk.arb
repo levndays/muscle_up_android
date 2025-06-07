@@ -1938,5 +1938,138 @@
   "commentListItemMenuTooltip": "Опції коментаря",
   "@commentListItemMenuTooltip": {
     "description": "Підказка для кнопки меню опцій коментаря"
+  },
+    "testNotificationWelcomeTitle": "Вітальний бонус!",
+  "@testNotificationWelcomeTitle": {},
+  "testNotificationWelcomeMessage": "Ви отримали 100 XP за приєднання!",
+  "@testNotificationWelcomeMessage": {},
+  "testNotificationReminderTitle": "Заплановано тренування",
+  "@testNotificationReminderTitle": {},
+  "testNotificationReminderMessage": "Ваше тренування 'Full Body Blast' заплановано на завтра.",
+  "@testNotificationReminderMessage": {},
+  "testNotificationSystemTitle": "Технічне обслуговування",
+  "@testNotificationSystemTitle": {},
+  "testNotificationSystemMessage": "Заплановане технічне обслуговування в неділю о 2:00.",
+  "@testNotificationSystemMessage": {},
+  "testNotificationAdviceTitle1": "Порада щодо гідратації",
+  "@testNotificationAdviceTitle1": {},
+  "testNotificationAdviceMessage1": "Не забувайте випивати щонайменше 8 склянок води сьогодні, особливо в дні тренувань!",
+  "@testNotificationAdviceMessage1": {},
+  "testNotificationAdviceTitle2": "Відпочинок та відновлення",
+  "@testNotificationAdviceTitle2": {},
+  "testNotificationAdviceMessage2": "М'язи ростуть під час відпочинку. Переконайтеся, що ви спите 7-9 годин для оптимального відновлення.",
+  "@testNotificationAdviceMessage2": {},
+  "testNotificationAdviceTitle3": "Порада щодо харчування",
+  "@testNotificationAdviceTitle3": {},
+  "testNotificationAdviceMessage3": "Надавайте перевагу споживанню білка протягом години після тренування для допомоги у відновленні м'язів.",
+  "@testNotificationAdviceMessage3": {},
+  "testNotificationAdviceSentSnackbar": "Тестові поради надіслано! Перевірте ваші сповіщення та розділ ПОРАДИ.",
+  "@testNotificationAdviceSentSnackbar": {},
+  "notificationNewFollowerTitle": "Новий підписник!",
+  "@notificationNewFollowerTitle": {},
+  "notificationNewFollowerMessage": "{username} почав(ла) стежити за вами.",
+  "@notificationNewFollowerMessage": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationXpForVotingTitle": "XP за голосування!",
+  "@notificationXpForVotingTitle": {},
+  "notificationXpForVotingMessage": "Ви отримали {xp} XP за голосування за заявку на рекорд.",
+  "@notificationXpForVotingMessage": {
+    "placeholders": {
+      "xp": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationRecordVerifiedTitle": "Рекорд підтверджено!",
+  "@notificationRecordVerifiedTitle": {},
+  "notificationRecordVerifiedMessage": "Вітаємо! Ваш рекорд у \"{exerciseName}\" ({weight}кг x {reps} повт.) було підтверджено спільнотою!",
+  "@notificationRecordVerifiedMessage": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationRecordRejectedTitle": "Заявку на рекорд відхилено",
+  "@notificationRecordRejectedTitle": {},
+  "notificationRecordRejectedMessage": "Вашу заявку на рекорд у \"{exerciseName}\" цього разу не було підтверджено спільнотою.",
+  "@notificationRecordRejectedMessage": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationRecordExpiredTitle": "Термін заявки на рекорд минув",
+  "@notificationRecordExpiredTitle": {},
+  "notificationRecordExpiredMessage": "Голосування за вашу заявку на рекорд у \"{exerciseName}\" завершилося без чіткого результату.",
+  "@notificationRecordExpiredMessage": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationXpForRecordTitle": "Новий рекорд: {exerciseName} підтверджено!",
+  "@notificationXpForRecordTitle": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationXpForRecordMessage": "Ви заробили {xp} XP за ваш підтверджений рекорд {weight}кг x {reps} повт.!",
+  "@notificationXpForRecordMessage": {
+    "placeholders": {
+      "xp": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "achievement_firstWorkout_title": "Перший крок",
+  "@achievement_firstWorkout_title": {},
+  "achievement_firstWorkout_message": "Ви завершили своє перше тренування! Так тримати!",
+  "@achievement_firstWorkout_message": {},
+  "achievement_profileSetup_title": "Рання пташка",
+  "@achievement_profileSetup_title": {},
+  "achievement_profileSetup_message": "Ласкаво просимо до клубу! Дякуємо, що приєдналися до MuscleUP.",
+  "@achievement_profileSetup_message": {},
+    "dayMon": "Пн",
+  "@dayMon": {},
+  "dayTue": "Вт",
+  "@dayTue": {},
+  "dayWed": "Ср",
+  "@dayWed": {},
+  "dayThu": "Чт",
+  "@dayThu": {},
+  "dayFri": "Пт",
+  "@dayFri": {},
+  "daySat": "Сб",
+  "@daySat": {},
+  "daySun": "Нд",
+  "@daySun": {},
+    "loginPageErrorInvalidCredential": "Неправильні дані для входу. Будь ласка, перевірте вашу пошту та пароль.",
+  "@loginPageErrorInvalidCredential": {
+    "description": "Повідомлення про помилку для неправильної пошти або пароля"
   }
 }

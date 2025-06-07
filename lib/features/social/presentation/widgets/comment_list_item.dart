@@ -35,7 +35,7 @@ class CommentListItem extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: loc.commentListItemEditDialogHint,
               ),
-               validator: (value) => value == null || value.trim().isEmpty ? loc.addExerciseDialogSetsErrorEmpty : null,
+               validator: (value) => value == null || value.trim().isEmpty ? loc.commentListItemErrorEmpty : null,
             ),
           ),
           actions: [
@@ -93,7 +93,7 @@ class CommentListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    final timeAgo = DateFormat.yMMMd().add_jm().format(comment.timestamp.toDate());
+    final timeAgo = DateFormat.yMMMd(loc.localeName).add_jm().format(comment.timestamp.toDate());
     final currentUserId = RepositoryProvider.of<fb_auth.FirebaseAuth>(context).currentUser?.uid;
     final bool isAuthor = currentUserId == comment.userId;
     final cubit = context.read<PostInteractionCubit>();
@@ -151,7 +151,7 @@ class CommentListItem extends StatelessWidget {
                         child: PopupMenuButton<String>(
                           icon: Icon(Icons.more_vert, size: 18, color: Colors.grey.shade600),
                           padding: EdgeInsets.zero,
-                          tooltip: loc.commentListItemMenuEdit, // Re-using, consider a specific one
+                          tooltip: loc.commentListItemMenuTooltip,
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                             PopupMenuItem<String>(
                               value: 'edit',

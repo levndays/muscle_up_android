@@ -59,10 +59,11 @@ class DashboardScreen extends StatelessWidget {
   }
 
   void _createTestNotifications(BuildContext ctx) {
+    final loc = AppLocalizations.of(ctx)!;
     final cubit = ctx.read<NotificationsCubit>();
-    cubit.createTestNotification(title: "Welcome Bonus!", message: "You've received 100 XP for joining!", type: NotificationType.achievementUnlocked);
-    cubit.createTestNotification(title: "Workout Scheduled", message: "Your 'Full Body Blast' is set for tomorrow.", type: NotificationType.workoutReminder);
-    cubit.createTestNotification(title: "App Maintenance", message: "Scheduled maintenance on Sunday, 2 AM.", type: NotificationType.systemMessage);
+    cubit.createTestNotification(title: loc.testNotificationWelcomeTitle, message: loc.testNotificationWelcomeMessage, type: NotificationType.achievementUnlocked);
+    cubit.createTestNotification(title: loc.testNotificationReminderTitle, message: loc.testNotificationReminderMessage, type: NotificationType.workoutReminder);
+    cubit.createTestNotification(title: loc.testNotificationSystemTitle, message: loc.testNotificationSystemMessage, type: NotificationType.systemMessage);
     developer.log("Test notifications creation requested from Dashboard", name: "DashboardScreen");
   }
 
@@ -70,7 +71,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     developer.log("DashboardScreen: Building UI", name: "DashboardScreen");
-    final loc = AppLocalizations.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return MultiBlocProvider(
       providers: [

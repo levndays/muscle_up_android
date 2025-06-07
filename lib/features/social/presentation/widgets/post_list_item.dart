@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:intl/intl.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/domain/entities/post.dart';
 import '../../../../core/domain/entities/vote_type.dart';
 import '../../../../core/domain/repositories/post_repository.dart';
@@ -41,6 +42,7 @@ class _PostListItemContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context)!;
     return BlocConsumer<PostInteractionCubit, PostInteractionState>(
       listener: (context, state) {
         if (state is PostInteractionFailure) {
@@ -83,7 +85,7 @@ class _PostListItemContent extends StatelessWidget {
         if (state is PostCommentsLoaded) currentUserVote = state.currentUserVote;
 
 
-        final timeAgo = DateFormat.yMMMd('en_US').add_jm().format(currentPost.timestamp.toDate());
+        final timeAgo = DateFormat.yMMMd(loc.localeName).add_jm().format(currentPost.timestamp.toDate());
         final currentAuthUserId = fb_auth.FirebaseAuth.instance.currentUser?.uid;
         final bool isAuthorOfPost = currentAuthUserId == currentPost.userId;
         final bool isLikedByCurrentUser = currentAuthUserId != null && currentPost.likedBy.contains(currentAuthUserId);
@@ -159,7 +161,7 @@ class _PostListItemContent extends StatelessWidget {
                       if (isAuthorOfPost)
                         PopupMenuButton<String>(
                           icon: Icon(Icons.more_vert, color: Colors.grey.shade700),
-                          tooltip: "Post options",
+                          tooltip: loc.postDetailMenuTooltipOptions,
                           onSelected: (String value) async {
                             if (value == 'edit') {
                               await Navigator.of(context).push<bool>(
@@ -169,13 +171,13 @@ class _PostListItemContent extends StatelessWidget {
                               final confirmed = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: const Text('Delete Post?'),
-                                  content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+                                  title: Text(loc.postDetailDeleteConfirmTitle),
+                                  content: Text(loc.postDetailDeleteConfirmMessage),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+                                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(loc.postDetailDeleteConfirmButtonCancel)),
                                     TextButton(
                                       style: TextButton.styleFrom(foregroundColor: Colors.red),
-                                      child: const Text('Delete'),
+                                      child: Text(loc.postDetailDeleteConfirmButtonDelete),
                                       onPressed: () => Navigator.of(ctx).pop(true),
                                     ),
                                   ],
@@ -188,8 +190,8 @@ class _PostListItemContent extends StatelessWidget {
                           },
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                             if (currentPost.type == PostType.standard)
-                              const PopupMenuItem<String>(value: 'edit', child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Edit Post'))),
-                            const PopupMenuItem<String>(value: 'delete', child: ListTile(leading: Icon(Icons.delete_outline, color: Colors.redAccent), title: Text('Delete Post', style: TextStyle(color: Colors.redAccent)))),
+                              PopupMenuItem<String>(value: 'edit', child: ListTile(leading: const Icon(Icons.edit_outlined), title: Text(loc.postDetailMenuEditPost))),
+                            PopupMenuItem<String>(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_outline, color: Colors.redAccent), title: Text(loc.postDetailMenuDeletePost, style: const TextStyle(color: Colors.redAccent)))),
                           ],
                         ),
                     ],

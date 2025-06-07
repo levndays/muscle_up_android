@@ -47,25 +47,26 @@ class _ProgressView extends StatelessWidget {
   static const Color trendNeutralColor = Colors.grey;
 
   void _createTestAdviceNotifications(BuildContext ctx) {
+    final loc = AppLocalizations.of(ctx)!;
     final cubit = ctx.read<NotificationsCubit>();
     cubit.createTestNotification(
-      title: "Hydration Tip",
-      message: "Remember to drink at least 8 glasses of water today, especially on training days!",
+      title: loc.testNotificationAdviceTitle1,
+      message: loc.testNotificationAdviceMessage1,
       type: NotificationType.advice
     );
     cubit.createTestNotification(
-      title: "Rest & Recovery",
-      message: "Muscles grow during rest. Ensure you're getting 7-9 hours of sleep for optimal recovery.",
+      title: loc.testNotificationAdviceTitle2,
+      message: loc.testNotificationAdviceMessage2,
       type: NotificationType.advice
     );
      cubit.createTestNotification(
-      title: "Nutrition Insight",
-      message: "Prioritize protein intake within an hour after your workout to aid muscle repair.",
+      title: loc.testNotificationAdviceTitle3,
+      message: loc.testNotificationAdviceMessage3,
       type: NotificationType.advice
     );
     developer.log("Test ADVICE notifications creation requested from ProgressScreen", name: "ProgressScreen");
      ScaffoldMessenger.of(ctx).showSnackBar(
-      const SnackBar(content: Text('Test advice sent! Check your notifications and ADVICE section.'), duration: Duration(seconds: 3),)
+      SnackBar(content: Text(loc.testNotificationAdviceSentSnackbar), duration: const Duration(seconds: 3),)
     );
   }
 

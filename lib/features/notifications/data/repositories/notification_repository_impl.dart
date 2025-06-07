@@ -125,8 +125,8 @@ class NotificationRepositoryImpl implements NotificationRepository {
     final newNotif = AppNotification(
       id: '', 
       type: type,
-      title: title,
-      message: message,
+      title: title, // We keep sending the full string for test notifications
+      message: message, // for simplicity, instead of using keys.
       timestamp: Timestamp.now(),
       isRead: false,
       iconName: iconName,

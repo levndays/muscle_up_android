@@ -48,7 +48,7 @@ class UpcomingScheduleWidget extends StatelessWidget {
               border: Border.all(color: Colors.blueGrey.shade100)
             ),
             alignment: Alignment.center,
-            child: Text(state.message, textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey.shade700)), // state.message тут вже локалізовано з Cubit, або має бути
+            child: Text(loc.upcomingScheduleEmpty, textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey.shade700)),
           );
         } else if (state is UpcomingScheduleLoaded) {
           final scheduleEntries = state.schedule.entries.toList();

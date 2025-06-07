@@ -25,10 +25,7 @@ class UpcomingScheduleLoaded extends UpcomingScheduleState {
 }
 
 class UpcomingScheduleEmpty extends UpcomingScheduleState {
-  final String message;
-  const UpcomingScheduleEmpty(this.message);
-  @override
-  List<Object?> get props => [message];
+  const UpcomingScheduleEmpty();
 }
 
 class UpcomingScheduleError extends UpcomingScheduleState {

@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
 
-import '../../../../core/domain/entities/routine.dart';
+
 import '../../../../core/domain/repositories/routine_repository.dart';
 
 part 'upcoming_schedule_state.dart';
@@ -30,7 +30,7 @@ class UpcomingScheduleCubit extends Cubit<UpcomingScheduleState> {
     try {
       final routines = await _routineRepository.getUserRoutines(userId);
       if (routines.isEmpty) {
-        emit(const UpcomingScheduleEmpty("No routines found to build a schedule."));
+        emit(UpcomingScheduleEmpty());
         return;
       }
 
@@ -54,7 +54,7 @@ class UpcomingScheduleCubit extends Cubit<UpcomingScheduleState> {
       bool hasScheduledWorkouts = weeklySchedule.values.any((routinesForDay) => routinesForDay.isNotEmpty);
 
       if (!hasScheduledWorkouts) {
-         emit(const UpcomingScheduleEmpty("No workouts scheduled for the next 7 days."));
+         emit(UpcomingScheduleEmpty());
       } else {
         emit(UpcomingScheduleLoaded(schedule: weeklySchedule, startDate: DateTime(today.year, today.month, today.day)));
       }

@@ -1938,5 +1938,138 @@
   "commentListItemMenuTooltip": "Comment options",
   "@commentListItemMenuTooltip": {
     "description": "Tooltip for the comment options menu button"
+  },
+    "testNotificationWelcomeTitle": "Welcome Bonus!",
+  "@testNotificationWelcomeTitle": {},
+  "testNotificationWelcomeMessage": "You've received 100 XP for joining!",
+  "@testNotificationWelcomeMessage": {},
+  "testNotificationReminderTitle": "Workout Scheduled",
+  "@testNotificationReminderTitle": {},
+  "testNotificationReminderMessage": "Your 'Full Body Blast' is set for tomorrow.",
+  "@testNotificationReminderMessage": {},
+  "testNotificationSystemTitle": "App Maintenance",
+  "@testNotificationSystemTitle": {},
+  "testNotificationSystemMessage": "Scheduled maintenance on Sunday, 2 AM.",
+  "@testNotificationSystemMessage": {},
+  "testNotificationAdviceTitle1": "Hydration Tip",
+  "@testNotificationAdviceTitle1": {},
+  "testNotificationAdviceMessage1": "Remember to drink at least 8 glasses of water today, especially on training days!",
+  "@testNotificationAdviceMessage1": {},
+  "testNotificationAdviceTitle2": "Rest & Recovery",
+  "@testNotificationAdviceTitle2": {},
+  "testNotificationAdviceMessage2": "Muscles grow during rest. Ensure you're getting 7-9 hours of sleep for optimal recovery.",
+  "@testNotificationAdviceMessage2": {},
+  "testNotificationAdviceTitle3": "Nutrition Insight",
+  "@testNotificationAdviceTitle3": {},
+  "testNotificationAdviceMessage3": "Prioritize protein intake within an hour after your workout to aid muscle repair.",
+  "@testNotificationAdviceMessage3": {},
+  "testNotificationAdviceSentSnackbar": "Test advice sent! Check your notifications and ADVICE section.",
+  "@testNotificationAdviceSentSnackbar": {},
+  "notificationNewFollowerTitle": "New Follower!",
+  "@notificationNewFollowerTitle": {},
+  "notificationNewFollowerMessage": "{username} started following you.",
+  "@notificationNewFollowerMessage": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationXpForVotingTitle": "XP for Voting!",
+  "@notificationXpForVotingTitle": {},
+  "notificationXpForVotingMessage": "You received {xp} XP for voting on a record claim.",
+  "@notificationXpForVotingMessage": {
+    "placeholders": {
+      "xp": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationRecordVerifiedTitle": "Record Verified!",
+  "@notificationRecordVerifiedTitle": {},
+  "notificationRecordVerifiedMessage": "Congratulations! Your record for \"{exerciseName}\" ({weight}kg x {reps} reps) has been verified by the community!",
+  "@notificationRecordVerifiedMessage": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationRecordRejectedTitle": "Record Claim Denied",
+  "@notificationRecordRejectedTitle": {},
+  "notificationRecordRejectedMessage": "Your record claim for \"{exerciseName}\" was not verified by the community this time.",
+  "@notificationRecordRejectedMessage": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationRecordExpiredTitle": "Record Claim Expired",
+  "@notificationRecordExpiredTitle": {},
+  "notificationRecordExpiredMessage": "Voting for your record claim on \"{exerciseName}\" has ended without a clear result.",
+  "@notificationRecordExpiredMessage": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationXpForRecordTitle": "New Record: {exerciseName} Verified!",
+  "@notificationXpForRecordTitle": {
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationXpForRecordMessage": "You earned {xp} XP for your verified record of {weight}kg x {reps} reps!",
+  "@notificationXpForRecordMessage": {
+    "placeholders": {
+      "xp": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "achievement_firstWorkout_title": "First Step",
+  "@achievement_firstWorkout_title": {},
+  "achievement_firstWorkout_message": "You completed your first workout! Keep it up!",
+  "@achievement_firstWorkout_message": {},
+  "achievement_profileSetup_title": "Early Bird",
+  "@achievement_profileSetup_title": {},
+  "achievement_profileSetup_message": "Welcome to the club! Thanks for joining MuscleUP.",
+  "@achievement_profileSetup_message": {},
+    "dayMon": "MON",
+  "@dayMon": {},
+  "dayTue": "TUE",
+  "@dayTue": {},
+  "dayWed": "WED",
+  "@dayWed": {},
+  "dayThu": "THU",
+  "@dayThu": {},
+  "dayFri": "FRI",
+  "@dayFri": {},
+  "daySat": "SAT",
+  "@daySat": {},
+  "daySun": "SUN",
+  "@daySun": {},
+    "loginPageErrorInvalidCredential": "Invalid credentials. Please check your email and password.",
+  "@loginPageErrorInvalidCredential": {
+    "description": "Error message for wrong email or password"
   }
 }

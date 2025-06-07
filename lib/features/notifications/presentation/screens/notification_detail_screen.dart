@@ -91,18 +91,22 @@ class NotificationDetailScreen extends StatelessWidget {
   }
 
 
-  String _formatTimestamp(DateTime timestamp) {
-    return DateFormat('EEEE, MMMM d, yyyy HH:mm').format(timestamp);
+  String _formatTimestamp(BuildContext context, DateTime timestamp) {
+    final loc = AppLocalizations.of(context)!;
+    return DateFormat.yMMMMd(loc.localeName).add_jm().format(timestamp);
   }
 
   @override
   Widget build(BuildContext context) {
     final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
-    final loc = AppLocalizations.of(context)!; // For localization
+    final loc = AppLocalizations.of(context)!;
+    
+    final localizedTitle = notification.getLocalizedTitle(context);
+    final localizedMessage = notification.getLocalizedMessage(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(notification.title),
+        title: Text(localizedTitle),
         backgroundColor: Theme.of(context).cardColor,
         elevation: 1,
       ),
@@ -118,11 +122,11 @@ class NotificationDetailScreen extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: [
-                    _getLeadingWidgetForDetail(context, notification), // UPDATED
+                    _getLeadingWidgetForDetail(context, notification),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        notification.title,
+                        localizedTitle,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: onSurfaceColor,
@@ -135,7 +139,7 @@ class NotificationDetailScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    _formatTimestamp(notification.timestamp.toDate()),
+                    _formatTimestamp(context, notification.timestamp.toDate()),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                           fontStyle: FontStyle.italic,
@@ -144,30 +148,13 @@ class NotificationDetailScreen extends StatelessWidget {
                 ),
                 const Divider(height: 32, thickness: 0.8),
                 Text(
-                  notification.message,
+                  localizedMessage,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontSize: 16,
                         height: 1.5,
                         color: onSurfaceColor.withOpacity(0.85),
                       ),
                 ),
-                const SizedBox(height: 24),
-                if (notification.relatedEntityId != null || notification.relatedEntityType != null) ...[
-                  const Divider(height: 24, thickness: 0.8),
-                  Text(
-                    loc.notificationDetailRelatedInfoTitle, // LOCALIZED
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: onSurfaceColor,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (notification.relatedEntityType != null)
-                    _buildInfoRow(context, loc.notificationDetailRelatedInfoTypeLabel, notification.relatedEntityType!), // LOCALIZED
-                  if (notification.relatedEntityId != null)
-                    _buildInfoRow(context, loc.notificationDetailRelatedInfoIdLabel, notification.relatedEntityId!), // LOCALIZED
-                  const SizedBox(height: 10),
-                ],
                 if (notification.isRead) ...[
                   const SizedBox(height: 20),
                   Row(
@@ -176,7 +163,7 @@ class NotificationDetailScreen extends StatelessWidget {
                       Icon(Icons.check_circle_outline, color: Colors.green.shade600, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        loc.notificationDetailStatusRead, // LOCALIZED
+                        loc.notificationDetailStatusRead,
                         style: TextStyle(color: Colors.green.shade700, fontSize: 12),
                       ),
                     ],
@@ -186,33 +173,6 @@ class NotificationDetailScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85),
-                  ),
-            ),
-          ),
-        ],
       ),
     );
   }

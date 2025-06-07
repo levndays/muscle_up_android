@@ -1419,4 +1419,172 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get currentSetDisplayMuscleGroupsLoading =>
       'Завантаження груп м\'язів...';
+
+  @override
+  String get leaderboardPlayerNameFallback => 'Гравець';
+
+  @override
+  String get xpAbbreviation => 'XP';
+
+  @override
+  String get levelAbbreviation => 'РІВ';
+
+  @override
+  String get dialogButtonClose => 'Закрити';
+
+  @override
+  String get routineListItemExerciseCountSuffix => ' вправ(и)';
+
+  @override
+  String get postDetailMenuTooltipOptions => 'Опції допису';
+
+  @override
+  String get commentListItemErrorEmpty => 'Коментар не може бути порожнім';
+
+  @override
+  String get commentListItemMenuTooltip => 'Опції коментаря';
+
+  @override
+  String get testNotificationWelcomeTitle => 'Вітальний бонус!';
+
+  @override
+  String get testNotificationWelcomeMessage =>
+      'Ви отримали 100 XP за приєднання!';
+
+  @override
+  String get testNotificationReminderTitle => 'Заплановано тренування';
+
+  @override
+  String get testNotificationReminderMessage =>
+      'Ваше тренування \'Full Body Blast\' заплановано на завтра.';
+
+  @override
+  String get testNotificationSystemTitle => 'Технічне обслуговування';
+
+  @override
+  String get testNotificationSystemMessage =>
+      'Заплановане технічне обслуговування в неділю о 2:00.';
+
+  @override
+  String get testNotificationAdviceTitle1 => 'Порада щодо гідратації';
+
+  @override
+  String get testNotificationAdviceMessage1 =>
+      'Не забувайте випивати щонайменше 8 склянок води сьогодні, особливо в дні тренувань!';
+
+  @override
+  String get testNotificationAdviceTitle2 => 'Відпочинок та відновлення';
+
+  @override
+  String get testNotificationAdviceMessage2 =>
+      'М\'язи ростуть під час відпочинку. Переконайтеся, що ви спите 7-9 годин для оптимального відновлення.';
+
+  @override
+  String get testNotificationAdviceTitle3 => 'Порада щодо харчування';
+
+  @override
+  String get testNotificationAdviceMessage3 =>
+      'Надавайте перевагу споживанню білка протягом години після тренування для допомоги у відновленні м\'язів.';
+
+  @override
+  String get testNotificationAdviceSentSnackbar =>
+      'Тестові поради надіслано! Перевірте ваші сповіщення та розділ ПОРАДИ.';
+
+  @override
+  String get notificationNewFollowerTitle => 'Новий підписник!';
+
+  @override
+  String notificationNewFollowerMessage(String username) {
+    return '$username почав(ла) стежити за вами.';
+  }
+
+  @override
+  String get notificationXpForVotingTitle => 'XP за голосування!';
+
+  @override
+  String notificationXpForVotingMessage(String xp) {
+    return 'Ви отримали $xp XP за голосування за заявку на рекорд.';
+  }
+
+  @override
+  String get notificationRecordVerifiedTitle => 'Рекорд підтверджено!';
+
+  @override
+  String notificationRecordVerifiedMessage(
+    String exerciseName,
+    String weight,
+    String reps,
+  ) {
+    return 'Вітаємо! Ваш рекорд у \"$exerciseName\" ($weightкг x $reps повт.) було підтверджено спільнотою!';
+  }
+
+  @override
+  String get notificationRecordRejectedTitle => 'Заявку на рекорд відхилено';
+
+  @override
+  String notificationRecordRejectedMessage(String exerciseName) {
+    return 'Вашу заявку на рекорд у \"$exerciseName\" цього разу не було підтверджено спільнотою.';
+  }
+
+  @override
+  String get notificationRecordExpiredTitle => 'Термін заявки на рекорд минув';
+
+  @override
+  String notificationRecordExpiredMessage(String exerciseName) {
+    return 'Голосування за вашу заявку на рекорд у \"$exerciseName\" завершилося без чіткого результату.';
+  }
+
+  @override
+  String notificationXpForRecordTitle(String exerciseName) {
+    return 'Новий рекорд: $exerciseName підтверджено!';
+  }
+
+  @override
+  String notificationXpForRecordMessage(
+    String xp,
+    String weight,
+    String reps,
+    String exerciseName,
+  ) {
+    return 'Ви заробили $xp XP за ваш підтверджений рекорд $weightкг x $reps повт.!';
+  }
+
+  @override
+  String get achievement_firstWorkout_title => 'Перший крок';
+
+  @override
+  String get achievement_firstWorkout_message =>
+      'Ви завершили своє перше тренування! Так тримати!';
+
+  @override
+  String get achievement_profileSetup_title => 'Рання пташка';
+
+  @override
+  String get achievement_profileSetup_message =>
+      'Ласкаво просимо до клубу! Дякуємо, що приєдналися до MuscleUP.';
+
+  @override
+  String get dayMon => 'Пн';
+
+  @override
+  String get dayTue => 'Вт';
+
+  @override
+  String get dayWed => 'Ср';
+
+  @override
+  String get dayThu => 'Чт';
+
+  @override
+  String get dayFri => 'Пт';
+
+  @override
+  String get daySat => 'Сб';
+
+  @override
+  String get daySun => 'Нд';
+
+  @override
+  String get loginPageErrorInvalidCredential =>
+      'Неправильні дані для входу. Будь ласка, перевірте вашу пошту та пароль.';
 }

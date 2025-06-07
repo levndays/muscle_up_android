@@ -67,9 +67,25 @@ class RoutineListItem extends StatelessWidget {
     }
   }
 
+  String _getLocalizedDay(BuildContext context, String dayKey) {
+    final loc = AppLocalizations.of(context)!;
+    switch (dayKey.toUpperCase()) {
+      case 'MON': return loc.dayMon;
+      case 'TUE': return loc.dayTue;
+      case 'WED': return loc.dayWed;
+      case 'THU': return loc.dayThu;
+      case 'FRI': return loc.dayFri;
+      case 'SAT': return loc.daySat;
+      case 'SUN': return loc.daySun;
+      default: return dayKey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final localizedDays = routine.scheduledDays.map((dayKey) => _getLocalizedDay(context, dayKey)).join(', ');
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
@@ -86,7 +102,7 @@ class RoutineListItem extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
-                '${routine.exercises.length}${loc.createPostRoutineExerciseCountSuffix}${routine.scheduledDays.isNotEmpty ? " | ${routine.scheduledDays.join(", ")}" : ""}',
+                '${routine.exercises.length}${loc.createPostRoutineExerciseCountSuffix}${localizedDays.isNotEmpty ? " | $localizedDays" : ""}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
             ),

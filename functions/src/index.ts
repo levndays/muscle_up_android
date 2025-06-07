@@ -86,7 +86,7 @@ const getUTCDayStart = (jsDate: Date): Date => {
   return new Date(Date.UTC(jsDate.getUTCFullYear(), jsDate.getUTCMonth(), jsDate.getUTCDate()));
 };
 
-export const createUserProfile = functionsV1.region(defaultRegion).auth.user().onCreate(async (user) => {
+export const createUserProfile = functionsV1.region(defaultRegion).auth.user().onCreate(async (user: functionsV1.auth.UserRecord) => {
   logger.info("V1 Auth trigger: New user created.", { uid: user.uid, email: user.email });
   const userDocRef = admin.firestore().collection("users").doc(user.uid);
   try {
@@ -214,11 +214,11 @@ export const calculateAndAwardXpAndStreak = onDocumentUpdated(
           achievedRewardIds.push(AchievementId.FIRST_WORKOUT);
           const notificationsRef = userProfileRef.collection("notifications");
           transaction.set(notificationsRef.doc(), {
-            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(), 
-            title: "First Workout Completed!",
-            message: "You've successfully completed your first workout. Great start!",
-            timestamp: FieldValue.serverTimestamp(), isRead: false, 
-            iconName: achievementEmblems[AchievementId.FIRST_WORKOUT] ?? "fitness_center", // CHANGED
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
+            titleLocKey: "achievement_firstWorkout_title",
+            messageLocKey: "achievement_firstWorkout_message",
+            timestamp: FieldValue.serverTimestamp(), isRead: false,
+            iconName: achievementEmblems[AchievementId.FIRST_WORKOUT] ?? "fitness_center",
             relatedEntityId: AchievementId.FIRST_WORKOUT, relatedEntityType: "achievement",
           });
         }
@@ -257,11 +257,11 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
           await userProfileRef.update({ achievedRewardIds, updatedAt: FieldValue.serverTimestamp() });
           const notificationsRef = userProfileRef.collection("notifications");
           await notificationsRef.add({
-            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(), 
-            title: "Profile Setup Complete!",
-            message: "You've successfully set up your profile. Welcome aboard!",
-            timestamp: FieldValue.serverTimestamp(), isRead: false, 
-            iconName: achievementEmblems[AchievementId.EARLY_BIRD] ?? "auto_awesome", // CHANGED
+            type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
+            titleLocKey: "achievement_profileSetup_title",
+            messageLocKey: "achievement_profileSetup_message",
+            timestamp: FieldValue.serverTimestamp(), isRead: false,
+            iconName: achievementEmblems[AchievementId.EARLY_BIRD] ?? "auto_awesome",
             relatedEntityId: AchievementId.EARLY_BIRD, relatedEntityType: "achievement",
           });
         }
@@ -269,8 +269,6 @@ export const checkProfileSetupCompletionAchievements = onDocumentWritten(
     }
   }
 );
-
-// ... (onCommentCreated, onCommentDeleted, onPostDeleted, onRecordClaimPostCreated, onRecordClaimVoteCasted remain the same) ...
 
 export const onCommentCreated = onDocumentCreated(
   { document: "posts/{postId}/comments/{commentId}", region: defaultRegion },
@@ -350,7 +348,6 @@ export const onPostDeleted = onDocumentDeleted(
   }
 );
 
-
 export const onRecordClaimPostCreated = onDocumentCreated(
   { document: "posts/{postId}", region: defaultRegion },
   async (event: FirestoreEvent<QueryDocumentSnapshot | undefined, { postId: string }>) => {
@@ -405,9 +402,11 @@ export const onRecordClaimVoteCasted = onDocumentUpdated(
           batchHasWrites = true;
           const notificationRef = userProfileRef.collection("notifications").doc();
           batch.set(notificationRef, {
-            type: NotificationType.SYSTEM_MESSAGE.toString(), title: "XP for Voting!",
-            message: `You received ${XP_FOR_VOTING} XP for voting on a record claim.`,
-            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech", // Generic icon, client will handle
+            type: NotificationType.SYSTEM_MESSAGE.toString(),
+            titleLocKey: "notification_xpForVoting_title",
+            messageLocKey: "notification_xpForVoting_message",
+            messageLocArgs: { "xp": XP_FOR_VOTING.toString() },
+            timestamp: FieldValue.serverTimestamp(), isRead: false, iconName: "military_tech",
             relatedEntityId: postIdFromEvent, relatedEntityType: "postVote",
           });
           logger.info(`Awarded ${XP_FOR_VOTING} XP to user ${voterId} for voting on post ${postIdFromEvent}`);
@@ -467,21 +466,27 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
       });
       const totalVotes = verifyCount + disputeCount;
       let newStatus = RecordVerificationStatus.EXPIRED;
-      let authorNotificationTitle = "Record Claim Expired";
-      let authorNotificationMessage = `Voting for your record claim on "${recordDetails?.exerciseName ?? "exercise"}" has ended without a clear result.`;
+      let authorNotificationTitleKey = "notification_recordExpired_title";
+      let authorNotificationMessageKey = "notification_recordExpired_message";
+      let authorNotificationMessageArgs: { [key: string]: string } = { exerciseName: recordDetails?.exerciseName ?? "exercise" };
       let shouldAwardXpAndAchievement = false;
 
       if (totalVotes > 0) {
         const verifyRatio = verifyCount / totalVotes;
         if (verifyRatio >= MIN_VOTE_PERCENTAGE_FOR_VERIFICATION) {
           newStatus = RecordVerificationStatus.VERIFIED;
-          authorNotificationTitle = "Record Verified!";
-          authorNotificationMessage = `Congratulations! Your record for "${recordDetails?.exerciseName ?? "exercise"}" (${recordDetails?.weightKg}kg x ${recordDetails?.reps} reps) has been verified by the community!`;
+          authorNotificationTitleKey = "notification_recordVerified_title";
+          authorNotificationMessageKey = "notification_recordVerified_message";
+          authorNotificationMessageArgs = {
+            exerciseName: recordDetails?.exerciseName ?? "exercise",
+            weight: recordDetails?.weightKg?.toString() ?? "N/A",
+            reps: recordDetails?.reps?.toString() ?? "N/A",
+          };
           shouldAwardXpAndAchievement = true;
         } else {
           newStatus = RecordVerificationStatus.REJECTED;
-          authorNotificationTitle = "Record Claim Denied";
-          authorNotificationMessage = `Your record claim for "${recordDetails?.exerciseName ?? "exercise"}" was not verified by the community this time.`;
+          authorNotificationTitleKey = "notification_recordRejected_title";
+          authorNotificationMessageKey = "notification_recordRejected_message";
         }
       }
       writeBatch.update(doc.ref, {
@@ -496,9 +501,11 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
         ref: authorProfileRef.collection("notifications").doc(),
         data: {
           type: newStatus === RecordVerificationStatus.VERIFIED ? NotificationType.ACHIEVEMENT_UNLOCKED.toString() : NotificationType.SYSTEM_MESSAGE.toString(),
-          title: authorNotificationTitle, message: authorNotificationMessage,
+          titleLocKey: authorNotificationTitleKey,
+          messageLocKey: authorNotificationMessageKey,
+          messageLocArgs: authorNotificationMessageArgs,
           timestamp: FieldValue.serverTimestamp(), isRead: false,
-          iconName: newStatus === RecordVerificationStatus.VERIFIED ? (achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech") : "gavel", // CHANGED
+          iconName: newStatus === RecordVerificationStatus.VERIFIED ? (achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech") : "gavel",
           relatedEntityId: currentPostId, relatedEntityType: "postVerification",
         },
       });
@@ -519,10 +526,16 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
           ref: authorProfileRef.collection("notifications").doc(),
           data: {
             type: NotificationType.ACHIEVEMENT_UNLOCKED.toString(),
-            title: `New Record: ${recordDetails?.exerciseName ?? "Exercise"} Verified!`,
-            message: `You earned ${recordXp} XP for your verified record of ${recordDetails?.weightKg}kg x ${recordDetails?.reps} reps!`,
-            timestamp: FieldValue.serverTimestamp(), isRead: false, 
-            iconName: achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech", // CHANGED
+            titleLocKey: "notification_xpForRecord_title",
+            messageLocKey: "notification_xpForRecord_message",
+            messageLocArgs: {
+              exerciseName: recordDetails?.exerciseName ?? "Exercise",
+              xp: recordXp.toString(),
+              weight: recordDetails?.weightKg?.toString() ?? "N/A",
+              reps: recordDetails?.reps?.toString() ?? "N/A",
+            },
+            timestamp: FieldValue.serverTimestamp(), isRead: false,
+            iconName: achievementEmblems[AchievementId.PERSONAL_RECORD_SET] ?? "military_tech",
             relatedEntityId: AchievementId.PERSONAL_RECORD_SET, relatedEntityType: "achievement",
           },
         });
@@ -543,7 +556,6 @@ export const processRecordClaimDeadlines = functionsV2.scheduler.onSchedule(
   }
 );
 
-// ... (handleUserFollowListUpdate remains the same) ...
 export const handleUserFollowListUpdate = onDocumentWritten(
   { document: "users/{userId}", region: defaultRegion, memory: "256MiB" },
   async (event: FirestoreEvent<Change<DocumentSnapshot> | undefined, { userId: string }>) => {
@@ -585,14 +597,15 @@ export const handleUserFollowListUpdate = onDocumentWritten(
       const notificationRef = targetUserRef.collection("notifications").doc();
       batch.set(notificationRef, {
         type: NotificationType.NEW_FOLLOWER.toString(),
-        title: "New Follower!",
-        message: `${afterData.username ?? afterData.displayName ?? "Someone"} started following you.`,
+        titleLocKey: "notification_newFollower_title",
+        messageLocKey: "notification_newFollower_message",
+        messageLocArgs: { "username": afterData.username ?? afterData.displayName ?? "Someone" },
         senderUserId: currentUserId,
         senderUsername: afterData.username ?? afterData.displayName ?? "A user",
         senderProfilePicUrl: afterData.profilePictureUrl ?? null,
         timestamp: FieldValue.serverTimestamp(),
         isRead: false,
-        iconName: "person_add_alt_1", // This can stay as an IconData key for now, or be changed to a generic follow icon asset
+        iconName: "person_add_alt_1",
         relatedEntityId: currentUserId,
         relatedEntityType: "userProfile",
       });

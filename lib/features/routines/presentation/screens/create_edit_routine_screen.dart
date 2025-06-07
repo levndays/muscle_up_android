@@ -26,7 +26,16 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
   final _descriptionController = TextEditingController();
   List<String> _selectedDays = [];
 
-  final List<String> _availableDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  final Map<String, String Function(AppLocalizations)> _dayMapping = {
+    'MON': (loc) => loc.dayMon,
+    'TUE': (loc) => loc.dayTue,
+    'WED': (loc) => loc.dayWed,
+    'THU': (loc) => loc.dayThu,
+    'FRI': (loc) => loc.dayFri,
+    'SAT': (loc) => loc.daySat,
+    'SUN': (loc) => loc.daySun,
+  };
+
 
   @override
   void initState() {
@@ -260,17 +269,19 @@ class _CreateEditRoutineScreenState extends State<CreateEditRoutineScreen> {
                     Text(loc.createEditRoutineScheduledDaysLabel, style: Theme.of(context).textTheme.titleMedium),
                     Wrap(
                       spacing: 8.0,
-                      children: _availableDays.map((day) {
-                        final isSelected = _selectedDays.contains(day);
+                      children: _dayMapping.entries.map((entry) { // CHANGED: Use map
+                        final dayKey = entry.key;
+                        final dayDisplay = entry.value(loc);
+                        final isSelected = _selectedDays.contains(dayKey);
                         return FilterChip(
-                          label: Text(day),
+                          label: Text(dayDisplay),
                           selected: isSelected,
                           onSelected: (bool selected) {
                             setState(() {
                               if (selected) {
-                                _selectedDays.add(day);
+                                _selectedDays.add(dayKey);
                               } else {
-                                _selectedDays.remove(day);
+                                _selectedDays.remove(dayKey);
                               }
                               _manageRoutineCubit.updateScheduledDays(List.from(_selectedDays));
                             });

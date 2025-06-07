@@ -102,9 +102,12 @@ class NotificationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!; // For localization
-    final timeAgo = DateFormat.MMMd().add_jm().format(notification.timestamp.toDate());
+    final loc = AppLocalizations.of(context)!;
+    final timeAgo = DateFormat.MMMd(loc.localeName).add_jm().format(notification.timestamp.toDate());
     final bool isUnread = !notification.isRead;
+
+    final localizedTitle = notification.getLocalizedTitle(context);
+    final localizedMessage = notification.getLocalizedMessage(context);
 
     return Dismissible(
       key: Key(notification.id),
@@ -114,10 +117,10 @@ class NotificationListItem extends StatelessWidget {
         context.read<NotificationsCubit>().deleteNotification(notification.id);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(loc.notificationListItemSnackbarRemoved(notification.title)), // LOCALIZED
+            content: Text(loc.notificationListItemSnackbarRemoved(localizedTitle)),
             duration: const Duration(seconds: 2),
             action: SnackBarAction(
-              label: loc.notificationListItemSnackbarUndo, // LOCALIZED
+              label: loc.notificationListItemSnackbarUndo,
               onPressed: () {
                 developer.log('UNDO pressed for ${notification.id} - not implemented', name: 'NotificationListItem');
               },
@@ -134,7 +137,7 @@ class NotificationListItem extends StatelessWidget {
           children: [
             const Icon(Icons.delete_forever, color: Colors.white),
             const SizedBox(width: 8),
-            Text(loc.notificationListItemDismissDelete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // LOCALIZED
+            Text(loc.notificationListItemDismissDelete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -145,7 +148,7 @@ class NotificationListItem extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text(loc.notificationListItemDismissDelete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // LOCALIZED
+            Text(loc.notificationListItemDismissDelete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             const SizedBox(width: 8),
             const Icon(Icons.delete_forever, color: Colors.white),
           ],
@@ -161,9 +164,9 @@ class NotificationListItem extends StatelessWidget {
               : BorderSide.none,
         ),
         child: ListTile(
-          leading: _getLeadingWidget(context, notification), // UPDATED
+          leading: _getLeadingWidget(context, notification),
           title: Text(
-            notification.title,
+            localizedTitle,
             style: TextStyle(
               fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
               color: isUnread ? Theme.of(context).colorScheme.onSurface : Colors.grey.shade700,
@@ -172,7 +175,7 @@ class NotificationListItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            notification.message,
+            localizedMessage,
             style: TextStyle(
               color: isUnread ? Theme.of(context).colorScheme.onSurface.withAlpha((0.8 * 255).round()) : Colors.grey.shade600,
             ),

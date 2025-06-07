@@ -300,8 +300,8 @@ class _HomePageContentState extends State<_HomePageContent> {
             label: loc.dashboardTabRoutines,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.travel_explore_outlined),
-            activeIcon: const Icon(Icons.travel_explore),
+            icon: const Icon(Icons.explore_outlined),
+            activeIcon: const Icon(Icons.explore),
             label: loc.dashboardTabExplore,
           ),
           BottomNavigationBarItem(

@@ -2521,6 +2521,285 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading muscle groups...'**
   String get currentSetDisplayMuscleGroupsLoading;
+
+  /// Fallback name for a user in the leaderboard if no other name is available
+  ///
+  /// In en, this message translates to:
+  /// **'Player'**
+  String get leaderboardPlayerNameFallback;
+
+  /// Abbreviation for Experience Points
+  ///
+  /// In en, this message translates to:
+  /// **'XP'**
+  String get xpAbbreviation;
+
+  /// Abbreviation for Level
+  ///
+  /// In en, this message translates to:
+  /// **'LVL'**
+  String get levelAbbreviation;
+
+  /// Generic 'Close' button text for dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get dialogButtonClose;
+
+  /// Suffix for the number of exercises in a routine list item
+  ///
+  /// In en, this message translates to:
+  /// **' exercise(s)'**
+  String get routineListItemExerciseCountSuffix;
+
+  /// Tooltip for the post options menu button in post detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'Post Options'**
+  String get postDetailMenuTooltipOptions;
+
+  /// Validation error for an empty comment
+  ///
+  /// In en, this message translates to:
+  /// **'Comment cannot be empty'**
+  String get commentListItemErrorEmpty;
+
+  /// Tooltip for the comment options menu button
+  ///
+  /// In en, this message translates to:
+  /// **'Comment options'**
+  String get commentListItemMenuTooltip;
+
+  /// No description provided for @testNotificationWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Bonus!'**
+  String get testNotificationWelcomeTitle;
+
+  /// No description provided for @testNotificationWelcomeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve received 100 XP for joining!'**
+  String get testNotificationWelcomeMessage;
+
+  /// No description provided for @testNotificationReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Scheduled'**
+  String get testNotificationReminderTitle;
+
+  /// No description provided for @testNotificationReminderMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your \'Full Body Blast\' is set for tomorrow.'**
+  String get testNotificationReminderMessage;
+
+  /// No description provided for @testNotificationSystemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Maintenance'**
+  String get testNotificationSystemTitle;
+
+  /// No description provided for @testNotificationSystemMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled maintenance on Sunday, 2 AM.'**
+  String get testNotificationSystemMessage;
+
+  /// No description provided for @testNotificationAdviceTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Hydration Tip'**
+  String get testNotificationAdviceTitle1;
+
+  /// No description provided for @testNotificationAdviceMessage1.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember to drink at least 8 glasses of water today, especially on training days!'**
+  String get testNotificationAdviceMessage1;
+
+  /// No description provided for @testNotificationAdviceTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest & Recovery'**
+  String get testNotificationAdviceTitle2;
+
+  /// No description provided for @testNotificationAdviceMessage2.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscles grow during rest. Ensure you\'re getting 7-9 hours of sleep for optimal recovery.'**
+  String get testNotificationAdviceMessage2;
+
+  /// No description provided for @testNotificationAdviceTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition Insight'**
+  String get testNotificationAdviceTitle3;
+
+  /// No description provided for @testNotificationAdviceMessage3.
+  ///
+  /// In en, this message translates to:
+  /// **'Prioritize protein intake within an hour after your workout to aid muscle repair.'**
+  String get testNotificationAdviceMessage3;
+
+  /// No description provided for @testNotificationAdviceSentSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Test advice sent! Check your notifications and ADVICE section.'**
+  String get testNotificationAdviceSentSnackbar;
+
+  /// No description provided for @notificationNewFollowerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Follower!'**
+  String get notificationNewFollowerTitle;
+
+  /// No description provided for @notificationNewFollowerMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{username} started following you.'**
+  String notificationNewFollowerMessage(String username);
+
+  /// No description provided for @notificationXpForVotingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'XP for Voting!'**
+  String get notificationXpForVotingTitle;
+
+  /// No description provided for @notificationXpForVotingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You received {xp} XP for voting on a record claim.'**
+  String notificationXpForVotingMessage(String xp);
+
+  /// No description provided for @notificationRecordVerifiedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Verified!'**
+  String get notificationRecordVerifiedTitle;
+
+  /// No description provided for @notificationRecordVerifiedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! Your record for \"{exerciseName}\" ({weight}kg x {reps} reps) has been verified by the community!'**
+  String notificationRecordVerifiedMessage(
+    String exerciseName,
+    String weight,
+    String reps,
+  );
+
+  /// No description provided for @notificationRecordRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Claim Denied'**
+  String get notificationRecordRejectedTitle;
+
+  /// No description provided for @notificationRecordRejectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your record claim for \"{exerciseName}\" was not verified by the community this time.'**
+  String notificationRecordRejectedMessage(String exerciseName);
+
+  /// No description provided for @notificationRecordExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Claim Expired'**
+  String get notificationRecordExpiredTitle;
+
+  /// No description provided for @notificationRecordExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Voting for your record claim on \"{exerciseName}\" has ended without a clear result.'**
+  String notificationRecordExpiredMessage(String exerciseName);
+
+  /// No description provided for @notificationXpForRecordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Record: {exerciseName} Verified!'**
+  String notificationXpForRecordTitle(String exerciseName);
+
+  /// No description provided for @notificationXpForRecordMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You earned {xp} XP for your verified record of {weight}kg x {reps} reps!'**
+  String notificationXpForRecordMessage(
+    String xp,
+    String weight,
+    String reps,
+    String exerciseName,
+  );
+
+  /// No description provided for @achievement_firstWorkout_title.
+  ///
+  /// In en, this message translates to:
+  /// **'First Step'**
+  String get achievement_firstWorkout_title;
+
+  /// No description provided for @achievement_firstWorkout_message.
+  ///
+  /// In en, this message translates to:
+  /// **'You completed your first workout! Keep it up!'**
+  String get achievement_firstWorkout_message;
+
+  /// No description provided for @achievement_profileSetup_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird'**
+  String get achievement_profileSetup_title;
+
+  /// No description provided for @achievement_profileSetup_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to the club! Thanks for joining MuscleUP.'**
+  String get achievement_profileSetup_message;
+
+  /// No description provided for @dayMon.
+  ///
+  /// In en, this message translates to:
+  /// **'MON'**
+  String get dayMon;
+
+  /// No description provided for @dayTue.
+  ///
+  /// In en, this message translates to:
+  /// **'TUE'**
+  String get dayTue;
+
+  /// No description provided for @dayWed.
+  ///
+  /// In en, this message translates to:
+  /// **'WED'**
+  String get dayWed;
+
+  /// No description provided for @dayThu.
+  ///
+  /// In en, this message translates to:
+  /// **'THU'**
+  String get dayThu;
+
+  /// No description provided for @dayFri.
+  ///
+  /// In en, this message translates to:
+  /// **'FRI'**
+  String get dayFri;
+
+  /// No description provided for @daySat.
+  ///
+  /// In en, this message translates to:
+  /// **'SAT'**
+  String get daySat;
+
+  /// No description provided for @daySun.
+  ///
+  /// In en, this message translates to:
+  /// **'SUN'**
+  String get daySun;
+
+  /// Error message for wrong email or password
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid credentials. Please check your email and password.'**
+  String get loginPageErrorInvalidCredential;
 }
 
 class _AppLocalizationsDelegate

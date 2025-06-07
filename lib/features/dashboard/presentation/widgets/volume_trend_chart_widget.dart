@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:muscle_up/l10n/app_localizations.dart';
 
 enum VolumeTrend { positive, negative, neutral }
 
@@ -48,17 +49,15 @@ class VolumeTrendChartWidget extends StatelessWidget {
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final Color defaultTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
     final Color chartBackgroundColor = isDarkMode ? Colors.grey[850]! : Colors.white;
+    final loc = AppLocalizations.of(context);
 
 
     if (volumes.isEmpty) {
-      return _buildMessageContainer(context, "Log workouts to see your volume trend.", chartBackgroundColor, defaultTextColor);
+      return _buildMessageContainer(context, loc.volumeTrendChartLogWorkouts, chartBackgroundColor, defaultTextColor);
     }
-    if (volumes.length < 2 && volumes.isNotEmpty) {
-      return _buildMessageContainer(context, "Log at least two workouts to see the trend.", chartBackgroundColor, defaultTextColor);
-    }
-     if (volumes.length == 1) { 
+    if (volumes.length == 1) { 
       final singleVolumeK = (volumes.first / 1000).toStringAsFixed(1);
-      return _buildMessageContainer(context, "Last workout volume: $singleVolumeK k kg.\nMore workouts needed for trend.", chartBackgroundColor, defaultTextColor, isSinglePoint: true);
+      return _buildMessageContainer(context, loc.volumeTrendChartSingleWorkoutVolume(singleVolumeK), chartBackgroundColor, defaultTextColor, isSinglePoint: true);
     }
 
 
